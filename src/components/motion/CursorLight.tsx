@@ -22,7 +22,7 @@ import { useEffect } from 'react';
  *    کشویی جابه‌جا شد یا صفحه اسکرول خورد، لکه سر جایش بماند.
  */
 
-const SELECTOR = '.deal, .review, .qa__card, .art';
+const SELECTOR = '.deal, .review, .qa__card, .art, .pcard';
 
 export function CursorLight() {
   useEffect(() => {
