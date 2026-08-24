@@ -379,3 +379,102 @@
   .acc__mesh { animation: none; }
   .acc__order:hover, .acc__sub:hover { translate: none; }
 }
+
+/* ---------- گروه‌های نوار کناری ---------- */
+
+.acc__side-group + .acc__side-group { margin-top: var(--sp-4); }
+
+.acc__side-title {
+  display: block;
+  padding: 0 var(--sp-4) var(--sp-2);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+}
+
+/* روی ریل افقی، عنوان گروه فقط جا می‌گیرد */
+@media (max-width: 900px) {
+  .acc__side-group { display: contents; }
+  .acc__side-title { display: none; }
+}
+
+/* ---------- حالت خالی ---------- */
+
+.acc__empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-3);
+  text-align: center;
+  padding: var(--sp-16) var(--sp-6);
+}
+.acc__empty svg { width: 34px; height: 34px; color: var(--ink-faint); opacity: 0.6; }
+.acc__empty h2 { font-size: var(--text-lg); }
+.acc__empty p { font-size: var(--text-sm); color: var(--ink-faint); max-width: 42ch; }
+
+/* ---------- پله‌های باشگاه ---------- */
+
+.acc__tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--sp-3);
+}
+
+.acc__tier {
+  display: grid;
+  gap: 4px;
+  padding: var(--sp-5);
+  border-radius: 14px;
+  border: 1px solid var(--glass-edge, var(--line));
+  background: color-mix(in srgb, var(--ink) 3%, transparent);
+}
+/* پله‌ی فعلی باید بی‌درنگ پیدا باشد، وگرنه نردبان معنی ندارد */
+.acc__tier.is-on {
+  border-color: var(--blue);
+  background: var(--blue-wash);
+  box-shadow: 0 0 0 1px var(--blue) inset;
+}
+.acc__tier b { font-size: var(--text-sm); color: var(--ink); }
+.acc__tier span { font-size: var(--text-xs); color: var(--ink-faint); }
+.acc__tier small { font-size: var(--text-xs); color: var(--ink-soft); margin-top: 4px; }
+
+[data-theme='dark'] .acc__tier { background: rgba(255, 255, 255, 0.04); }
+
+/* ---------- معرفی دوستان ---------- */
+
+.acc__refer { display: grid; gap: var(--sp-4); }
+.acc__refer h2 { font-size: var(--text-lg); }
+.acc__refer > p { font-size: var(--text-sm); color: var(--ink-soft); max-width: 54ch; }
+
+.acc__code {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: 14px;
+  border: 1px dashed var(--blue-line);
+  background: var(--blue-wash);
+}
+.acc__code code {
+  font-family: ui-monospace, monospace;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--blue);
+  user-select: all;
+}
+.acc__code svg { width: 14px; height: 14px; }
+
+/* ---------- امنیت و تیکت ---------- */
+
+.acc__sec { grid-template-columns: 1fr auto; }
+.acc__last {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

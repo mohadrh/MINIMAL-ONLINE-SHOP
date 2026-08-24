@@ -95,6 +95,8 @@ export function ProductCard({ product: p }: { product: Product }) {
      سریع‌ترند. */
   const exceptional = mins !== null && mins <= 5;
 
+  const isGame = p.category === 'gaming';
+
   const open = () => router.push(`/product/${p.slug}`);
 
   return (
@@ -114,8 +116,14 @@ export function ProductCard({ product: p }: { product: Product }) {
       tabIndex={0}
       aria-label={`${p.title} — ${fmt(getLowestPrice(p))} تومان`}
     >
+      {/* بازی‌ها قاب خودشان را می‌شکنند.
+
+          کارتِ اشتراک یک بنر تخت است و همان درست است. ولی بازی
+          کاراکتر دارد، و کاراکتری که از لبه‌ی بالای قاب بیرون
+          می‌زند، کارت را از تصویرِ توی جعبه به چیزی سه‌بعدی تبدیل
+          می‌کند — همان کاری که نسخه‌ی قبلی سایت می‌کرد. */}
       <ProductArt
-        className="pcard__art"
+        className={`pcard__art ${isGame ? 'pcard__art--game' : ''}`}
         src={p.media.thumbnail}
         title={p.englishTitle}
         brand={p.brand}

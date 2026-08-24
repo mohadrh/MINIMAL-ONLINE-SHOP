@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Menu, Moon, Search, ShoppingBag, Sun, User, X } from 'lucide-react';
+import { Menu, Moon, Search, ShoppingBag, Sun, X } from 'lucide-react';
+import { AccountMenu } from './AccountMenu';
 import { ShoppingAssistant } from './ShoppingAssistant';
 import { CATEGORIES } from '../../data/catalog';
 import { asset } from '../../lib/asset';
@@ -79,9 +80,7 @@ export function Nav() {
             {theme === 'dark' ? <Sun /> : <Moon />}
           </button>
 
-          <Link href="/account" className="nav__icon" aria-label="حساب کاربری">
-            <User />
-          </Link>
+          <AccountMenu theme={theme} onToggleTheme={toggleTheme} />
 
           <Link href="/cart" className="nav__icon" aria-label="سبد خرید">
             <ShoppingBag />

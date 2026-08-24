@@ -3,7 +3,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
-  Eye, EyeOff, KeyRound, Package, Repeat, User, Wallet,
+  Award, Bookmark, Copy, Eye, EyeOff, Gift, KeyRound, LifeBuoy, Package,
+  Repeat, ShieldCheck, Smartphone, User, Wallet,
 } from 'lucide-react';
 import {
   ORDERS, ORDER_STATUS_META, PROFILE, SUBSCRIPTIONS,
@@ -11,10 +12,13 @@ import {
   VAULT, WALLET_TX, WALLET_TX_META,
 } from '../../data/account';
 import { listOrders } from '../../lib/orders';
+import { listTickets, type Ticket } from '../../lib/tickets';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
-type Tab = 'orders' | 'vault' | 'subs' | 'wallet' | 'profile';
+type Tab =
+  | 'orders' | 'vault' | 'subs' | 'wallet'
+  | 'tickets' | 'saved' | 'club' | 'refer' | 'security' | 'profile';
 
 /** شکل مشترکی که هر دو منبع سفارش به آن ترجمه می‌شوند */
 interface Row {
@@ -26,12 +30,55 @@ interface Row {
   lines: { title: string; variantLabel: string; quantity: number; price: number }[];
 }
 
-const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: 'orders',  label: 'سفارش‌ها',        icon: <Package /> },
-  { id: 'vault',   label: 'تحویل‌ها',        icon: <KeyRound /> },
-  { id: 'subs',    label: 'اشتراک‌های فعال', icon: <Repeat /> },
-  { id: 'wallet',  label: 'کیف پول',         icon: <Wallet /> },
-  { id: 'profile', label: 'حساب من',         icon: <User /> },
+/* بخش‌ها در سه گروه.
+
+   الگو از پنل نمونه: منوی کناری‌شان گروه‌بندی‌شده است، نه یک فهرست
+   بلندِ تخت. ترتیب گروه‌ها هم بی‌دلیل نیست — «خریدهای من» اول است
+   چون بیشترین دلیلِ باز کردن پنل همان است. */
+const GROUPS: { title: string; items: { id: Tab; label: string; icon: React.ReactNode; badge?: string }[] }[] = [
+  {
+    title: 'خریدهای من',
+    items: [
+      { id: 'orders', label: 'سفارش‌ها',        icon: <Package /> },
+      { id: 'vault',  label: 'تحویل‌ها',        icon: <KeyRound /> },
+      { id: 'subs',   label: 'اشتراک‌های فعال', icon: <Repeat /> },
+      { id: 'saved',  label: 'نشان‌شده‌ها',      icon: <Bookmark /> },
+    ],
+  },
+  {
+    title: 'مالی',
+    items: [
+      { id: 'wallet', label: 'کیف پول',        icon: <Wallet /> },
+      { id: 'club',   label: 'باشگاه مشتریان', icon: <Award /> },
+      { id: 'refer',  label: 'معرفی دوستان',   icon: <Gift /> },
+    ],
+  },
+  {
+    title: 'حساب',
+    items: [
+      { id: 'tickets',  label: 'پشتیبانی و تیکت', icon: <LifeBuoy /> },
+      { id: 'security', label: 'امنیت حساب',      icon: <ShieldCheck /> },
+      { id: 'profile',  label: 'اطلاعات من',      icon: <User /> },
+    ],
+  },
+];
+
+const ALL_TABS = GROUPS.flatMap((g) => g.items);
+
+/* پله‌های باشگاه — از کم به زیاد، تا نردبان خوانده شود */
+const TIERS: { id: string; label: string; from: number; perk: string }[] = [
+  { id: 'bronze',  label: 'برنزی',  from: 0,    perk: 'پشتیبانی استاندارد' },
+  { id: 'silver',  label: 'نقره‌ای', from: 500,  perk: '۳٪ کش‌بک روی هر خرید' },
+  { id: 'gold',    label: 'طلایی',  from: 2000, perk: '۵٪ کش‌بک و تحویل اولویت‌دار' },
+  { id: 'phoenix', label: 'ققنوس',  from: 5000, perk: '۸٪ کش‌بک و پشتیبانی اختصاصی' },
+];
+
+const REFER_CODE = 'PHX-MOHA-2405';
+
+const SECURITY: { title: string; note: string; ok: boolean }[] = [
+  { title: 'تأیید شماره‌ی موبایل', note: 'با پیامک تأیید شده', ok: true },
+  { title: 'ورود دومرحله‌ای',      note: 'هنوز فعال نشده — توصیه می‌کنیم فعالش کنی', ok: false },
+  { title: 'ایمیل بازیابی',        note: 'برای بازگرداندن حساب اگر شماره را از دست دادی', ok: false },
 ];
 
 /**
@@ -49,6 +96,12 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
 export function AccountView() {
   const [tab, setTab] = useState<Tab>('orders');
   const [shown, setShown] = useState<Record<string, boolean>>({});
+  const [copied, setCopied] = useState(false);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+
+  /* تیکت‌ها هم مثل سفارش‌ها فقط در مرورگر وجود دارند، پس بعد از
+     سوار شدن خوانده می‌شوند نه در رندر. */
+  useEffect(() => { setTickets(listTickets()); }, []);
 
   /* دو منبع سفارش داریم و شکلشان یکی نیست: سفارش‌های نمونه در
      data/account با `id/total/productTitle` و سفارش‌های واقعیِ
@@ -157,17 +210,22 @@ export function AccountView() {
               روی موبایل به ریل افقیِ اسکرول‌شونده تبدیل می‌شود؛
               ستون عمودی روی عرض کم، نصف صفحه را می‌خورد. */}
           <nav className="acc__side" role="tablist" aria-label="بخش‌های پنل">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                role="tab"
-                aria-selected={tab === t.id}
-                className={`acc__side-item ${tab === t.id ? 'is-on' : ''}`}
-                onClick={() => setTab(t.id)}
-              >
-                <span className="acc__side-icon" aria-hidden="true">{t.icon}</span>
-                {t.label}
-              </button>
+            {GROUPS.map((g) => (
+              <div key={g.title} className="acc__side-group">
+                <span className="acc__side-title">{g.title}</span>
+                {g.items.map((t) => (
+                  <button
+                    key={t.id}
+                    role="tab"
+                    aria-selected={tab === t.id}
+                    className={`acc__side-item ${tab === t.id ? 'is-on' : ''}`}
+                    onClick={() => setTab(t.id)}
+                  >
+                    <span className="acc__side-icon" aria-hidden="true">{t.icon}</span>
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             ))}
           </nav>
 
@@ -333,6 +391,127 @@ export function AccountView() {
         )}
 
         {/* ---------- حساب من ---------- */}
+        {/* ---------- نشان‌شده‌ها ---------- */}
+        {tab === 'saved' && (
+          <div className="acc__empty">
+            <Bookmark aria-hidden="true" />
+            <h2>هنوز چیزی نشان نکرده‌ای</h2>
+            <p>
+              روی هر محصولی که بعداً می‌خواهی سراغش برگردی، نشان بزن تا
+              همین‌جا جمع شود.
+            </p>
+            <Link href="/shop" className="btn btn--primary btn--sm">رفتن به فروشگاه</Link>
+          </div>
+        )}
+
+        {/* ---------- باشگاه مشتریان ---------- */}
+        {tab === 'club' && (
+          <>
+            <div className="acc__balance">
+              <span className="acc__label">امتیاز شما</span>
+              <b className="num">{fmt(PROFILE.points)}</b>
+            </div>
+
+            {/* پله‌های باشگاه. جای کاربر روی نردبان مشخص است، و
+                پله‌ی بعدی هم — وگرنه «نقره‌ای» فقط یک برچسب است. */}
+            <div className="acc__tiers">
+              {TIERS.map((t) => (
+                <div
+                  key={t.id}
+                  className={`acc__tier ${PROFILE.tier === t.id ? 'is-on' : ''}`}
+                >
+                  <b>{t.label}</b>
+                  <span className="num">از {fmt(t.from)} امتیاز</span>
+                  <small>{t.perk}</small>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* ---------- معرفی دوستان ---------- */}
+        {tab === 'refer' && (
+          <div className="acc__refer">
+            <h2>هر دوستی که بیاوری، هر دو سود می‌کنید</h2>
+            <p>
+              کد زیر را بده به دوستت. اولین خریدش که انجام شد، ۱۰٪ مبلغ
+              به کیف پول تو برمی‌گردد و خودش هم ۵٪ تخفیف می‌گیرد.
+            </p>
+
+            <div className="acc__code">
+              <code dir="ltr">{REFER_CODE}</code>
+              <button
+                type="button"
+                className="btn btn--ghost btn--sm"
+                onClick={() => {
+                  navigator.clipboard?.writeText(REFER_CODE);
+                  setCopied(true);
+                  window.setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                <Copy aria-hidden="true" />
+                {copied ? 'کپی شد' : 'کپی کد'}
+              </button>
+            </div>
+
+            <dl className="spec__table">
+              <div className="spec__row"><dt>دعوت‌های موفق</dt><dd className="num">۰</dd></div>
+              <div className="spec__row"><dt>مجموع پاداش</dt><dd className="num">۰ تومان</dd></div>
+            </dl>
+          </div>
+        )}
+
+        {/* ---------- پشتیبانی و تیکت ---------- */}
+        {tab === 'tickets' && (
+          <>
+            {tickets.length === 0 ? (
+              <div className="acc__empty">
+                <LifeBuoy aria-hidden="true" />
+                <h2>تیکتی باز نکرده‌ای</h2>
+                <p>
+                  اگر سفارشی مشکل دارد یا سوالی مانده، از اینجا بپرس.
+                  معمولاً زیر یک ساعت جواب می‌گیری.
+                </p>
+                <Link href="/faq" className="btn btn--primary btn--sm">دیدن سوالات متداول</Link>
+              </div>
+            ) : (
+              <div className="acc__list">
+                {tickets.map((t) => (
+                  <article key={t.id} className="acc__order">
+                    <header>
+                      <div>
+                        <b>{t.subject}</b>
+                        <span className="acc__label">{t.category}</span>
+                      </div>
+                      <span className={`pill acc__status acc__status--${t.status === 'closed' ? 'muted' : t.status === 'answered' ? 'ok' : 'warn'}`}>
+                        {t.status === 'closed' ? 'بسته' : t.status === 'answered' ? 'پاسخ داده شد' : 'باز'}
+                      </span>
+                    </header>
+                    <p className="acc__last">{t.messages[t.messages.length - 1]?.text.slice(0, 120)}</p>
+                  </article>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ---------- امنیت حساب ---------- */}
+        {tab === 'security' && (
+          <div className="acc__list">
+            {SECURITY.map((row) => (
+              <div key={row.title} className="acc__tx acc__sec">
+                <div>
+                  <b>{row.title}</b>
+                  <span className="acc__label">{row.note}</span>
+                </div>
+                <span className={`pill acc__status acc__status--${row.ok ? 'ok' : 'warn'}`}>
+                  {row.ok ? 'فعال' : 'انجام نشده'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {tab === 'profile' && (
           <dl className="spec__table">
             <div className="spec__row"><dt>نام</dt><dd>{PROFILE.name}</dd></div>

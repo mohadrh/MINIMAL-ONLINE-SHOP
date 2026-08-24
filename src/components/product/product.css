@@ -15,6 +15,8 @@
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
+  /* بریده نمی‌شود، چون کاراکترِ بازی باید بیرون بزند */
+  overflow: visible;
   transition: translate 340ms var(--ease), border-color 340ms var(--ease),
               box-shadow 340ms var(--ease);
 }
@@ -111,9 +113,16 @@
    قبلاً برای آیکونِ وسط‌چین ساخته شده بود (۵۴٪ عرض، contain). حالا
    تصویرها بنرِ تمام‌عرضِ ۱۶:۹اند، پس نسبت قاب هم ۱۶:۹ شد و تصویر
    کل آن را پر می‌کند. */
+/* تصویر با فاصله از لبه.
+
+   قبلاً بنر تا لبه‌ی کارت می‌آمد و کارت شبیه یک تصویرِ برچسب‌خورده
+   می‌شد. حالا داخل یک قابِ گردِ کوچک‌تر می‌نشیند و کارت، قاب است
+   نه پس‌زمینه. */
 .pcard__art {
   display: block;
   position: relative;
+  margin: var(--sp-3) var(--sp-3) 0;
+  border-radius: 12px;
   aspect-ratio: 16 / 9;
   background: color-mix(in srgb, var(--accent) 8%, var(--tint));
   overflow: hidden;
@@ -125,6 +134,40 @@
   display: block;
   transition: scale 700ms var(--ease);
 }
+
+/* بازی‌ها: کاراکتر از بالای قاب بیرون می‌زند.
+
+   overflow: visible روی قاب، به‌علاوه‌ی تصویری که بلندتر از قاب
+   است و از بالا بیرون می‌ایستد. رنگِ پشتش را یک ::before می‌سازد
+   که هنوز بریده می‌شود، وگرنه زمینه هم بیرون می‌زد. */
+.pcard__art--game {
+  overflow: visible;
+  background: transparent;
+  margin-top: var(--sp-8);
+}
+.pcard__art--game::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(165deg,
+    color-mix(in srgb, var(--accent) 22%, var(--tint)),
+    color-mix(in srgb, var(--accent) 6%, var(--tint)));
+}
+.pcard__art--game img {
+  position: relative;
+  z-index: 1;
+  height: calc(100% + var(--sp-8));
+  margin-top: calc(var(--sp-8) * -1);
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.28));
+  transition: scale 700ms var(--ease), translate 500ms var(--ease);
+}
+.pcard:hover .pcard__art--game img { scale: 1.04; translate: 0 -4px; }
+
+/* لایه‌ی نشان‌ها باید بالای کاراکتر بماند */
+.pcard__over { z-index: 3; }
 .pcard:hover .pcard__art img { scale: 1.08; }
 
 /* صفحه‌ی جایگزین — وقتی تصویر محصول هنوز ساخته نشده */

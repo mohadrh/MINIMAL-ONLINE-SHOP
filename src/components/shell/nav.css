@@ -287,12 +287,22 @@
 .assist {
   position: fixed;
   z-index: 71;
-  inset-block-start: 50%;
-  inset-inline-start: 50%;
-  translate: -50% -50%;
+  /* وسط‌چینی با inset:0 + margin:auto، نه با translate.
+
+     نسخه‌ی قبل از translate: -50% -50% استفاده می‌کرد. وقتی پنل از
+     ارتفاع دید بلندتر می‌شد، نصفش می‌رفت زیر لبه‌ی پایین و دیگر
+     قابل اسکرول نبود. با margin:auto پنل هرگز از قاب بیرون نمی‌زند
+     و خودش داخلش اسکرول می‌خورد.
+
+     dvh هم به‌جای vh: روی موبایل، vh نوار آدرس مرورگر را هم حساب
+     می‌کند و ارتفاع واقعیِ دید کمتر از آن است. */
+  inset: 0;
+  margin: auto;
   width: min(34rem, calc(100vw - 2rem));
-  max-height: min(40rem, calc(100vh - 2rem));
+  height: fit-content;
+  max-height: min(40rem, calc(100dvh - 2rem));
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: var(--sp-8);
   border-radius: 28px;
   color: var(--ink);
@@ -564,3 +574,150 @@
 }
 .chat__form button:hover { background: var(--blue-hover); }
 .chat__form button svg { width: 17px; height: 17px; }
+
+/* ============================================================
+   منوی «حساب من»
+
+   با پورتال روی body می‌نشیند، پس موقعیتش نسبت به صفحه است نه
+   نوبار. جای ثابتِ بالا-چپ عمدی است: نوبار چسبان است و منو باید
+   همیشه زیرش بیفتد، صرف‌نظر از اینکه صفحه کجاست.
+   ============================================================ */
+
+.amenu {
+  position: fixed;
+  inset-block-start: calc(var(--nav-h) + 8px);
+  /* منو باید کنار دکمه‌ی خودش باز شود.
+
+     در RTL، inset-inline-start یعنی لبه‌ی راست — ولی آیکون‌های
+     نوبار سمت چپ‌اند. پس end درست است، نه start. */
+  inset-inline-end: var(--sp-5);
+  z-index: 90;
+  width: min(20rem, calc(100vw - var(--sp-8)));
+  padding: var(--sp-3);
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: 0 28px 60px -28px rgba(15, 17, 32, 0.35);
+  animation: amenuIn 180ms var(--ease);
+}
+
+[data-theme='dark'] .amenu {
+  background: var(--tint);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 30px 64px -26px rgba(0, 0, 0, 0.7);
+}
+
+@keyframes amenuIn {
+  from { opacity: 0; translate: 0 -8px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+.amenu__head {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
+}
+.amenu__head b { display: block; font-size: var(--text-sm); color: var(--ink); }
+.amenu__head span { font-size: var(--text-xs); color: var(--ink-faint); }
+
+.amenu__avatar {
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--r-full);
+  background: var(--blue);
+  color: #fff;
+  font-weight: 900;
+}
+
+/* کیف پول جدا و برجسته — عددی که آدم اول دنبالش می‌گردد */
+.amenu__wallet {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-2);
+  border-radius: 14px;
+  background: var(--blue-wash);
+  color: var(--ink);
+}
+.amenu__wallet > div { flex: 1; }
+.amenu__wallet span { display: block; font-size: var(--text-xs); color: var(--ink-faint); }
+.amenu__wallet b { font-size: var(--text-md); color: var(--blue); }
+.amenu__wallet svg { width: 16px; height: 16px; color: var(--ink-faint); }
+
+.amenu__wallet-ic {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 10px;
+  background: var(--blue);
+  color: #fff;
+}
+.amenu__wallet-ic svg { width: 16px; height: 16px; color: #fff; }
+
+.amenu__list { display: grid; }
+
+.amenu__item {
+  display: flex; align-items: center; gap: var(--sp-3);
+  width: 100%;
+  padding: 11px var(--sp-4);
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  text-align: start;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.amenu__item:hover { background: color-mix(in srgb, var(--blue) 8%, transparent); color: var(--ink); }
+[data-theme='dark'] .amenu__item:hover { background: rgba(255, 255, 255, 0.07); }
+
+.amenu__ic { display: inline-flex; flex-shrink: 0; color: var(--ink-faint); }
+.amenu__ic svg { width: 16px; height: 16px; }
+
+.amenu__badge {
+  margin-inline-start: auto;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  background: var(--warn-wash);
+  color: var(--warn);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* کلید شب/روز داخل منو */
+.amenu__theme { margin-top: var(--sp-2); }
+.amenu__switch {
+  margin-inline-start: auto;
+  width: 38px; height: 22px;
+  border-radius: var(--r-full);
+  background: var(--sunken);
+  position: relative;
+  transition: background var(--dur) var(--ease);
+}
+.amenu__switch i {
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline-start: 3px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: translate var(--dur) var(--ease);
+}
+.amenu__switch.is-on { background: var(--blue); }
+.amenu__switch.is-on i { translate: -16px 0; }
+
+.amenu__out {
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 12px 12px;
+  color: var(--danger);
+}
+.amenu__out .amenu__ic { color: var(--danger); }
+.amenu__out:hover { background: color-mix(in srgb, var(--danger) 8%, transparent); color: var(--danger); }
+[data-theme='dark'] .amenu__out { border-top-color: rgba(255, 255, 255, 0.1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .amenu { animation: none; }
+}
