@@ -21,7 +21,7 @@ const ABOUT = [
 export function Footer() {
   return (
     <footer className="ft">
-      <div className="container ft__grid">
+      <div className="wrap ft__grid">
         <div className="ft__brand">
           <Link href="/" className="ft__logo">
             <img src={asset('/brand/phoenix-logo.png')} alt="" width={36} height={36} />
@@ -58,7 +58,7 @@ export function Footer() {
         </nav>
       </div>
 
-      <div className="container ft__bottom">
+      <div className="wrap ft__bottom">
         <span className="xsmall">همه‌ی حقوق متعلق به فونیکس شاپ است.</span>
         <span className="xsmall num">۱۴۰۴</span>
       </div>

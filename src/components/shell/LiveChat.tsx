@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { MessageCircle, Send, X } from 'lucide-react';
+import { Headset, Send, X } from 'lucide-react';
 
 /**
  * چت آنلاین — دکمه‌ی چسبیده به لبه‌ی صفحه.
@@ -81,15 +81,19 @@ export function LiveChat() {
 
   return createPortal(
     <>
+      {/* دکمه‌ی گرد پایین صفحه.
+
+          حلقه‌ی نبض فقط وقتی هست که چت بسته است — روی پنلِ باز
+          فقط حواس‌پرتی می‌شود. */}
       <button
         type="button"
-        className={`chat__tab ${open ? 'is-open' : ''}`}
+        className={`chatfab ${open ? 'is-open' : ''}`}
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        aria-label={open ? 'بستن چت' : 'چت آنلاین'}
+        aria-label={open ? 'بستن چت' : 'چت آنلاین با پشتیبانی'}
       >
-        {open ? <X aria-hidden="true" /> : <MessageCircle aria-hidden="true" />}
-        {!open && <span className="chat__tab-text">چت آنلاین</span>}
+        {!open && <span className="chatfab__pulse" aria-hidden="true" />}
+        {open ? <X aria-hidden="true" /> : <Headset aria-hidden="true" />}
       </button>
 
       {open && (

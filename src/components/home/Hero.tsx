@@ -77,7 +77,7 @@ export function Hero() {
                اشتباهی که در نسخه‌ی یک هم شد. */
             inert={idx === i ? undefined : true}
           >
-            <div className="container hero__slide-inner">
+            <div className="wrap hero__slide-inner">
               <div className="hero__txt">
                 <h2>{s.titleLead} {s.titleAccent}</h2>
                 <p>{s.description}</p>
@@ -132,7 +132,7 @@ export function Hero() {
       </div>
 
       {/* ---------- جعبه‌ی محاسبه ---------- */}
-      <div className="container">
+      <div className="wrap">
         <div className="calc">
           <div className="calc__tabs" role="tablist" aria-label="نوع سرویس">
             {TABS.map((t) => (

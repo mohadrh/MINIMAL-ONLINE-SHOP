@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Providers } from './providers';
+import { JetFlightOverlay } from '../components/three/JetFlightOverlay';
 import { Nav } from '../components/shell/Nav';
 import { Footer } from '../components/shell/Footer';
 import { Reveal } from '../components/motion/Reveal';
@@ -50,13 +52,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <Nav />
-        <main>{children}</main>
-        <Footer />
-        <ScrollTop />
-        <LiveChat />
-        <Reveal />
-        <CursorLight />
+        <Providers>
+          <Nav />
+          <main>{children}</main>
+          <Footer />
+
+          {/* پروازِ جت هنگام افزودن به سبد — روی همه‌ی صفحه‌ها */}
+          <JetFlightOverlay />
+          <ScrollTop />
+          <LiveChat />
+          <Reveal />
+          <CursorLight />
+        </Providers>
       </body>
     </html>
   );

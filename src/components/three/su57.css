@@ -1,0 +1,89 @@
+/* ============================================================
+   نمایش سه‌بعدی Su-57
+   ============================================================ */
+
+.su57 {
+  position: relative;
+  width: 100%;
+  border-radius: var(--r-2xl);
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 40%, rgba(95, 124, 154, 0.14) 0%, transparent 70%),
+    var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.su57 canvas { display: block; }
+
+/* هاله‌ی کهربایی زیر بدنه — رنگ برند وارد صحنه می‌شود بدون اینکه
+   روی متریال آبی جنگنده بنشیند */
+.su57__glow {
+  position: absolute;
+  inset-inline: 12%;
+  bottom: -18%;
+  height: 55%;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(232, 134, 46, 0.28) 0%, rgba(222, 46, 107, 0.1) 45%, transparent 72%);
+  filter: blur(34px);
+  pointer-events: none;
+}
+
+/* ---------- جای‌گزین ثابت ---------- */
+
+.su57__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.su57__fallback-mark {
+  font-family: var(--font-en);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-en-wide);
+  color: var(--border-strong);
+}
+
+/* ---------- برچسب‌ها ---------- */
+
+.su57__caption {
+  position: absolute;
+  inset-block-end: var(--sp-4);
+  inset-inline-start: var(--sp-5);
+  z-index: 2;
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.su57__hint {
+  position: absolute;
+  inset-block-end: var(--sp-4);
+  inset-inline-end: var(--sp-5);
+  z-index: 2;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-full);
+  background: rgba(8, 6, 13, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle);
+  font-size: var(--text-2xs);
+  color: var(--text-faint);
+  pointer-events: none;
+  opacity: 0;
+  animation: su57Hint 5s var(--ease-out) 1.2s forwards;
+}
+
+/* راهنما ظاهر می‌شود، می‌ماند، محو می‌شود — یک بار، نه تکرارشونده */
+@keyframes su57Hint {
+  0%   { opacity: 0; transform: translateY(6px); }
+  12%  { opacity: 1; transform: translateY(0); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .su57__hint { animation: none; opacity: 1; }
+}

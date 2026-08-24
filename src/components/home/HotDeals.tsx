@@ -1,8 +1,12 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Clock, Flame } from 'lucide-react';
-import { PRODUCTS, getDefaultVariant, getLowestPrice } from '../../data/catalog';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, Clock, Flame, Plus } from 'lucide-react';
+import { PRODUCTS, getDefaultVariant, getLowestPrice, needsCustomerInput } from '../../data/catalog';
 import { asset } from '../../lib/asset';
+import { useCart, useFlight } from '../../app/providers';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -22,6 +26,10 @@ const fmt = (n: number) => n.toLocaleString('fa-IR');
  * بدتر از نبودنش است.
  */
 export function HotDeals() {
+  const { add } = useCart();
+  const { launch } = useFlight();
+  const router = useRouter();
+
   const deals = PRODUCTS
     .map((p) => {
       const v = getDefaultVariant(p);
@@ -37,7 +45,7 @@ export function HotDeals() {
 
   return (
     <section className="section deals reveal">
-      <div className="container">
+      <div className="wrap">
         <div className="sec-head deals__head">
           <div>
             <span className="sec-head__kicker">
@@ -54,11 +62,11 @@ export function HotDeals() {
 
         <div className="rail deals__grid">
           {deals.map(({ p, v, off }, idx) => (
-            <Link
+            <div
               key={p.slug}
-              href={`/product/${p.slug}`}
               className="deal"
               style={{ ['--i' as string]: idx, ['--accent' as string]: p.media.accent }}
+              onClick={() => router.push(`/product/${p.slug}`)}
             >
               <span className="deal__off num">٪{fmt(off)}−</span>
 
@@ -81,12 +89,38 @@ export function HotDeals() {
                 </span>
 
                 <span className="deal__prices">
+                  {/* دکمه‌ی افزودن.
+
+                      stopPropagation لازم است، وگرنه کلیک به کارت
+                      می‌رسد و به‌جای افزودن، صفحه‌ی محصول باز می‌شود.
+
+                      محصولی که چند پلن یا ورودی لازم دارد نباید
+                      کورکورانه اضافه شود — آنجا به صفحه‌ی محصول
+                      می‌رود تا کاربر خودش انتخاب کند. */}
+                  <button
+                    type="button"
+                    className="deal__add"
+                    aria-label={`افزودن ${p.title} به سبد`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (p.variants.length > 1 || needsCustomerInput(p)) {
+                        router.push(`/product/${p.slug}`);
+                        return;
+                      }
+                      const r = e.currentTarget.getBoundingClientRect();
+                      launch({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+                      add(p, v);
+                    }}
+                  >
+                    <Plus aria-hidden="true" />
+                  </button>
+
                   <s className="deal__was num">{fmt(v.compareAt!)}</s>
                   <b className="deal__now num">{fmt(getLowestPrice(p))}</b>
                   <span className="deal__unit">تومان</span>
                 </span>
               </span>
-            </Link>
+            </div>
           ))}
         </div>
       </div>

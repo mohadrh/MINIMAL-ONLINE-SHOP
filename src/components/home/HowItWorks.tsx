@@ -16,7 +16,7 @@ const STEPS = [
 export function HowItWorks() {
   return (
     <section className="section reveal">
-      <div className="container mediatext">
+      <div className="wrap mediatext">
         <div className="mediatext__body">
           <span className="sec-head__kicker">سه قدم</span>
           <h2>خرید از فونیکس شاپ چطور است؟</h2>

@@ -931,26 +931,12 @@
 }
 
 
-/* ---------- سکشن مقالات ---------- */
+/* ---------- سکشن مقالات ----------
 
-/* هاله‌ها باید داخل سکشن بمانند و کارت‌ها رویشان بنشینند */
-.arts { position: relative; isolation: isolate; overflow: hidden; }
-.arts > .container { position: relative; z-index: 1; }
-
-/* کارت مقاله روی هاله‌ها شیشه‌ای می‌شود، وگرنه رنگ از پشتش
-   متن را می‌خورد. */
-.arts .art {
-  background: rgba(255, 255, 255, 0.72);
-  border-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(24px) saturate(175%);
-  -webkit-backdrop-filter: blur(24px) saturate(175%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
-
-[data-theme='dark'] .arts .art {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.14);
-}
+   پس‌زمینه‌ی هاله‌دار برداشته شد. آن گرادیانت روشن بود و در حالت شب
+   هم روشن می‌ماند، پس سکشن مقالات وسط صفحه‌ی تیره یک تکه‌ی سفید
+   می‌شد. کارت‌ها هم دیگر لازم نیست شیشه‌ای باشند چون پشتشان چیزی
+   برای شکستن نیست. */
 
 /* ============================================================
    کارت تخفیف — کج شدن سه‌بعدی
@@ -987,4 +973,241 @@
 @media (prefers-reduced-motion: reduce) {
   .deal { transform: none; }
   .deal__art, .deal__off { transform: none; }
+}
+
+
+/* ============================================================
+   انتخاب هوش مصنوعی
+
+   رنگ هر مدل با --accent روی خودِ عنصر می‌نشیند و در آیکون، لبه و
+   دکمه تکرار می‌شود. یک رنگ در سه جا، پس پنل یکپارچه دیده می‌شود.
+   ============================================================ */
+
+.aip__grid {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: var(--sp-6);
+  align-items: start;
+}
+@media (max-width: 900px) { .aip__grid { grid-template-columns: 1fr; } }
+
+/* ---------- ستون انتخاب ---------- */
+
+.aip__list { display: grid; gap: var(--sp-3); }
+@media (max-width: 900px) {
+  /* روی موبایل کشویی، وگرنه چهار کارت قبل از پنل جا می‌گیرند */
+  .aip__list {
+    grid-auto-flow: column;
+    grid-auto-columns: 60%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+    scroll-snap-type: x mandatory;
+  }
+  .aip__list::-webkit-scrollbar { display: none; }
+  .aip__opt { scroll-snap-align: start; }
+}
+
+.aip__opt {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
+              translate var(--dur) var(--ease);
+}
+.aip__opt:hover { translate: 0 -2px; border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+
+.aip__opt.is-on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--paper));
+}
+
+.aip__opt-icon {
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--r);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-size: 17px;
+}
+
+.aip__opt-text b { display: block; font-size: var(--text-sm); color: var(--ink); }
+.aip__opt-text small { display: block; font-size: 10px; color: var(--ink-faint); }
+
+[data-theme='dark'] .aip__opt { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.12); }
+
+/* ---------- پنل جزئیات ---------- */
+
+.aip__panel {
+  padding: var(--sp-10);
+  border-radius: var(--r-lg);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--accent);
+}
+@media (max-width: 560px) { .aip__panel { padding: var(--sp-6); } }
+
+[data-theme='dark'] .aip__panel {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  border-top-color: var(--accent);
+}
+
+.aip__panel-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-5);
+  margin-bottom: var(--sp-5);
+  border-bottom: 1px solid var(--line);
+}
+
+.aip__panel-icon {
+  width: 48px; height: 48px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-size: 22px;
+}
+
+.aip__panel-head h3 { font-size: var(--text-lg); }
+.aip__sub { font-size: var(--text-xs); color: var(--ink-faint); }
+
+.aip__price {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  white-space: nowrap;
+}
+.aip__price b { font-size: var(--text-lg); font-weight: 900; color: var(--ink); }
+.aip__price-label { font-size: var(--text-xs); color: var(--ink-faint); }
+
+.aip__desc { font-size: var(--text-sm); color: var(--ink-soft); margin-bottom: var(--sp-7); }
+
+.aip__cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-8); }
+@media (max-width: 640px) { .aip__cols { grid-template-columns: 1fr; gap: var(--sp-6); } }
+
+.aip__h4 { font-size: var(--text-xs); color: var(--ink-faint); margin-bottom: var(--sp-3); }
+
+.aip__uses { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-3); }
+.aip__uses li {
+  display: flex; align-items: flex-start; gap: var(--sp-2);
+  font-size: var(--text-sm); color: var(--ink-soft);
+}
+.aip__uses svg { width: 14px; height: 14px; color: var(--accent); flex-shrink: 0; margin-top: 5px; }
+
+.aip__bench { margin: 0; display: grid; gap: var(--sp-3); }
+.aip__bench > div {
+  display: flex; justify-content: space-between; gap: var(--sp-4);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--line-soft);
+}
+.aip__bench dt { font-size: var(--text-xs); color: var(--ink-faint); }
+.aip__bench dd { margin: 0; font-size: var(--text-xs); color: var(--ink-soft); text-align: end; }
+.aip__bench .is-strong dd { color: var(--accent); font-weight: 700; }
+
+[data-theme='dark'] .aip__bench > div { border-bottom-color: rgba(255, 255, 255, 0.08); }
+[data-theme='dark'] .aip__panel-head { border-bottom-color: rgba(255, 255, 255, 0.12); }
+
+.aip__foot {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-4); flex-wrap: wrap;
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--line);
+}
+[data-theme='dark'] .aip__foot { border-top-color: rgba(255, 255, 255, 0.12); }
+.aip__activation { font-size: var(--text-xs); color: var(--ink-faint); }
+
+/* ---------- جدول مقایسه ---------- */
+
+.aip__compare { margin-top: var(--sp-16); }
+.aip__compare-title { font-size: var(--text-lg); margin-bottom: var(--sp-2); }
+.aip__compare-lead { font-size: var(--text-sm); color: var(--ink-faint); margin-bottom: var(--sp-6); }
+
+/* جدول روی موبایل باید داخل خودش بلغزد، نه اینکه صفحه را افقی کند */
+.aip__table-wrap { overflow-x: auto; scrollbar-width: thin; }
+
+.aip__table { width: 100%; border-collapse: collapse; min-width: 34rem; }
+
+.aip__table th,
+.aip__table td {
+  padding: var(--sp-4);
+  text-align: start;
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--line);
+}
+[data-theme='dark'] .aip__table th,
+[data-theme='dark'] .aip__table td { border-bottom-color: rgba(255, 255, 255, 0.1); }
+
+.aip__table thead th {
+  font-size: var(--text-xs);
+  font-weight: 800;
+  color: var(--accent, var(--ink));
+  border-bottom-width: 2px;
+}
+.aip__table thead th:first-child { color: var(--ink-faint); }
+
+.aip__table tbody th { font-weight: 600; color: var(--ink); }
+.aip__table tbody td { color: var(--ink-soft); }
+.aip__table tbody tr:hover { background: color-mix(in srgb, var(--blue) 5%, transparent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .aip__opt:hover { translate: none; }
+}
+
+
+/* ---------- دکمه‌ی افزودن روی کارت تخفیف ----------
+
+   رنگش از --accent همان کارت می‌آید، پس دکمه‌ی کنار تلگرام آبی
+   است و کنار یک بازی نارنجی — نه یک رنگ یکنواخت روی همه.
+
+   translateZ لازم است: کارت کج می‌شود و بدون آن، دکمه روی سطحِ
+   کج می‌خوابد و کلیکش سخت می‌شود. */
+.deal__add {
+  margin-inline-end: auto;
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--r-full);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--paper));
+  color: color-mix(in srgb, var(--accent) 75%, #1a1206);
+  cursor: pointer;
+  transform: translateZ(30px);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+              border-color var(--dur) var(--ease), scale var(--dur) var(--ease);
+}
+
+.deal__add:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  scale: 1.1;
+}
+
+.deal__add svg { width: 17px; height: 17px; }
+
+.deal { cursor: pointer; }
+
+[data-theme='dark'] .deal__add {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: color-mix(in srgb, var(--accent) 40%, #fff);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deal__add { transform: none; }
+  .deal__add:hover { scale: 1; }
 }

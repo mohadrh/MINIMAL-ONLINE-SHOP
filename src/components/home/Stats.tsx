@@ -24,7 +24,7 @@ export function Stats() {
 
   return (
     <section className="section stats-sec reveal">
-      <div className="container stats">
+      <div className="wrap stats">
         {items.map(({ icon: Icon, num, label }, idx) => (
           <div key={label} className="stats__item" style={{ ['--i' as string]: idx }}>
             <div className="stats__head">

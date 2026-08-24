@@ -11,7 +11,7 @@ import { REVIEWS } from '../../data/reviews';
 export function Reviews() {
   return (
     <section className="section section--tint reveal">
-      <div className="container">
+      <div className="wrap">
         <div className="sec-head sec-head--center">
           <span className="sec-head__kicker">تجربه‌ی خریداران</span>
           <h2>مشتری‌ها چه می‌گویند</h2>

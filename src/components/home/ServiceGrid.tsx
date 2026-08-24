@@ -24,7 +24,7 @@ const SERVICES: { g: GlyphName; title: string; note: string; href: string }[] = 
 export function ServiceGrid() {
   return (
     <section className="section section--tint reveal">
-      <div className="container">
+      <div className="wrap">
         <div className="sec-head sec-head--center">
           <span className="sec-head__kicker">خدمات</span>
           <h2>فونیکس شاپ چه ارائه می‌دهد؟</h2>

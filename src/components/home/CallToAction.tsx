@@ -17,7 +17,7 @@ import { ArrowLeft } from 'lucide-react';
 export function CallToAction() {
   return (
     <section className="section cta reveal">
-      <div className="container">
+      <div className="wrap">
         <div className="cta__box">
           <div className="cta__grad" aria-hidden="true" />
           <div className="cta__blobs" aria-hidden="true">

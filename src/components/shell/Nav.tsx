@@ -39,7 +39,7 @@ export function Nav() {
 
   return (
     <header className="nav">
-      <div className="container nav__inner">
+      <div className="wrap nav__inner">
         <Link href="/" className="nav__brand">
           <img src={asset('/brand/phoenix-logo.png')} alt="" width={34} height={34} />
           <span>
@@ -122,7 +122,7 @@ export function Nav() {
 
       {open && (
         <div className="nav__mobile">
-          <div className="container">
+          <div className="wrap">
             {CATEGORIES.map((c) => (
               <Link key={c.slug} href={`/${c.slug}`} onClick={() => setOpen(false)}>
                 {c.title}

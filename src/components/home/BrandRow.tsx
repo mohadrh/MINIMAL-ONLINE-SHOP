@@ -25,7 +25,7 @@ export function BrandRow() {
 
   return (
     <section className="section brands reveal">
-      <div className="container">
+      <div className="wrap">
         <div className="sec-head sec-head--center">
           <span className="sec-head__kicker">اورجینال</span>
           <h2>سرویس‌هایی که ارائه می‌دهیم</h2>

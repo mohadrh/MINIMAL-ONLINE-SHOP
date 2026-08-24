@@ -2,6 +2,7 @@ import { Hero } from '../components/home/Hero';
 import { HotDeals } from '../components/home/HotDeals';
 import { QuickAccess } from '../components/home/QuickAccess';
 import { ServiceGrid } from '../components/home/ServiceGrid';
+import { AiPicker } from '../components/home/AiPicker';
 import { HowItWorks } from '../components/home/HowItWorks';
 import { WhySafe } from '../components/home/WhySafe';
 import { Stats } from '../components/home/Stats';
@@ -27,6 +28,7 @@ export default function HomePage() {
       <HotDeals />
       <QuickAccess />
       <ServiceGrid />
+      <AiPicker />
       <HowItWorks />
       <WhySafe />
       <Stats />

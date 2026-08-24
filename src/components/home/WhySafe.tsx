@@ -17,7 +17,7 @@ const POINTS = [
 export function WhySafe() {
   return (
     <section className="section section--tint reveal">
-      <div className="container mediatext mediatext--rev">
+      <div className="wrap mediatext mediatext--rev">
         <div className="mediatext__body">
           <span className="sec-head__kicker">امنیت</span>
           <h2>چرا خرید از ما امن است</h2>

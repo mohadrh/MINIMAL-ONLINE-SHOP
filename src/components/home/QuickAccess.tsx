@@ -44,7 +44,7 @@ export function QuickAccess() {
       {/* شب */}
       <div className="qa__night"><StarField /></div>
 
-      <div className="container relative">
+      <div className="wrap relative">
         <div className="mb-12 text-center">
           <span className="qa__kicker mb-3 inline-block text-xs font-bold">
             همه چیز یک‌جا
