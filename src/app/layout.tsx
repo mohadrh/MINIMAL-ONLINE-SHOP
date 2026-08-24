@@ -5,6 +5,7 @@ import { Footer } from '../components/shell/Footer';
 import { Reveal } from '../components/motion/Reveal';
 import { CursorLight } from '../components/motion/CursorLight';
 import { ScrollTop } from '../components/shell/ScrollTop';
+import { LiveChat } from '../components/shell/LiveChat';
 
 export const metadata: Metadata = {
   title: 'فونیکس شاپ — اشتراک هوش مصنوعی، گیم و شماره مجازی',
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
         <Footer />
         <ScrollTop />
+        <LiveChat />
         <Reveal />
         <CursorLight />
       </body>

@@ -4,3 +4,4 @@ out/
 .env*
 *.tsbuildinfo
 .DS_Store
+dev.log

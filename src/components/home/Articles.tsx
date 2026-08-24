@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { ARTICLES } from '../../data/articles';
 import { asset } from '../../lib/asset';
+import { MorphBackdrop } from '../ui/MorphBackdrop';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -10,7 +11,9 @@ export function Articles() {
   const items = ARTICLES.slice(0, 3);
 
   return (
-    <section className="section reveal">
+    <section className="section arts reveal">
+      <MorphBackdrop tone="blue" />
+
       <div className="container">
         <div className="sec-head arts__head">
           <div>

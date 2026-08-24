@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { ArrowLeft, X } from 'lucide-react';
 import { CATEGORIES, PRODUCTS, getLowestPrice, type CategorySlug } from '../../data/catalog';
@@ -32,6 +33,30 @@ export function ShoppingAssistant({ onClose }: { onClose: () => void }) {
   const [cat, setCat] = useState<CategorySlug | 'all'>('all');
   const [budget, setBudget] = useState<Budget>('mid');
 
+  /* پنل به body پورتال می‌شود.
+
+     بدون این، پنل داخل <header> رندر می‌شد و هدر z-index دارد،
+     یعنی یک بسترِ انباشت می‌سازد. هر z-index داخل آن نسبت به
+     همان بستر حساب می‌شود، پس پنل نمی‌توانست از بقیه‌ی صفحه
+     بالاتر بیاید و نصفه دیده می‌شد.
+
+     mounted لازم است چون document در رندر سمت سرور وجود ندارد. */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  /* Escape ببندد — انتظارِ پایه‌ی هر دیالوگی */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    /* پشت پنل نباید اسکرول شود، وگرنه صفحه زیر دست کاربر می‌لغزد */
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+
   const results = useMemo(() => {
     const max = BUDGETS.find((b) => b.id === budget)!.max;
     return PRODUCTS
@@ -41,7 +66,9 @@ export function ShoppingAssistant({ onClose }: { onClose: () => void }) {
       .slice(0, 4);
   }, [cat, budget]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <>
       <button className="assist__scrim" onClick={onClose} aria-label="بستن دستیار" />
 
@@ -122,6 +149,7 @@ export function ShoppingAssistant({ onClose }: { onClose: () => void }) {
           دیدن همه‌ی محصولات
         </Link>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }

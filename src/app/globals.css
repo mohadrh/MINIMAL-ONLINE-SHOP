@@ -1,12 +1,29 @@
 @import 'tailwindcss';
 
-/* توکن‌ها اول از همه — بقیه‌ی فایل‌ها به آن‌ها تکیه دارند */
+/* ============================================================
+   ترتیب لایه‌ها
+
+   نکته‌ای که اول از قلم افتاد و باعث شد کلاس‌های تیلویند بی‌اثر
+   شوند: در آبشار CSS، استایلِ بیرون از لایه بر هر استایلِ داخل
+   لایه مقدم است — فارغ از specificity.
+
+   تیلویند همه‌ی کلاس‌هایش را داخل @layer utilities می‌گذارد. اگر
+   CSS ما بی‌لایه باشد، یک قانونِ ساده مثل `h3 { margin: 0 }`
+   کلاس‌هایی مثل mt-28 را می‌خورد و ما ساعت‌ها دنبال دلیلش می‌گردیم.
+
+   با layer() هنگام ایمپورت، هر فایل سر جای درستش می‌نشیند و
+   ترتیب theme → base → components → utilities رعایت می‌شود.
+   ============================================================ */
+
+/* توکن‌ها و کیفریم‌ها — بی‌لایه، چون چیزی با آن‌ها رقابت نمی‌کند */
 @import '../styles/theme.css';
 @import '../styles/tokens.css';
-@import '../styles/base.css';
-@import '../styles/effects.css';
+
+/* پایه: ریست و تایپوگرافی */
+@import '../styles/base.css' layer(base);
 
 /* کامپوننت‌ها */
-@import '../components/shell/nav.css';
-@import '../components/shell/footer.css';
-@import '../components/home/home.css';
+@import '../styles/effects.css' layer(components);
+@import '../components/shell/nav.css' layer(components);
+@import '../components/shell/footer.css' layer(components);
+@import '../components/home/home.css' layer(components);
