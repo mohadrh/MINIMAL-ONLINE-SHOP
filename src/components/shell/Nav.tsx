@@ -63,20 +63,21 @@ export function Nav() {
             <Search />
           </button>
 
-          {/* تا وقتی تم واقعی معلوم نشده جای دکمه نگه داشته می‌شود،
-              وگرنه HTMLِ سرور با حالت واقعی نمی‌خواند. */}
-          {theme === null ? (
-            <span className="nav__icon nav__icon--ghost" aria-hidden="true" />
-          ) : (
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="nav__icon"
-              aria-label={theme === 'dark' ? 'حالت روز' : 'حالت شب'}
-            >
-              {theme === 'dark' ? <Sun /> : <Moon />}
-            </button>
-          )}
+          {/* همیشه دکمه است، حتی وقتی تم هنوز معلوم نیست.
+
+              نسخه‌ی اول تا مشخص شدن تم یک <span> می‌گذاشت و بعد
+              آن را با <button> عوض می‌کرد. ری‌اکت نمی‌تواند یک نوع
+              عنصر را با نوع دیگری وصله کند، و نتیجه‌اش خطای
+              hydration در تمام صفحه‌ها بود. حالا فقط آیکونِ داخلش
+              بعد از سوار شدن جا می‌افتد — و آیکون، عنصر نیست. */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="nav__icon"
+            aria-label={theme === 'dark' ? 'حالت روز' : 'حالت شب'}
+          >
+            {theme === 'dark' ? <Sun /> : <Moon />}
+          </button>
 
           <Link href="/account" className="nav__icon" aria-label="حساب کاربری">
             <User />

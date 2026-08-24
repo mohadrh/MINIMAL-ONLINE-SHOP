@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AlertCircle, ArrowLeft, Check, Lock, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../app/providers';
+import { newOrderCode, saveOrder, scheduleFulfilment, type Order } from '../../lib/orders';
 import { Loader } from '../ui/Loader';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
@@ -28,6 +29,9 @@ const GATEWAYS = [
 
 export function CheckoutFlow() {
   const { lines, count, subtotal, clear } = useCart();
+
+  /* کد پیگیریِ همین سفارش. تا وقتی پرداخت تأیید نشده null است. */
+  const [code, setCode] = useState<string | null>(null);
 
   const [step, setStep] = useState<Step>('identify');
   const [phone, setPhone] = useState('');
@@ -73,7 +77,38 @@ export function CheckoutFlow() {
           <button
             type="button"
             className="btn btn--primary"
-            onClick={() => (atGateway ? setStep('verify') : (clear(), setStep('done')))}
+            onClick={() => {
+              if (atGateway) { setStep('verify'); return; }
+              /* اینجا جایی است که تراکنش تأیید می‌شود. سفارش باید
+                 همین‌جا ساخته و ذخیره شود — نسخه‌ی اول این کار را
+                 نمی‌کرد و صفحه‌ی موفقیت کد پیگیری وعده می‌داد که
+                 اصلاً وجود نداشت. */
+              const order: Order = {
+                code: newOrderCode(),
+                createdAt: Date.now(),
+                status: 'paid',
+                phone,
+                gateway,
+                subtotal,
+                discount: 0,
+                walletUsed: 0,
+                payable: subtotal,
+                items: lines.map((l) => ({
+                  productId: l.product.id,
+                  title: l.product.title,
+                  variantLabel: l.variant.label,
+                  quantity: l.quantity,
+                  price: l.variant.price,
+                  inputs: l.inputs,
+                  deliveryEstimate: l.product.deliveryEstimate,
+                })),
+              };
+              saveOrder(order);
+              scheduleFulfilment(order.code);
+              setCode(order.code);
+              clear();
+              setStep('done');
+            }}
           >
             {atGateway ? 'پرداخت کردم' : 'ادامه'}
           </button>
@@ -116,8 +151,23 @@ export function CheckoutFlow() {
           کد پیگیری به شماره‌ی <b className="num">{phone}</b> پیامک شد.
           تحویل اغلب زیر پانزده دقیقه انجام می‌شود.
         </p>
+
+        {/* کد را همین‌جا هم نشان می‌دهیم. اتکا به پیامکِ تنها یعنی
+            هرکس پیامک دیر برسد یا نرسد، راهی به سفارشش ندارد. */}
+        {code && (
+          <div className="co__code">
+            <span>کد پیگیری</span>
+            <b className="num" dir="ltr">{code}</b>
+          </div>
+        )}
+
         <div className="co__wait-actions">
-          <Link href="/track" className="btn btn--primary">پیگیری سفارش</Link>
+          <Link
+            href={code ? `/track?code=${encodeURIComponent(code)}` : '/track'}
+            className="btn btn--primary"
+          >
+            پیگیری سفارش
+          </Link>
           <Link href="/shop" className="btn btn--ghost">ادامه‌ی خرید</Link>
         </div>
       </div>

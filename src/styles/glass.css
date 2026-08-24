@@ -1,0 +1,99 @@
+/* ============================================================
+   شیشه‌ی مایع — لایه‌ی پایانی
+
+   ⚠ .svc__item عمداً در این فهرست نیست.
+
+   موارد سکشن «فونیکس شاپ چه چیزهایی ارائه می‌دهد» باید بدون کادر
+   بمانند — فقط آیکون و متن. یک بار این قانون آن‌ها را دوباره
+   کادردار کرد و کارفرما مجبور شد دوباره بگوید. هر پرداختِ سراسری
+   که به کارت‌ها می‌دهی، اول چک کن این سکشن را برنگرداند.
+
+   این فایل عمداً آخر از همه ایمپورت می‌شود. باکس‌ها در فایل‌های
+   خودشان background توپر می‌گیرند و چون همه در یک لایه‌اند، هرکه
+   دیرتر بیاید برنده است. شیشه یک پرداختِ رویی است، پس باید آخر
+   بنشیند — نه اینکه با specificity زورش را زیاد کنیم.
+   ============================================================ */
+
+/* ============================================================
+   شیشه‌ی مایع روی باکس‌ها
+
+   شیشه با «تار کردن پس‌زمینه» ساخته نمی‌شود — با لبه ساخته می‌شود.
+   خطِ روشنِ بالا و خطِ کم‌رنگِ پایین همان چیزی‌اند که مغز به‌عنوان
+   ضخامتِ ورق می‌خواند. اگر این دو نباشند، هرچقدر هم blur بدهی فقط
+   یک سطح تارِ بی‌شکل می‌ماند.
+
+   روی کاغذِ سفید، شیشه چیزی برای شکستن ندارد. برای همین فیلم را
+   خیلی کم‌رنگ نگه می‌داریم و کار را به رینگ می‌سپاریم؛ روی زمینه‌ی
+   شب برعکس، فیلم دیده می‌شود و رینگ کمکی است.
+   ============================================================ */
+
+.deal, .review, .art, .pcard,
+.nums__kind, .nums__svc, .nums__offer,
+.calc, .track__result, .co__card {
+  position: relative;
+  isolation: isolate;
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.45);
+  transition: box-shadow var(--dur) var(--ease),
+              border-color var(--dur) var(--ease),
+              background var(--dur) var(--ease),
+              translate 320ms var(--ease);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .deal, .review, .art, .pcard,
+  .nums__kind, .nums__svc, .nums__offer,
+  .calc, .track__result, .co__card {
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    backdrop-filter: blur(18px) saturate(150%);
+  }
+}
+
+/* بدون پشتیبانی بلور، نیمه‌شفافی فقط متن را ناخوانا می‌کند */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .deal, .review, .art, .pcard,
+  .nums__kind, .nums__svc, .nums__offer,
+  .calc, .track__result, .co__card { background: var(--paper); }
+}
+
+/* روی هاور، لبه‌ی بالا روشن‌تر می‌شود — انگار نور روی ورق سُر خورد */
+.deal:hover, .review:hover, .art:hover, .pcard:hover,
+.nums__kind:hover, .nums__svc:hover, .nums__offer:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.55),
+    0 18px 40px -28px rgba(0, 0, 0, 0.28);
+}
+
+/* شب: فیلم دیده می‌شود، پس رینگ‌ها کم‌رنگ‌تر می‌شوند وگرنه
+   لبه‌ها مثل خط‌کش سفید بیرون می‌زنند. */
+[data-theme='dark'] .deal,
+[data-theme='dark'] .review,
+[data-theme='dark'] .art,
+[data-theme='dark'] .pcard,
+[data-theme='dark'] .nums__kind,
+[data-theme='dark'] .nums__svc,
+[data-theme='dark'] .nums__offer,
+[data-theme='dark'] .calc,
+[data-theme='dark'] .track__result,
+[data-theme='dark'] .co__card {
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme='dark'] .deal:hover,
+[data-theme='dark'] .review:hover,
+[data-theme='dark'] .art:hover,
+[data-theme='dark'] .pcard:hover,
+[data-theme='dark'] .nums__kind:hover,
+[data-theme='dark'] .nums__svc:hover,
+[data-theme='dark'] .nums__offer:hover {
+  background: rgba(255, 255, 255, 0.085);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}

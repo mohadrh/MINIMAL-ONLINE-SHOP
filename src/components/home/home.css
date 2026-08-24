@@ -90,19 +90,21 @@
   bottom: var(--sp-12);
   display: flex;
   justify-content: center;
-  gap: var(--sp-2);
+  gap: 0;
   z-index: 2;
 }
 .hero__dots button {
+  box-sizing: content-box;
   width: 7px; height: 7px;
-  padding: 0;
+  padding: 14px 8px;
   border: 0;
-  border-radius: var(--r-full);
   background: var(--line);
+  background-clip: content-box;
+  border-radius: var(--r-full);
   cursor: pointer;
   transition: background var(--dur) var(--ease), width var(--dur) var(--ease);
 }
-.hero__dots button.is-on { background: var(--blue); width: 22px; }
+.hero__dots button.is-on { background: var(--blue); background-clip: content-box; width: 22px; }
 
 /* ---------- جعبه‌ی محاسبه ----------
 
@@ -659,7 +661,9 @@
 
 .qa__card-head { border-bottom: 1px solid rgba(15, 17, 32, 0.1); color: var(--ink); }
 .qa__card-glyph { color: var(--blue); }
-.qa__link { color: var(--ink-soft); }
+/* ارتفاعِ قابل زدن، نه فقط ارتفاعِ متن. با ۱۹ پیکسل روی موبایل
+   زدن روی لینکِ بغلی خیلی راحت اتفاق می‌افتد. */
+.qa__link { color: var(--ink-soft); display: block; padding-block: 7px; }
 .qa__link:hover { color: var(--blue); }
 .qa__more { color: var(--blue); }
 

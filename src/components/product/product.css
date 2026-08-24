@@ -46,11 +46,29 @@
   transition: opacity 420ms var(--ease);
 }
 
-.pcard__off {
+/* لایه‌ی نشان‌ها روی تصویر.
+
+   تصویر حالا کامپوننت مشترک ProductArt است و نشان‌ها بیرونش
+   می‌مانند، پس این لایه خودش را روی ناحیه‌ی تصویر می‌اندازد.
+   ارتفاعش با همان نسبت ۱۶:۱۰ی تصویر گره خورده. */
+.pcard__over {
   position: absolute;
-  inset-block-start: var(--sp-4);
-  inset-inline-start: var(--sp-4);
+  inset-block-start: 0;
+  inset-inline: 0;
+  aspect-ratio: 16 / 9;
   z-index: 2;
+  pointer-events: none;
+}
+
+.pcard__flags {
+  position: absolute;
+  inset-block-start: var(--sp-3);
+  inset-inline-start: var(--sp-3);
+  display: flex;
+  gap: 6px;
+}
+
+.pcard__off {
   padding: 4px 10px;
   border-radius: var(--r-full);
   background: color-mix(in srgb, var(--accent) 90%, #000);
@@ -59,19 +77,90 @@
   font-weight: 800;
 }
 
-.pcard__art {
+/* تحویل آنی — سبز است نه رنگِ محصول، چون یک واقعیتِ سرویس است
+   نه بخشی از هویت آن محصول. */
+.pcard__instant {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 4px 9px;
+  border-radius: var(--r-full);
+  background: var(--ok);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+.pcard__instant svg { width: 11px; height: 11px; }
+
+.pcard__sold {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-items: center;
-  aspect-ratio: 16 / 10;
+  background: color-mix(in srgb, var(--paper) 72%, transparent);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.pcard.is-sold { opacity: 0.75; }
+.pcard.is-sold:hover { translate: none; }
+
+/* قاب تصویر کارت.
+
+   قبلاً برای آیکونِ وسط‌چین ساخته شده بود (۵۴٪ عرض، contain). حالا
+   تصویرها بنرِ تمام‌عرضِ ۱۶:۹اند، پس نسبت قاب هم ۱۶:۹ شد و تصویر
+   کل آن را پر می‌کند. */
+.pcard__art {
+  display: block;
+  position: relative;
+  aspect-ratio: 16 / 9;
   background: color-mix(in srgb, var(--accent) 8%, var(--tint));
   overflow: hidden;
 }
 .pcard__art img {
-  width: 54%;
-  object-fit: contain;
-  transition: scale 500ms var(--ease);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: scale 700ms var(--ease);
 }
 .pcard:hover .pcard__art img { scale: 1.08; }
+
+/* صفحه‌ی جایگزین — وقتی تصویر محصول هنوز ساخته نشده */
+.art-plate {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  padding: var(--sp-4);
+  text-align: center;
+  direction: ltr;
+}
+.art-plate b {
+  font-size: var(--text-md);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--accent, var(--blue)) 78%, var(--ink));
+}
+.art-plate i {
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* هر سطحی که تصویرش نیامده، همین شیب ملایمِ رنگِ محصول را می‌گیرد */
+.is-blank {
+  display: grid !important;
+  place-items: center;
+  background: linear-gradient(150deg,
+    color-mix(in srgb, var(--accent, var(--blue)) 20%, var(--tint)),
+    color-mix(in srgb, var(--accent, var(--blue)) 7%, var(--tint))) !important;
+}
+.is-blank img { display: none; }
 
 .pcard__body {
   display: flex;
@@ -99,11 +188,37 @@
   overflow: hidden;
 }
 
-.pcard__meta {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 11px; color: var(--ok);
+/* هر نشانه یک سوال خریدار را جواب می‌دهد: چند پلن، چه گارانتی */
+.pcard__signals {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-top: 2px;
 }
-.pcard__meta svg { width: 11px; height: 11px; }
+.pcard__sig {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--r);
+  background: var(--tint);
+  font-size: 10px;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.pcard__sig svg { width: 11px; height: 11px; }
+[data-theme='dark'] .pcard__sig { background: rgba(255, 255, 255, 0.06); }
+
+/* زمان تحویل مهم‌ترینِ سه نشانه است، پس ته‌رنگ سبز می‌گیرد —
+   نه آن‌قدر که فریاد بزند، آن‌قدر که اول خوانده شود. */
+.pcard__sig--time { background: var(--ok-wash); color: var(--ok); }
+[data-theme='dark'] .pcard__sig--time {
+  background: color-mix(in srgb, var(--ok) 14%, transparent);
+  color: var(--ok);
+}
+
+/* کمبود موجودی فقط وقتی گفته می‌شود که واقعاً کم است */
+.pcard__scarce {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--warn);
+}
 
 .pcard__foot {
   display: flex; align-items: center; gap: var(--sp-3);
@@ -113,23 +228,97 @@
 }
 [data-theme='dark'] .pcard__foot { border-top-color: rgba(255, 255, 255, 0.1); }
 
+/* دکمه روی هاور کلمه‌ی «افزودن» را باز می‌کند. عرض با grid-template
+   انیمیت می‌شود نه با width، چون محتوا اندازه‌ی ثابتی ندارد. */
 .pcard__add {
-  width: 34px; height: 34px;
-  display: grid; place-items: center;
+  height: 34px;
+  padding-inline: 9px;
+  display: inline-flex; align-items: center; gap: 0;
   flex-shrink: 0;
   border-radius: var(--r-full);
-  border: 1.5px solid color-mix(in srgb, var(--accent) 40%, transparent);
-  background: color-mix(in srgb, var(--accent) 10%, var(--paper));
-  color: color-mix(in srgb, var(--accent) 75%, #1a1206);
+  /* شیشه‌ی پاستلی از کمان ققنوس.
+
+     سه لایه است و هر سه لازم: فیلمِ نیمه‌شفافِ رنگی، بلورِ پشت،
+     و رینگِ روشنِ بالا که به ورق ضخامت می‌دهد. بدون رینگ، فقط
+     یک لکه‌ی رنگیِ تار می‌ماند و اصلاً شیشه به نظر نمی‌رسد. */
+  position: relative;
+  isolation: isolate;
+  border: 1px solid color-mix(in srgb, var(--pick, var(--accent)) 26%, transparent);
+  background: color-mix(in srgb, var(--pick, var(--accent)) 15%, transparent);
+  color: color-mix(in srgb, var(--pick, var(--accent)) 72%, var(--ink));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 color-mix(in srgb, var(--pick, var(--accent)) 18%, transparent),
+    0 2px 8px -4px color-mix(in srgb, var(--pick, var(--accent)) 45%, transparent);
   cursor: pointer;
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
-              border-color var(--dur) var(--ease), scale var(--dur) var(--ease);
+              border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
-.pcard__add:hover { background: var(--accent); border-color: var(--accent); color: #fff; scale: 1.1; }
-.pcard__add svg { width: 16px; height: 16px; }
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .pcard__add {
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(180%);
+  }
+}
+
+/* درخششِ مورب که روی هاور از روی شیشه رد می‌شود — همان حرکتی
+   که دکمه‌های اصلی سایت دارند، در مقیاس کوچک. */
+.pcard__add::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(100deg,
+    transparent 32%, rgba(255, 255, 255, 0.55) 50%, transparent 68%);
+  translate: -130% 0;
+  transition: translate 620ms var(--ease);
+}
+.pcard:hover .pcard__add::before { translate: 130% 0; }
+/* روی هاور غلیظ‌تر می‌شود ولی هنوز شیشه است — رینگ سرجایش
+   می‌ماند و هاله‌ی زیرش باز می‌شود. */
+.pcard__add:hover {
+  background: color-mix(in srgb, var(--pick, var(--accent)) 62%, transparent);
+  border-color: color-mix(in srgb, var(--pick, var(--accent)) 55%, transparent);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 8px 20px -8px color-mix(in srgb, var(--pick, var(--accent)) 62%, transparent);
+}
+.pcard__add svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+.pcard__add-text {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  transition: max-width 280ms var(--ease), margin-inline-start 280ms var(--ease);
+}
+.pcard:hover .pcard__add-text,
+.pcard__add:focus-visible .pcard__add-text { max-width: 5rem; margin-inline-start: 5px; }
+
+.pcard__add:disabled { opacity: 0.45; cursor: not-allowed; }
+.pcard__add:disabled:hover { background: color-mix(in srgb, var(--accent) 10%, var(--paper)); }
 [data-theme='dark'] .pcard__add {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-  color: color-mix(in srgb, var(--accent) 40%, #fff);
+  background: color-mix(in srgb, var(--pick, var(--accent)) 22%, transparent);
+  border-color: color-mix(in srgb, var(--pick, var(--accent)) 38%, transparent);
+  color: color-mix(in srgb, var(--pick, var(--accent)) 52%, #fff);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 2px 10px -5px color-mix(in srgb, var(--pick, var(--accent)) 55%, transparent);
+}
+/* روی زمینه‌ی تیره، درخشش سفید زیادی می‌زند */
+[data-theme='dark'] .pcard__add::before {
+  background: linear-gradient(100deg,
+    transparent 32%, rgba(255, 255, 255, 0.22) 50%, transparent 68%);
+}
+[data-theme='dark'] .pcard__add:hover {
+  background: color-mix(in srgb, var(--pick, var(--accent)) 64%, transparent);
+  color: #fff;
 }
 
 .pcard__prices { margin-inline-start: auto; display: flex; align-items: baseline; gap: 6px; }
@@ -147,6 +336,7 @@
   font-size: var(--text-xs); color: var(--ink-faint);
   flex-wrap: wrap;
 }
+.crumb__row a { display: inline-block; padding-block: 6px; }
 .crumb__row a:hover { color: var(--blue); }
 .crumb__row svg { width: 13px; height: 13px; opacity: 0.5; }
 .crumb__row [aria-current] { color: var(--ink); font-weight: 600; }
@@ -271,8 +461,9 @@
 
 .pdp-toc { position: sticky; top: calc(var(--nav-h) + var(--sp-5)); }
 .pdp-toc h3 { font-size: var(--text-sm); margin-bottom: var(--sp-4); }
-.pdp-toc ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-3); }
-.pdp-toc a { font-size: var(--text-sm); color: var(--ink-soft); }
+.pdp-toc ul { list-style: none; margin: 0; padding: 0; display: grid; }
+/* padding به‌جای gap: ناحیه‌ی قابل زدن بزرگ می‌شود نه فقط فاصله */
+.pdp-toc a { font-size: var(--text-sm); color: var(--ink-soft); display: block; padding-block: 8px; }
 .pdp-toc a:hover { color: var(--blue); }
 @media (max-width: 900px) { .pdp-toc { position: static; } }
 
@@ -457,3 +648,119 @@
   .pcard:hover .pcard__art img { scale: 1; }
   .pcard::after { display: none; }
 }
+
+/* ============================================================
+   جدول مشخصات و آموزش فعال‌سازی
+
+   الگو از صفحه‌ی محصول نمونه: یک بلوک کلید-مقدار که وضعیت و
+   نحوه‌ی تحویل را در یک نگاه می‌دهد. <dl> است نه <table> چون
+   این‌ها جفتِ نام-مقدارند، نه داده‌ی دوبعدی.
+   ============================================================ */
+
+.spec { max-width: 52rem; }
+
+.spec__table {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.spec__row {
+  display: grid;
+  grid-template-columns: 15rem 1fr;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-6);
+}
+.spec__row + .spec__row { border-top: 1px solid var(--line); }
+.spec__row:nth-child(odd) { background: var(--tint); }
+[data-theme='dark'] .spec__row:nth-child(odd) { background: rgba(255, 255, 255, 0.03); }
+[data-theme='dark'] .spec__row + .spec__row { border-top-color: rgba(255, 255, 255, 0.08); }
+
+.spec__row dt {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+}
+.spec__row dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.spec__icon { display: inline-flex; color: var(--blue); }
+.spec__icon svg { width: 15px; height: 15px; }
+
+/* روی موبایل، دو ستون به دو سطر می‌شکند — ۱۵ رم برچسب روی
+   عرض ۳۷۵ پیکسل جایی برای مقدار نمی‌گذارد. */
+@media (max-width: 640px) {
+  .spec__row { grid-template-columns: 1fr; gap: 4px; }
+}
+
+.spec__notes {
+  margin: var(--sp-5) 0 0;
+  padding-inline-start: var(--sp-5);
+  display: grid;
+  gap: var(--sp-2);
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+}
+.spec__notes li { list-style: disc; }
+
+/* ---------- گام‌های فعال‌سازی ---------- */
+
+.spec__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--sp-5);
+}
+.spec__steps li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--sp-4);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.spec__num {
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--r-full);
+  background: var(--blue-wash);
+  color: var(--blue);
+  font-size: var(--text-sm);
+  font-weight: 800;
+}
+
+/* ---------- بستنِ صفحه‌ی محصول ---------- */
+
+.pdp-close__box {
+  max-width: 44rem;
+  margin-inline: auto;
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-12) var(--sp-8);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--tint);
+}
+[data-theme='dark'] .pdp-close__box {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.pdp-close__box h2 { font-size: var(--text-xl); }
+.pdp-close__box p { font-size: var(--text-sm); color: var(--ink-soft); max-width: 46ch; }
+.pdp-close__cta { display: flex; gap: var(--sp-3); flex-wrap: wrap; justify-content: center; }
+.pdp-close__cta svg { width: 15px; height: 15px; }
+
+/* شرح محصول — چند پاراگراف، با عرض محدود */
+.pdp-desc { display: grid; gap: var(--sp-4); margin-bottom: var(--sp-6); }
+.pdp-desc p { font-size: var(--text-sm); line-height: 2; color: var(--ink-soft); max-width: 62ch; }
+.pdp-desc p.sec-head__lead { font-size: var(--text-md); }

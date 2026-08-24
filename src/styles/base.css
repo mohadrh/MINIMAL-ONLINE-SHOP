@@ -278,3 +278,20 @@ a { color: inherit; text-decoration: none; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================
+   متنی که فقط صفحه‌خوان می‌بیند
+
+   display:none یا visibility:hidden آن را از صفحه‌خوان هم پنهان
+   می‌کند. راهش این است که به یک پیکسلِ بریده‌شده تبدیل شود، پس
+   همچنان در درخت دسترسی هست ولی دیده نمی‌شود.
+   ============================================================ */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

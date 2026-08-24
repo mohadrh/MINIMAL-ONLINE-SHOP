@@ -40,7 +40,7 @@ export function Footer() {
         </div>
 
         <nav className="ft__col" aria-label="دسته‌بندی‌ها">
-          <h4>دسته‌بندی‌ها</h4>
+          <h2>دسته‌بندی‌ها</h2>
           {CATEGORIES.map((c) => (
             <Link key={c.slug} href={`/${c.slug}`}>{c.title}</Link>
           ))}
@@ -48,12 +48,12 @@ export function Footer() {
         </nav>
 
         <nav className="ft__col" aria-label="راهنما">
-          <h4>راهنما</h4>
+          <h2>راهنما</h2>
           {HELP.map((l) => <Link key={l.h} href={l.h}>{l.t}</Link>)}
         </nav>
 
         <nav className="ft__col" aria-label="فونیکس شاپ">
-          <h4>فونیکس شاپ</h4>
+          <h2>فونیکس شاپ</h2>
           {ABOUT.map((l) => <Link key={l.h} href={l.h}>{l.t}</Link>)}
         </nav>
       </div>

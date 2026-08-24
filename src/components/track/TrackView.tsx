@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Check, Clock, PackageSearch, Search } from 'lucide-react';
 import { getOrder, type Order, type OrderStatus } from '../../lib/orders';
@@ -38,6 +38,22 @@ export function TrackView() {
   const [code, setCode] = useState('');
   const [order, setOrder] = useState<Order | null>(null);
   const [notFound, setNotFound] = useState(false);
+
+  /* اگر از صفحه‌ی موفقیتِ پرداخت آمده، کد در آدرس است و باید
+     خودش جست‌وجو شود. کپی‌کردن دستیِ کد یک گام اضافه است که
+     هیچ‌کس دوستش ندارد.
+
+     خواندن از window انجام می‌شود نه useSearchParams، چون این
+     صفحه استاتیک اکسپورت می‌شود و آن هوک، مرز Suspense می‌خواهد. */
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('code');
+    if (!q) return;
+    const c = q.trim().toUpperCase();
+    setCode(c);
+    const found = getOrder(c);
+    setOrder(found ?? null);
+    setNotFound(!found);
+  }, []);
 
   const search = () => {
     const c = code.trim().toUpperCase();

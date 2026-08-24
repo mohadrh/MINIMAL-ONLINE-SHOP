@@ -58,12 +58,26 @@
 }
 
 /* بلند شدن ریز روی هاور — روی دکمه، نه روی متن */
-.btn { transition: background var(--dur) var(--ease),
-                   border-color var(--dur) var(--ease),
-                   color var(--dur) var(--ease),
-                   translate 220ms var(--ease); }
-.btn:hover { translate: 0 -2px; }
-.btn:active { translate: 0 0; }
+.btn {
+  transition: background var(--dur) var(--ease),
+              border-color var(--dur) var(--ease),
+              color var(--dur) var(--ease),
+              box-shadow 260ms var(--ease),
+              translate 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              scale 160ms var(--ease);
+}
+
+.btn--primary:hover {
+  translate: 0 -3px;
+  box-shadow: 0 12px 26px -12px color-mix(in srgb, var(--blue) 70%, transparent);
+}
+.btn--ghost:hover {
+  translate: 0 -3px;
+  box-shadow: 0 12px 24px -14px rgba(0, 0, 0, 0.28);
+}
+
+/* فشردن باید فوری باشد — هر تأخیری اینجا حس «نگرفت» می‌دهد */
+.btn:active { translate: 0 0; scale: 0.975; }
 
 /* ============================================================
    حرکت هاور
@@ -90,6 +104,7 @@
   .sky__stars, .sky__meteor, .sky__nebula { animation: none; }
   .sky__meteor { opacity: 0.5; }
   .btn::after { display: none; }
+  .btn:hover, .btn:active { translate: none; scale: none; }
   .btn:hover, .qa__card:hover, .svc__item:hover, .art:hover { translate: none; }
   .qa__card:hover .qa__card-head svg,
 }

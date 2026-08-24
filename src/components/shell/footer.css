@@ -54,11 +54,12 @@
 .ft__social a:hover { background: var(--blue); color: #fff; }
 .ft__social svg { width: 16px; height: 16px; }
 
-.ft__col { display: flex; flex-direction: column; gap: var(--sp-3); }
-.ft__col h4 { color: var(--ink); font-size: var(--text-sm); margin-bottom: var(--sp-1); }
+.ft__col { display: flex; flex-direction: column; }
+.ft__col h2 { color: var(--ink); font-size: var(--text-sm); font-weight: 800; margin-bottom: var(--sp-2); }
 .ft__col a {
   font-size: var(--text-sm);
   color: var(--ink-soft);
+  padding-block: 9px;
   transition: color var(--dur) var(--ease);
 }
 .ft__col a:hover { color: var(--blue); }
@@ -74,7 +75,7 @@
 /* در شب همان رنگ‌های تیره‌ی قبلی برمی‌گردند */
 [data-theme='dark'] .ft__grid { border-bottom-color: rgba(255, 255, 255, 0.07); }
 [data-theme='dark'] .ft__logo b,
-[data-theme='dark'] .ft__col h4 { color: #fff; }
+[data-theme='dark'] .ft__col h2 { color: #fff; }
 [data-theme='dark'] .ft__social a {
   background: rgba(255, 255, 255, 0.05);
   border-color: transparent;

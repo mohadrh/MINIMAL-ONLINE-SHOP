@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Check, Clock, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, Check, Clock, ShieldCheck, Sparkles } from 'lucide-react';
 import {
   CATEGORIES, PRODUCTS, getProductsByCategory, type Product,
 } from '../../data/catalog';
 import { asset } from '../../lib/asset';
+import { ProductSpecs } from './ProductSpecs';
+import { ProductArt } from '../ui/ProductArt';
 import { useCart, useFlight } from '../../app/providers';
 import { ProductCard } from './ProductCard';
 import { Faq } from '../ui/Faq';
@@ -71,11 +73,14 @@ export function ProductView({ product: p }: { product: Product }) {
       {/* ---------- ۲ هیرو + جعبه‌ی سفارش ---------- */}
       <section className="pdp-hero" style={{ ['--accent' as string]: p.media.accent }}>
         <div className="wrap pdp-hero__grid">
-          <div className="pdp-hero__art">
-            <img src={asset(p.media.cover ?? p.media.thumbnail)} alt="" aria-hidden="true" />
-          </div>
+          <ProductArt
+            className="pdp-hero__art"
+            src={p.media.cover ?? p.media.thumbnail}
+            title={p.englishTitle}
+            brand={p.brand}
+          />
 
-          <div className="pdp-hero__buy">
+          <div className="pdp-hero__buy" id="buy">
             <h1>{p.title}</h1>
             <p className="pdp-hero__en">{p.englishTitle}</p>
             <p className="pdp-hero__lead">{p.shortDescription}</p>
@@ -151,7 +156,16 @@ export function ProductView({ product: p }: { product: Product }) {
         <div className="wrap mediatext">
           <div className="mediatext__body">
             <h2>{p.title} به چه کارت می‌آید؟</h2>
-            <p className="sec-head__lead">{p.description}</p>
+            {/* شرح چندپاراگرافی است و با خط خالی جدا می‌شود.
+                یک پاراگرافِ بلند در فارسی، با این ارتفاع سطر، دیوارِ
+                متن می‌شود و کسی تا آخرش نمی‌رود. */}
+            <div className="pdp-desc">
+              {p.description.split('\n\n').map((para, i) => (
+                <p key={i} className={i === 0 ? 'sec-head__lead' : undefined}>
+                  {para.trim()}
+                </p>
+              ))}
+            </div>
 
             <ul className="points pdp-features">
               {p.features.map((f) => (
@@ -163,16 +177,17 @@ export function ProductView({ product: p }: { product: Product }) {
             </ul>
           </div>
 
-          <div className="mediatext__art">
-            <img
-              src={asset(p.media.cover ?? p.media.thumbnail)}
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-            />
-          </div>
+          <ProductArt
+            className="mediatext__art"
+            src={p.media.cover ?? p.media.thumbnail}
+            title={p.englishTitle}
+            brand={p.brand}
+          />
         </div>
       </section>
+
+      {/* ---------- مشخصات و آموزش فعال‌سازی ---------- */}
+      <ProductSpecs p={p} />
 
       {/* ---------- ۴ نوار مزایا ---------- */}
       <section className="section section--blue" id="why">
@@ -222,6 +237,8 @@ export function ProductView({ product: p }: { product: Product }) {
               <h3>فهرست مطالب</h3>
               <ul>
                 <li><a href="#about">درباره‌ی این سرویس</a></li>
+                <li><a href="#specs">مشخصات</a></li>
+                <li><a href="#howto">بعد از خرید چه کار کنم؟</a></li>
                 <li><a href="#why">چرا از فونیکس شاپ</a></li>
                 {related.length > 0 && <li><a href="#related">سرویس‌های مشابه</a></li>}
                 <li><a href="#faq">سوالات متداول</a></li>
@@ -247,6 +264,28 @@ export function ProductView({ product: p }: { product: Product }) {
             <b className="num">{fmt(p.reviewsCount)}</b> نظر ثبت‌شده
           </span>
           <Link href="/shop" className="btn btn--ghost btn--sm">دیدن همه‌ی محصولات</Link>
+        </div>
+      </section>
+
+      {/* ---------- ۹ بستنِ صفحه ----------
+
+           کسی که تا اینجا خوانده، تصمیمش را گرفته. اگر آخر صفحه
+           راهی به بالا نگذاریم، باید خودش اسکرول کند تا جعبه‌ی
+           سفارش را پیدا کند — و بعضی‌ها نمی‌کنند. */}
+      <section className="section pdp-close">
+        <div className="wrap pdp-close__box">
+          <h2>همین حالا {p.title} را بگیر</h2>
+          <p>
+            {p.deliveryEstimate} بعد از پرداخت تحویل می‌گیری، با {p.warrantyLabel}.
+            اگر سوالی داری، قبل از خرید بپرس.
+          </p>
+          <div className="pdp-close__cta">
+            <a href="#buy" className="btn btn--primary">
+              رفتن به جعبه‌ی سفارش
+              <ArrowLeft aria-hidden="true" />
+            </a>
+            <Link href="/faq" className="btn btn--ghost">سوال دارم</Link>
+          </div>
         </div>
       </section>
     </>

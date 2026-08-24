@@ -30,7 +30,7 @@ const METEORS = [
 ];
 
 const STAR = 'rgba(255,255,255,0.97)';
-const STAR_BLUE = 'rgba(190,214,255,0.8)';
+const STAR_WING = 'rgba(190,214,255,0.8)';
 
 export function StarField() {
   return (
@@ -73,7 +73,7 @@ export function StarField() {
         style={{
           backgroundImage: [
             `radial-gradient(${STAR} 0.85px, transparent 1.05px)`,
-            `radial-gradient(${STAR_BLUE} 0.7px, transparent 0.95px)`,
+            `radial-gradient(${STAR_WING} 0.7px, transparent 0.95px)`,
           ].join(','),
           backgroundSize: '83px 83px, 127px 127px',
           backgroundPosition: '0 0, 47px 61px',

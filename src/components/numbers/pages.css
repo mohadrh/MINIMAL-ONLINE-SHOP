@@ -224,3 +224,23 @@
 @media (prefers-reduced-motion: reduce) {
   .nums__kind:hover, .nums__svc:hover { translate: none; }
 }
+
+/* کد پیگیری روی صفحه‌ی موفقیتِ پرداخت.
+   انتخاب‌شدنی است چون اولین کاری که آدم می‌کند کپی کردنش است. */
+.co__code {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: var(--sp-4) var(--sp-8);
+  border-radius: var(--r-md);
+  border: 1px dashed var(--blue-line);
+  background: var(--blue-wash);
+}
+.co__code span { font-size: var(--text-xs); color: var(--ink-faint); }
+.co__code b {
+  font-size: var(--text-xl);
+  font-weight: 900;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+  user-select: all;
+}

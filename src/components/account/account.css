@@ -1,0 +1,381 @@
+/* ============================================================
+   پنل کاربری
+
+   سه چیز اینجا با بقیه‌ی سایت فرق دارد و هر سه عمدی است:
+
+     ۱ پس‌زمینه‌ی مِش — چهار لکه‌ی شعاعیِ پاستلی که خیلی آرام
+       می‌چرخند. دلیلش زیبایی نیست: شیشه بدون چیزی پشتش، شیشه
+       نیست. روی زمینه‌ی تخت هرچقدر blur بدهی فقط یک سطح مات
+       می‌ماند.
+
+     ۲ کارت‌های شیشه‌ای — بلور ۲۴ پیکسل با اشباع ۱۵۰٪. این عدد
+       از راهنمای خود دستور آمده: ۲۰ تا ۲۸ برای سطوحی که متن
+       بلند نگه می‌دارند. کمتر، جدا نمی‌کند؛ بیشتر، سنگین است.
+
+     ۳ نوار کناری به‌جای ریل چیپ — پنل جای ماندن است نه گذر
+       کردن، و فهرست عمودی همه‌ی بخش‌ها را هم‌زمان نشان می‌دهد.
+   ============================================================ */
+
+.acc {
+  position: relative;
+  isolation: isolate;
+  padding: var(--sp-8) var(--sp-6) var(--sp-24);
+  display: grid;
+  gap: var(--sp-8);
+  border-radius: 24px;
+  /* clip نه hidden.
+
+     مِش با scale انیمیت می‌شود و از قاب بیرون می‌زند؛ باید بریده
+     شود. ولی overflow:hidden یک ظرف اسکرول می‌سازد و position:
+     sticky نوار کناری را از کار می‌اندازد. overflow:clip فقط
+     می‌برد و ظرف اسکرول نمی‌سازد. */
+  overflow: clip;
+  /* زمینه‌ی پایه هرگز سفیدِ خالص نیست.
+
+     شیشه روی سفید، شیشه نیست — چیزی برای شکستن ندارد. در نمونه‌ی
+     مرجع زمینه یک شیب تیره‌ی سیر است و همان است که پنل‌ها را
+     شیشه‌ای نشان می‌دهد. اینجا معادلِ روزش را می‌گذاریم: یک شیب
+     یاسیِ خیلی ملایم. */
+  background: linear-gradient(162deg, #f2f4fd 0%, #eaeefb 52%, #f4f2fb 100%);
+}
+
+[data-theme='dark'] .acc {
+  background: linear-gradient(162deg, #0d0f18 0%, #141127 52%, #0e1019 100%);
+}
+
+/* ---------- مِش محیطی ---------- */
+
+.acc__mesh {
+  position: absolute;
+  /* افقی صفر می‌ماند.
+
+     نسخه‌ی اول ۶٪ از دو طرف بیرون می‌زد و کل صفحه اسکرول افقی
+     می‌گرفت. عرض را خودِ blur پخش می‌کند؛ لازم نیست جعبه بزرگ‌تر
+     از ظرفش باشد. */
+  inset: -14% 0;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  /* بلور کم و آلفای بالا.
+
+     نسخه‌ی اول ۶۴ پیکسل بلور با شفافیت ۰٫۵ داشت و عملاً محو شده
+     بود. شیشه به رنگِ *دیده‌شدنی* پشتش نیاز دارد، نه به مه. */
+  filter: blur(26px);
+  opacity: 1;
+  background:
+    radial-gradient(52% 44% at 12% 16%, rgba(150, 130, 255, 0.44) 0%, transparent 62%),
+    radial-gradient(46% 40% at 86% 10%, rgba(96, 190, 255, 0.42) 0%, transparent 60%),
+    radial-gradient(50% 44% at 80% 84%, rgba(255, 150, 205, 0.32) 0%, transparent 62%),
+    radial-gradient(44% 40% at 18% 90%, rgba(110, 225, 205, 0.34) 0%, transparent 60%);
+  animation: accMesh 34s ease-in-out infinite alternate;
+}
+
+[data-theme='dark'] .acc__mesh { opacity: 0.72; }
+
+/* حرکت خیلی کند و بدون بازچینش — فقط translate و scale، که هر دو
+   روی GPU می‌روند. ۳۴ ثانیه یعنی کسی «انیمیشن» نمی‌بیند، فقط حس
+   می‌کند صفحه زنده است. */
+@keyframes accMesh {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(-1.2%, 2%, 0) scale(1.06); }
+  100% { transform: translate3d(1%, -1.5%, 0) scale(1.03); }
+}
+
+/* ---------- دستور شیشه ---------- */
+
+.acc__hero,
+.acc__order,
+.acc__sub,
+.acc__tx,
+.acc__balance,
+.acc__side {
+  --glass-rim:  rgba(255, 255, 255, 0.9);
+  --glass-rim2: rgba(255, 255, 255, 0.4);
+  --glass-edge: rgba(18, 19, 28, 0.10);
+  /* ۶۲٪ سفید یعنی سطحِ مات با یک ذره شفافیت. نمونه‌ی مرجع ۱۶٪
+     می‌گذارد و همان است که رنگِ پشت را رد می‌کند. اینجا ۳۴٪ —
+     کمی غلیظ‌تر از مرجع، چون متن فارسی باید خوانا بماند. */
+  background: color-mix(in oklab, #ffffff 34%, transparent);
+  border: 1px solid var(--glass-edge);
+  border-radius: 18px;
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -1px 0 var(--glass-rim2),
+    0 24px 48px -30px rgba(30, 26, 60, 0.34);
+}
+
+[data-theme='dark'] .acc__hero,
+[data-theme='dark'] .acc__order,
+[data-theme='dark'] .acc__sub,
+[data-theme='dark'] .acc__tx,
+[data-theme='dark'] .acc__balance,
+[data-theme='dark'] .acc__side {
+  --glass-rim:  rgba(255, 255, 255, 0.16);
+  --glass-rim2: rgba(255, 255, 255, 0.05);
+  --glass-edge: rgba(255, 255, 255, 0.16);
+  background: color-mix(in oklab, #ffffff 13%, transparent);
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -1px 0 var(--glass-rim2),
+    0 26px 54px -26px rgba(0, 0, 0, 0.6);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .acc__hero, .acc__order, .acc__sub, .acc__tx, .acc__balance, .acc__side {
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    backdrop-filter: blur(24px) saturate(160%);
+  }
+}
+
+/* بدون بلور، نیمه‌شفافی فقط متن را ناخوانا می‌کند */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .acc__hero, .acc__order, .acc__sub, .acc__tx, .acc__balance, .acc__side {
+    background: var(--paper);
+  }
+  [data-theme='dark'] .acc__hero,
+  [data-theme='dark'] .acc__order,
+  [data-theme='dark'] .acc__sub,
+  [data-theme='dark'] .acc__tx,
+  [data-theme='dark'] .acc__balance,
+  [data-theme='dark'] .acc__side { background: var(--tint); }
+}
+
+/* ---------- کارت خلاصه ---------- */
+
+.acc__hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  padding: var(--sp-7) var(--sp-8);
+}
+
+.acc__who { display: flex; align-items: center; gap: var(--sp-4); }
+.acc__who b { display: block; font-size: var(--text-md); color: var(--ink); margin-bottom: 3px; }
+.acc__who span { font-size: var(--text-xs); color: var(--ink-faint); }
+
+.acc__avatar {
+  width: 48px; height: 48px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--r-full);
+  background: var(--blue);
+  color: #fff;
+  font-size: var(--text-lg);
+  font-weight: 900;
+  box-shadow: 0 8px 20px -10px color-mix(in srgb, var(--blue) 70%, transparent);
+}
+
+/* آمارها.
+
+   نسخه‌ی اول flex با gap بود و روی عرض متوسط، ستون‌ها به هم
+   می‌چسبیدند. حالا شبکه است با کف عرض، پس هر ستون فضای خودش را
+   دارد و موقع کم آمدن جا، می‌شکند نه اینکه له شود. */
+.acc__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: var(--sp-5) var(--sp-8);
+  margin: 0;
+  flex: 1 1 26rem;
+}
+.acc__stats > div { min-width: 0; }
+.acc__stats dt { font-size: var(--text-xs); color: var(--ink-faint); margin-bottom: 4px; }
+.acc__stats dd { margin: 0; font-size: var(--text-sm); font-weight: 800; color: var(--ink); }
+
+@media (max-width: 720px) {
+  .acc__hero { flex-direction: column; align-items: stretch; gap: var(--sp-6); padding: var(--sp-6); }
+  .acc__stats { flex: 1 1 auto; grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---------- بدنه: نوار کناری + محتوا ---------- */
+
+.acc__body {
+  display: grid;
+  grid-template-columns: 15rem 1fr;
+  gap: var(--sp-6);
+  align-items: start;
+}
+
+.acc__side {
+  display: grid;
+  gap: 2px;
+  padding: var(--sp-3);
+  position: sticky;
+  top: calc(var(--nav-h) + var(--sp-4));
+}
+
+.acc__side-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 11px var(--sp-4);
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-soft);
+  text-align: start;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.acc__side-item:hover { background: color-mix(in srgb, var(--blue) 8%, transparent); color: var(--ink); }
+.acc__side-item.is-on { background: var(--blue); color: #fff; }
+[data-theme='dark'] .acc__side-item:hover { background: rgba(255, 255, 255, 0.07); }
+
+.acc__side-icon { display: inline-flex; flex-shrink: 0; }
+.acc__side-icon svg { width: 16px; height: 16px; }
+
+.acc__main { min-width: 0; display: grid; gap: var(--sp-4); }
+
+/* روی عرض کم، ستون عمودی نصف صفحه را می‌خورد. ریل افقی می‌شود. */
+@media (max-width: 900px) {
+  .acc__body { grid-template-columns: 1fr; }
+  .acc__side {
+    position: static;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    gap: var(--sp-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .acc__side::-webkit-scrollbar { display: none; }
+  .acc__side-item { white-space: nowrap; }
+}
+
+/* ---------- فهرست‌ها ---------- */
+
+.acc__list { display: grid; gap: var(--sp-3); }
+.acc__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: var(--sp-4); }
+
+.acc__order, .acc__sub, .acc__tx { padding: var(--sp-5) var(--sp-6); }
+
+.acc__order:hover, .acc__sub:hover {
+  translate: 0 -3px;
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -1px 0 var(--glass-rim2),
+    0 32px 60px -28px rgba(30, 26, 60, 0.4);
+}
+.acc__order, .acc__sub { transition: translate 250ms cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 250ms var(--ease); }
+
+.acc__order header, .acc__sub footer, .acc__order footer {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-3); flex-wrap: wrap;
+}
+.acc__order header {
+  padding-bottom: var(--sp-4); margin-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--glass-edge);
+}
+.acc__order footer {
+  padding-top: var(--sp-4); margin-top: var(--sp-4);
+  border-top: 1px solid var(--glass-edge);
+}
+
+.acc__label { display: block; font-size: var(--text-xs); color: var(--ink-faint); margin-bottom: 2px; }
+.acc__date { font-size: var(--text-xs); color: var(--ink-faint); }
+
+.acc__status--ok     { background: var(--ok-wash); color: var(--ok); }
+.acc__status--warn   { background: var(--warn-wash); color: var(--warn); }
+.acc__status--danger { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+.acc__status--info,
+.acc__status--muted  { background: var(--blue-wash); color: var(--blue); }
+
+.acc__lines { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+.acc__lines li {
+  display: flex; justify-content: space-between; gap: var(--sp-4);
+  font-size: var(--text-sm); color: var(--ink-soft);
+}
+
+/* ---------- اطلاعات تحویل ---------- */
+
+.acc__secrets { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-3); }
+.acc__secrets li {
+  display: grid;
+  grid-template-columns: 9rem 1fr auto;
+  align-items: center;
+  gap: var(--sp-3);
+}
+@media (max-width: 640px) {
+  .acc__secrets li { grid-template-columns: 1fr auto; }
+  .acc__secrets .acc__label { grid-column: 1 / -1; margin-bottom: 0; }
+}
+
+.acc__secrets code {
+  font-family: ui-monospace, monospace;
+  font-size: var(--text-sm);
+  padding: 7px 11px;
+  border-radius: var(--r);
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+[data-theme='dark'] .acc__secrets code { background: rgba(255, 255, 255, 0.08); }
+
+.acc__eye {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  border: 1px solid var(--glass-edge);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.acc__eye:hover { color: var(--blue); border-color: var(--blue-line); }
+.acc__eye svg { width: 15px; height: 15px; }
+
+/* ---------- اشتراک‌ها ---------- */
+
+.acc__sub { display: grid; gap: var(--sp-2); }
+.acc__sub b { font-size: var(--text-sm); color: var(--ink); }
+
+.acc__bar {
+  height: 6px;
+  border-radius: var(--r-full);
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
+  overflow: hidden;
+  margin-top: var(--sp-3);
+}
+.acc__bar span {
+  display: block; height: 100%;
+  border-radius: inherit;
+  background: var(--accent, var(--blue));
+  transition: width 700ms var(--ease);
+}
+[data-theme='dark'] .acc__bar { background: rgba(255, 255, 255, 0.12); }
+
+.acc__left { font-size: var(--text-xs); color: var(--ink-faint); }
+.acc__left b { font-size: var(--text-sm); color: var(--ink); }
+/* زیر پنج روز، رنگ هشدار — تمدید نکردن یعنی قطع شدن سرویس */
+.acc__left.is-soon, .acc__left.is-soon b { color: var(--warn); }
+
+.acc__sub footer { padding-top: var(--sp-3); margin-top: var(--sp-2); }
+
+/* ---------- کیف پول ---------- */
+
+.acc__balance { padding: var(--sp-7) var(--sp-8); margin-bottom: var(--sp-4); }
+.acc__balance b {
+  display: block;
+  font-size: var(--text-2xl);
+  font-weight: 900;
+  color: var(--blue);
+  margin-top: 4px;
+}
+
+.acc__tx { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: var(--sp-5); }
+@media (max-width: 560px) {
+  .acc__tx { grid-template-columns: 1fr auto; gap: var(--sp-2) var(--sp-4); }
+  .acc__tx .acc__date { grid-column: 1; }
+}
+.acc__tx b { font-size: var(--text-sm); color: var(--ink); }
+.acc__amt.is-plus { color: var(--ok); }
+.acc__amt.is-minus { color: var(--ink-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  .acc__mesh { animation: none; }
+  .acc__order:hover, .acc__sub:hover { translate: none; }
+}
