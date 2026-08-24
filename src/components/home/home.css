@@ -1,0 +1,931 @@
+/* ============================================================
+   صفحه‌ی اصلی
+
+   ساختار سکشن‌ها از سایت نمونه گرفته شده: بنر باریک روی جعبه‌ی
+   محاسبه، یک نوار تیره، شبکه‌ی آیکونی، دو بلوک تصویر و متن، آمار،
+   نظرات، مقالات، فراخوان، لوگوها.
+   ============================================================ */
+
+/* ---------- هیرو ---------- */
+
+.hero { background: var(--tint); padding-bottom: var(--sp-16); }
+
+/* اسلایدر: همه‌ی اسلایدها روی هم، فقط یکی مات.
+
+   اولی در جریان عادی می‌ماند تا ارتفاع بنر را تعیین کند؛ بقیه
+   absolute روی آن می‌نشینند. اگر همه absolute بودند، ارتفاع صفر
+   می‌شد و بنر جمع می‌شد. */
+.hero__slider {
+  position: relative;
+  padding-block: var(--sp-14) var(--sp-20);
+}
+
+.hero__slide {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 520ms var(--ease), visibility 0s linear 520ms;
+}
+.hero__slide:first-of-type { position: relative; }
+.hero__slide:not(:first-of-type) { position: absolute; inset: var(--sp-14) 0 var(--sp-20); }
+.hero__slide.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 520ms var(--ease), visibility 0s;
+}
+
+.hero__slide-inner {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: var(--sp-12);
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .hero__slide-inner { grid-template-columns: 1fr; gap: var(--sp-6); }
+  .hero__img { order: -1; }
+}
+
+.hero__txt h2 {
+  font-size: var(--text-2xl);
+  font-weight: 900;
+  line-height: 1.6;
+  margin-bottom: var(--sp-4);
+}
+.hero__txt p {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  max-width: 42ch;
+  margin-bottom: var(--sp-6);
+}
+
+.hero__img {
+  border-radius: var(--r-md);
+  overflow: hidden;
+  aspect-ratio: 16 / 7;
+  background: var(--sunken);
+}
+.hero__img img { width: 100%; height: 100%; object-fit: cover; }
+
+/* پیکان‌ها بیرون از ظرف، چسبیده به لبه‌ی قاب */
+.hero__arrow {
+  position: absolute;
+  top: 44%;
+  width: 30px; height: 46px;
+  display: grid; place-items: center;
+  border: 0;
+  background: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease);
+  z-index: 2;
+}
+.hero__arrow:hover { color: var(--blue); }
+.hero__arrow svg { width: 26px; height: 26px; }
+.hero__arrow--prev { inset-inline-start: var(--sp-2); }
+.hero__arrow--next { inset-inline-end: var(--sp-2); }
+@media (max-width: 1240px) { .hero__arrow { display: none; } }
+
+.hero__dots {
+  position: absolute;
+  inset-inline: 0;
+  bottom: var(--sp-12);
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-2);
+  z-index: 2;
+}
+.hero__dots button {
+  width: 7px; height: 7px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-full);
+  background: var(--line);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), width var(--dur) var(--ease);
+}
+.hero__dots button.is-on { background: var(--blue); width: 22px; }
+
+/* ---------- جعبه‌ی محاسبه ----------
+
+   یک باکس سفید، همه‌چیز داخلش. تب‌ها بیضی‌اند نه ردیفِ زیرخط‌دار:
+   تبِ فعال یک قرص آبیِ توپر است.
+
+   اعداد از نمونه گرفته شده — شعاع ۱۰ برای باکس، ۲۱ برای قرص‌ها،
+   و پدینگ سخاوتمند ۵۰/۷۰ که همان چیزی است که باکس را بدون سایه
+   آرام نگه می‌دارد. */
+
+.calc {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--paper);
+  border-radius: 10px;
+  padding: var(--sp-12) var(--sp-16);
+}
+
+/* گرادیانت متحرک پشت جعبه.
+
+   خودِ گرادیانت می‌لغزد، نه یک المان: background-size دو برابر
+   می‌شود و background-position انیمیت. آن‌وقت رنگ‌ها داخل قاب
+   جابه‌جا می‌شوند بدون اینکه چیزی حرکت کند و بازچینش بدهد.
+
+   عمداً خیلی کم‌رنگ است — جعبه باید سفید به نظر برسد و فقط وقتی
+   چند ثانیه نگاهش کنی بفهمی زنده است. */
+.calc::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    115deg,
+    #ffffff 0%,
+    #f2f6ff 22%,
+    #eaf1ff 40%,
+    #f6f9ff 58%,
+    #edf3ff 76%,
+    #ffffff 100%
+  );
+  background-size: 280% 280%;
+  animation: calcGrad 22s ease-in-out infinite alternate;
+}
+
+[data-theme='dark'] .calc::before {
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(106, 147, 255, 0.12) 30%,
+    rgba(255, 255, 255, 0.03) 55%,
+    rgba(106, 147, 255, 0.1) 78%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 280% 280%;
+}
+
+@keyframes calcGrad {
+  0%   { background-position:   0% 50%; }
+  50%  { background-position: 100% 25%; }
+  100% { background-position:  35% 90%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .calc::before { animation: none; }
+}
+@media (max-width: 900px) { .calc { padding: var(--sp-10) var(--sp-8); } }
+@media (max-width: 560px) { .calc { padding: var(--sp-8) var(--sp-5); } }
+
+.calc__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-8);
+}
+
+.calc__tab {
+  padding: 7px 18px;
+  border: 0;
+  border-radius: 21px;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: #20222c;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.calc__tab:hover { background: var(--tint); }
+.calc__tab.is-on {
+  background: var(--blue);
+  color: #fff;
+  font-weight: 700;
+}
+
+[data-theme='dark'] .calc__tab { color: var(--ink-soft); }
+[data-theme='dark'] .calc__tab.is-on { color: #0f1116; }
+
+.calc__body {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto auto;
+  gap: var(--sp-6);
+  align-items: end;
+}
+@media (max-width: 900px) { .calc__body { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .calc__body { grid-template-columns: 1fr; } }
+
+.calc__field { display: grid; gap: var(--sp-2); min-width: 0; }
+.calc__field label { font-size: var(--text-xs); font-weight: 600; color: var(--ink-faint); }
+
+/* انتخاب شیشه‌ای با فلشِ خودمان.
+
+   فلش داخل قاب است و روی هاور کمی پایین می‌رود — همان اشاره‌ی
+   کوچکی که می‌گوید اینجا گزینه‌های دیگری هم هست. */
+.calc__select { position: relative; }
+
+.calc__select select {
+  appearance: none;
+  width: 100%;
+  padding: 14px 16px;
+  padding-inline-end: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.4);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.calc__select select:hover {
+  border-color: color-mix(in srgb, var(--blue) 40%, transparent);
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.calc__caret {
+  position: absolute;
+  inset-inline-end: 14px;
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  width: 16px; height: 16px;
+  color: var(--blue);
+  pointer-events: none;
+  transition: translate 260ms var(--ease);
+}
+.calc__select:hover .calc__caret { translate: 0 -30%; }
+
+[data-theme='dark'] .calc__select select {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+[data-theme='dark'] .calc__select select:hover { background: rgba(255, 255, 255, 0.12); }
+
+@media (prefers-reduced-motion: reduce) {
+  .calc__select:hover .calc__caret { translate: 0 -50%; }
+}
+
+.calc__price { display: flex; align-items: baseline; gap: var(--sp-2); white-space: nowrap; }
+.calc__price b { font-size: var(--text-xl); font-weight: 800; color: var(--ink); }
+.calc__price span { font-size: var(--text-xs); color: var(--ink-faint); }
+
+.calc__go { height: 46px; }
+
+.calc__note {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  flex-wrap: wrap;
+}
+.calc__note p { max-width: 52ch; font-size: var(--text-sm); }
+
+/* ---------- دسترسی سریع ----------
+
+   چیدمان و ظاهر این سکشن در خودِ کامپوننت با کلاس‌های تیلویند
+   نوشته شده. اینجا فقط چیزی می‌ماند که کلاس نمی‌شود بیانش کرد:
+   تأخیر پله‌ای ظهور، که از متغیر --i می‌آید. */
+
+/* ---------- شبکه‌ی خدمات ---------- */
+
+/* بدون کارت و بدون کادر — فقط آیکون و دو خط متن.
+
+   قاب دور هر آیتم، ده آیتم را به ده جعبه تبدیل می‌کرد و همان
+   شلوغی‌ای می‌شد که قرار بود از آن فرار کنیم. آیکون هم بزرگ‌تر شد
+   چون حالا خودش باید کار جلب توجه را بکند، نه کادرش. */
+
+.svc {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--sp-12) var(--sp-6);
+}
+@media (max-width: 900px) { .svc { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px) { .svc { grid-template-columns: repeat(2, 1fr); gap: var(--sp-10) var(--sp-4); } }
+
+.svc__item {
+  text-align: center;
+  display: grid;
+  gap: var(--sp-3);
+  justify-items: center;
+  transition: translate 320ms var(--ease);
+}
+.svc__item:hover { translate: 0 -4px; }
+
+/* آیکون بدون قاب. نور آبی از پشتش باز می‌شود — همان چیزی که جای
+   کادر را می‌گیرد. */
+.svc__icon {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  background: none;
+  color: var(--blue);
+}
+.svc__icon svg {
+  width: 46px; height: 46px;
+  transition: transform 380ms var(--ease), filter 320ms var(--ease);
+}
+
+.svc__icon::after {
+  content: '';
+  position: absolute;
+  inset: -18px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--blue) 26%, transparent) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 320ms var(--ease);
+}
+
+.svc__item:hover .svc__icon::after { opacity: 1; }
+.svc__item:hover .svc__icon svg {
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--blue) 55%, transparent));
+}
+
+.svc__item b { font-size: var(--text-sm); color: var(--ink); }
+.svc__note { font-size: var(--text-xs); color: var(--ink-faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .svc__item:hover { translate: none; }
+  .svc__item:hover .svc__icon svg { transform: none; }
+}
+
+/* ---------- تصویر و متن ---------- */
+
+.mediatext {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-16);
+  align-items: center;
+}
+.mediatext--rev .mediatext__art { order: -1; }
+@media (max-width: 900px) {
+  .mediatext { grid-template-columns: 1fr; gap: var(--sp-8); }
+  .mediatext--rev .mediatext__art { order: 0; }
+}
+
+.mediatext__art { border-radius: var(--r-md); overflow: hidden; aspect-ratio: 4 / 3; background: var(--sunken); }
+.mediatext__art img { width: 100%; height: 100%; object-fit: cover; }
+.mediatext__body h2 { margin-bottom: var(--sp-3); }
+
+.steps, .points { list-style: none; margin: var(--sp-8) 0 0; padding: 0; display: grid; gap: var(--sp-6); }
+.steps li, .points li { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-4); }
+.steps b, .points b { display: block; color: var(--ink); font-size: var(--text-md); margin-bottom: 2px; }
+
+.steps__n {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: var(--r-full);
+  background: var(--blue-wash);
+  color: var(--blue);
+  font-weight: 800; font-size: var(--text-sm);
+}
+
+.points__icon {
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  border-radius: var(--r-md);
+  background: var(--blue-wash);
+  color: var(--blue);
+}
+.points__icon svg { width: 18px; height: 18px; }
+
+/* ---------- آمار ---------- */
+
+.stats-sec { padding-block: var(--sp-20); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-8); }
+@media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); gap: var(--sp-10) var(--sp-6); } }
+
+.stats__item { text-align: center; }
+.stats__head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-2);
+}
+.stats__num { font-size: var(--text-3xl); font-weight: 900; color: var(--ink); line-height: 1.2; }
+.stats__head svg { width: 26px; height: 26px; color: var(--blue); }
+.stats__title { font-size: var(--text-sm); color: var(--ink-faint); }
+
+/* ---------- نظرات ----------
+
+   ساختارش مثل نسخه‌ی قبلیِ سایت است — ستاره، نقل‌قول، نام و نقش —
+   ولی نورش آبی شده تا با پالت جدید بخواند. هاله زیر کارت می‌نشیند
+   و روی هاور بزرگ‌تر و غلیظ‌تر می‌شود.
+   ============================================================ */
+
+.review {
+  position: relative;
+  isolation: isolate;
+  margin: 0;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--sp-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  transition: translate 340ms var(--ease), border-color 340ms var(--ease),
+              box-shadow 340ms var(--ease);
+}
+
+/* هاله‌ی آبی — با box-shadow نه با المان، تا دور تا دور یکنواخت
+   بماند و لبه‌ی خودش پیدا نباشد. */
+.review {
+  box-shadow: 0 0 24px -10px color-mix(in srgb, var(--blue) 40%, transparent);
+}
+
+.review:hover {
+  translate: 0 -5px;
+  border-color: var(--blue-line);
+  box-shadow:
+    0 18px 34px -20px rgba(15, 17, 32, 0.18),
+    0 0 46px -8px color-mix(in srgb, var(--blue) 55%, transparent);
+}
+
+[data-theme='dark'] .review {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.review__stars { display: flex; gap: 3px; }
+.review__stars svg { width: 15px; height: 15px; color: var(--line); fill: var(--line); }
+.review__stars .is-on { color: var(--blue); fill: var(--blue); }
+
+.review blockquote { margin: 0; color: var(--ink-soft); font-size: var(--text-sm); }
+.review figcaption { margin-top: auto; }
+.review figcaption b { display: block; color: var(--ink); font-size: var(--text-sm); }
+
+/* ---------- مقالات ---------- */
+
+.arts__head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--sp-6); }
+@media (max-width: 560px) { .arts__head { flex-direction: column; align-items: stretch; } }
+
+.art {
+  display: flex; flex-direction: column; gap: var(--sp-3);
+  padding: 0; overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  transition: border-color var(--dur) var(--ease);
+}
+.art:hover { border-color: var(--blue-line); }
+.art__cover { display: block; aspect-ratio: 16 / 9; background: var(--sunken); overflow: hidden; }
+.art__cover img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 600ms var(--ease);
+}
+.art:hover .art__cover img { transform: scale(1.04); }
+.art .pill, .art h3, .art p, .art__meta { margin-inline: var(--sp-6); }
+.art__topic { align-self: flex-start; margin-top: var(--sp-6); }
+.art__meta { margin-bottom: var(--sp-6); }
+
+/* ---------- نوار سرویس‌ها ----------
+
+   نوار با ماسک دو طرفش محو می‌شود، وگرنه لوگوها وسط لبه‌ی صفحه
+   قیچی می‌شوند و بریده به نظر می‌رسند.
+   ============================================================ */
+
+.brands__track {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to left,
+    transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to left,
+    transparent, #000 12%, #000 88%, transparent);
+}
+
+.brands__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-16);
+  width: max-content;
+  animation: brandSlide 38s linear infinite;
+}
+
+/* روی هاور می‌ایستد — چیزی که می‌لغزد را نمی‌شود درست دید */
+.brands__track:hover .brands__row { animation-play-state: paused; }
+
+@keyframes brandSlide {
+  to { transform: translateX(50%); }
+}
+
+.brands__item {
+  flex-shrink: 0;
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  opacity: 0.75;
+  transition: opacity var(--dur) var(--ease), scale var(--dur) var(--ease);
+}
+.brands__item:hover { opacity: 1; scale: 1.1; }
+.brands__item img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+@media (prefers-reduced-motion: reduce) {
+  .brands__row { animation: none; justify-content: center; flex-wrap: wrap; width: auto; }
+}
+
+/* ---------- ظهور هنگام اسکرول ----------
+
+   پیش‌فرض «دیده‌شده» است تا اگر جاوااسکریپت اجرا نشد محتوا نامرئی
+   نماند. کلاس js-reveal را خود کامپوننت روی <html> می‌گذارد. */
+/* ---------- ظهور هنگام اسکرول ----------
+
+   پیش‌فرض «دیده‌شده» است تا اگر جاوااسکریپت اجرا نشد محتوا نامرئی
+   نماند. کلاس js-reveal را خود کامپوننت روی <html> می‌گذارد. */
+
+.reveal { opacity: 1; }
+
+.js-reveal .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 760ms var(--ease), transform 760ms var(--ease);
+}
+.js-reveal .reveal.is-in { opacity: 1; transform: none; }
+
+/* بچه‌ها پله‌ای می‌آیند نه همه با هم.
+
+   تأخیر را CSS می‌دهد نه JS: یک متغیر --i روی هر آیتم کافی است و
+   لازم نیست جاوااسکریپت تک‌تکشان را زمان‌بندی کند. پله‌ی ۶۰ میلی‌ثانیه
+   عمدی است — کمتر از آن دیده نمی‌شود، بیشتر از آن کند حس می‌شود. */
+.js-reveal .reveal .qa__card,
+.js-reveal .reveal .svc__item,
+.js-reveal .reveal .art,
+.js-reveal .reveal .review,
+.js-reveal .reveal .stats__item,
+.js-reveal .reveal .qa__other {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 620ms var(--ease), transform 620ms var(--ease);
+}
+
+.js-reveal .reveal.is-in .qa__card,
+.js-reveal .reveal.is-in .svc__item,
+.js-reveal .reveal.is-in .art,
+.js-reveal .reveal.is-in .review,
+.js-reveal .reveal.is-in .stats__item,
+.js-reveal .reveal.is-in .qa__other {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(var(--i, 0) * 60ms);
+}
+
+/* بلوک‌های تصویر و متن از پهلو می‌آیند — جهتشان با چیدمانشان
+   می‌خواند، پس حرکت به‌جای تزئین، ساختار را تکرار می‌کند. */
+.js-reveal .reveal .mediatext__body { opacity: 0; transform: translateX(20px); }
+.js-reveal .reveal .mediatext__art  { opacity: 0; transform: translateX(-20px); }
+.js-reveal .reveal .mediatext--rev .mediatext__body { transform: translateX(-20px); }
+.js-reveal .reveal .mediatext--rev .mediatext__art  { transform: translateX(20px); }
+
+.js-reveal .reveal .mediatext__body,
+.js-reveal .reveal .mediatext__art {
+  transition: opacity 800ms var(--ease), transform 800ms var(--ease);
+}
+
+.js-reveal .reveal.is-in .mediatext__body,
+.js-reveal .reveal.is-in .mediatext__art { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cta__blob, .cta__grad { animation: none; }
+  .hero__slide { transition: none; }
+  .js-reveal .reveal,
+  .js-reveal .reveal *,
+  .js-reveal .reveal.is-in * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ============================================================
+   دسترسی سریع
+
+   پس‌زمینه با تم عوض می‌شود و رنگ متن هم باید با آن عوض شود.
+   نسخه‌ی قبل متن را ثابتِ سفید گذاشته بود و در حالت روز روی
+   هاله‌های روشن ناخوانا می‌شد.
+   ============================================================ */
+
+.qa__day { display: block; }
+.qa__night { display: none; }
+
+[data-theme='dark'] .qa__day { display: none; }
+[data-theme='dark'] .qa__night { display: block; }
+
+/* ---------- متن ---------- */
+
+.qa__kicker { color: var(--blue); }
+.qa__title  { color: var(--ink); }
+
+[data-theme='dark'] .qa__kicker { color: #9fbaff; }
+[data-theme='dark'] .qa__title  { color: #fff; }
+
+/* ---------- کارت شیشه‌ای ---------- */
+
+.qa__card {
+  position: relative;
+  isolation: isolate;
+  /* روی کاغذِ روشن، شیشه باید سفیدتر و مات‌تر باشد وگرنه هاله‌های
+     پشتش متن را می‌خورند. ۷۲٪ آن‌قدری هست که رنگ از پشت حس شود و
+     آن‌قدری که متن تیره روی آن بخواند. */
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.5),
+    0 30px 70px -40px rgba(15, 17, 32, 0.3);
+  transition: translate 320ms var(--ease), box-shadow 320ms var(--ease);
+}
+
+.qa__card:hover { translate: 0 -5px; }
+
+[data-theme='dark'] .qa__card {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.12),
+    0 40px 90px -34px rgba(0, 0, 0, 0.7);
+}
+
+.qa__card-head { border-bottom: 1px solid rgba(15, 17, 32, 0.1); color: var(--ink); }
+.qa__card-glyph { color: var(--blue); }
+.qa__link { color: var(--ink-soft); }
+.qa__link:hover { color: var(--blue); }
+.qa__more { color: var(--blue); }
+
+[data-theme='dark'] .qa__card-head { border-bottom-color: rgba(255, 255, 255, 0.16); color: #fff; }
+[data-theme='dark'] .qa__card-glyph { color: #9fbaff; }
+[data-theme='dark'] .qa__link { color: rgba(255, 255, 255, 0.72); }
+[data-theme='dark'] .qa__link:hover { color: #fff; }
+[data-theme='dark'] .qa__more { color: #9fbaff; }
+
+/* ---------- ردیف خدمات دیگر ----------
+
+   خواسته: روی هاور بدرخشند و کمی بزرگ‌تر شوند. */
+
+.qa__other { color: var(--ink-soft); transition: color 300ms var(--ease); }
+.qa__other:hover { color: var(--blue); }
+[data-theme='dark'] .qa__other { color: rgba(255, 255, 255, 0.75); }
+[data-theme='dark'] .qa__other:hover { color: #fff; }
+
+.qa__other-icon {
+  position: relative;
+  isolation: isolate;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px) saturate(170%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
+  color: var(--blue);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: scale 320ms var(--ease), box-shadow 320ms var(--ease);
+}
+
+[data-theme='dark'] .qa__other-icon {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #9fbaff;
+}
+
+/* درخشش: هاله‌ی آبی از پشت باز می‌شود و خودِ خط آیکون هم می‌درخشد.
+   دولایه بودنش عمدی است — فقط بزرگ شدن، «درخشان» به نظر نمی‌رسد. */
+.qa__other-icon::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--blue) 40%, transparent) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 320ms var(--ease);
+}
+
+.qa__other:hover .qa__other-icon {
+  scale: 1.12;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 0 24px -4px color-mix(in srgb, var(--blue) 55%, transparent);
+}
+.qa__other:hover .qa__other-icon::after { opacity: 1; }
+.qa__other:hover .qa__other-icon svg {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--blue) 60%, transparent));
+}
+.qa__other-icon svg { transition: filter 320ms var(--ease); }
+
+@media (prefers-reduced-motion: reduce) {
+  .qa__card:hover, .qa__other:hover .qa__other-icon { translate: none; scale: 1; }
+}
+
+
+/* ---------- فراخوان ---------- */
+
+.cta__box {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--r-md);
+  padding: var(--sp-20) var(--sp-16);
+  background: var(--blue-wash);
+}
+@media (max-width: 640px) { .cta__box { padding: var(--sp-14) var(--sp-6); } }
+
+.cta__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-10);
+  flex-wrap: wrap;
+}
+.cta__text { max-width: 56ch; }
+.cta__kicker {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--blue);
+  margin-bottom: var(--sp-3);
+}
+.cta__text h2 { margin-bottom: var(--sp-3); }
+.cta__actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+
+/* گرادیانت لغزان — خودِ گرادیانت جابه‌جا می‌شود نه یک المان.
+   background-size دو برابر است و background-position انیمیت، پس
+   رنگ‌ها داخل قاب می‌لغزند بدون اینکه چیزی بازچینش بدهد. */
+.cta__grad {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: linear-gradient(
+    115deg,
+    #e8f0ff 0%,
+    #dbe7ff 22%,
+    #eef2ff 44%,
+    #dde9ff 62%,
+    #e6eeff 80%,
+    #e8f0ff 100%
+  );
+  background-size: 260% 260%;
+  animation: ctaGrad 26s ease-in-out infinite alternate;
+}
+
+[data-theme='dark'] .cta__box { background: rgba(23, 29, 46, 0.9); }
+[data-theme='dark'] .cta__grad {
+  background: linear-gradient(115deg,
+    #141a2b 0%, #1b2340 24%, #161d31 48%, #1d2647 70%, #141a2b 100%);
+  background-size: 260% 260%;
+}
+
+@keyframes ctaGrad {
+  0%   { background-position:   0% 50%; }
+  50%  { background-position: 100% 20%; }
+  100% { background-position:  40% 90%; }
+}
+
+.cta__blobs { position: absolute; inset: 0; z-index: -1; filter: blur(52px); opacity: 0.45; }
+
+.cta__blob {
+  position: absolute;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  animation:
+    float var(--t, 15s) ease-in-out infinite,
+    morph calc(var(--t, 15s) * 1.4) ease-in-out infinite,
+    turn calc(var(--t, 15s) * 3.1) linear infinite;
+}
+.cta__blob--1 { left: 14%; top: 28%; width: 26vmin; background: #8fb0ff; --t: 13s; }
+.cta__blob--2 { left: 80%; top: 34%; width: 20vmin; background: #b7ccff; --t: 17s; }
+.cta__blob--3 { left: 56%; top: 84%; width: 28vmin; background: #7ea0ee; --t: 15s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cta__grad, .cta__blob { animation: none; }
+  .review:hover { translate: none; }
+}
+
+
+/* ============================================================
+   تخفیف‌های امروز
+
+   هر کارت رنگ محصول خودش را می‌گیرد و همان رنگ در نشانِ تخفیف،
+   هاله‌ی زیر کارت و قیمت تکرار می‌شود — یک رنگ در سه جا، پس کارت
+   یکپارچه دیده می‌شود نه چهل‌تکه.
+   ============================================================ */
+
+.deals__head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--sp-6); }
+@media (max-width: 560px) { .deals__head { flex-direction: column; align-items: stretch; } }
+
+.deals__kicker-icon { width: 13px; height: 13px; display: inline-block; vertical-align: -2px; margin-inline-end: 4px; }
+
+.deals__grid { grid-template-columns: repeat(4, 1fr); }
+@media (min-width: 768px) and (max-width: 1080px) { .deals__grid { grid-template-columns: repeat(2, 1fr); } }
+
+.deal {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: translate 340ms var(--ease), border-color 340ms var(--ease),
+              box-shadow 340ms var(--ease);
+}
+
+[data-theme='dark'] .deal {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* هاله از رنگ خودِ محصول می‌آید. با box-shadow نه با المان، تا
+   دور تا دور یکنواخت بماند و لبه‌ی خودش پیدا نباشد. */
+.deal:hover {
+  translate: 0 -6px;
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow:
+    0 20px 36px -22px rgba(15, 17, 32, 0.2),
+    0 0 44px -10px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.deal__off {
+  position: absolute;
+  inset-block-start: var(--sp-4);
+  inset-inline-start: var(--sp-4);
+  z-index: 2;
+  padding: 5px 11px;
+  border-radius: var(--r-full);
+  background: color-mix(in srgb, var(--accent) 90%, #000);
+  color: #fff;
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+.deal__art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  background: color-mix(in srgb, var(--accent) 8%, var(--tint));
+  overflow: hidden;
+}
+.deal__art img {
+  width: 58%;
+  height: auto;
+  object-fit: contain;
+  transition: scale 500ms var(--ease);
+}
+.deal:hover .deal__art img { scale: 1.08; }
+
+.deal__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-6);
+}
+
+.deal__name { font-size: var(--text-md); font-weight: 800; color: var(--ink); }
+.deal__note {
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  /* دو خط، بعدش سه‌نقطه — وگرنه کارت‌ها قدهای مختلف پیدا می‌کنند */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.deal__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-xs);
+  color: var(--ok);
+}
+.deal__meta svg { width: 12px; height: 12px; }
+
+.deal__prices {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}
+[data-theme='dark'] .deal__prices { border-top-color: rgba(255, 255, 255, 0.1); }
+
+.deal__was { font-size: var(--text-xs); color: var(--ink-faint); }
+.deal__now { font-size: var(--text-lg); font-weight: 900; color: var(--ink); }
+.deal__unit { font-size: var(--text-xs); color: var(--ink-faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .deal:hover { translate: none; }
+  .deal:hover .deal__art img { scale: 1; }
+}

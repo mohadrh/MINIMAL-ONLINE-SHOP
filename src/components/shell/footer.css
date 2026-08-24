@@ -1,0 +1,84 @@
+/* ============================================================
+   فوتر — تنها ناحیه‌ی تیره‌ی صفحه به‌جز نوار آبی
+   ============================================================ */
+
+/* فوتر در روز روشن است و در شب تیره — مثل بقیه‌ی سایت.
+
+   نسخه‌ی اول ثابت تیره بود، به این استدلال که «فوتر همیشه تیره
+   است». ولی روی صفحه‌ی سفیدِ آرام، یک بلوکِ سیاهِ بلند ته صفحه
+   همان تضادِ تندی است که قرار بود کنار برود. */
+.ft {
+  background: var(--tint);
+  color: var(--ink-soft);
+  border-top: 1px solid var(--line);
+  padding-block: var(--sp-20) var(--sp-8);
+}
+
+[data-theme='dark'] .ft {
+  background: #0d1017;
+  color: #98a1b3;
+  border-top-color: rgba(255, 255, 255, 0.07);
+}
+
+.ft__grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: var(--sp-10);
+  padding-bottom: var(--sp-12);
+  border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 900px) { .ft__grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .ft__grid { grid-template-columns: 1fr; gap: var(--sp-8); } }
+
+.ft__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+.ft__logo b { color: var(--ink); font-size: var(--text-base); letter-spacing: 0.04em; }
+
+.ft__brand p { max-width: 40ch; line-height: var(--leading); }
+
+.ft__social { display: flex; gap: var(--sp-2); margin-top: var(--sp-5); }
+.ft__social a {
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  border-radius: var(--r);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.ft__social a:hover { background: var(--blue); color: #fff; }
+.ft__social svg { width: 16px; height: 16px; }
+
+.ft__col { display: flex; flex-direction: column; gap: var(--sp-3); }
+.ft__col h4 { color: var(--ink); font-size: var(--text-sm); margin-bottom: var(--sp-1); }
+.ft__col a {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  transition: color var(--dur) var(--ease);
+}
+.ft__col a:hover { color: var(--blue); }
+
+.ft__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--sp-6);
+  color: var(--ink-faint);
+}
+
+/* در شب همان رنگ‌های تیره‌ی قبلی برمی‌گردند */
+[data-theme='dark'] .ft__grid { border-bottom-color: rgba(255, 255, 255, 0.07); }
+[data-theme='dark'] .ft__logo b,
+[data-theme='dark'] .ft__col h4 { color: #fff; }
+[data-theme='dark'] .ft__social a {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: transparent;
+  color: #98a1b3;
+}
+[data-theme='dark'] .ft__col a { color: #98a1b3; }
+[data-theme='dark'] .ft__bottom { color: #6b7488; }

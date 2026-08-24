@@ -1,0 +1,397 @@
+/* ============================================================
+   نوبار
+
+   تنها جایی از سایت که سایه دارد، و همان هم چهار درصد است.
+   ============================================================ */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line-soft);
+  box-shadow: var(--shadow-nav);
+}
+
+.nav__inner {
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+}
+
+/* ---------- برند ---------- */
+
+.nav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-shrink: 0;
+}
+.nav__brand b {
+  display: block;
+  font-size: var(--text-base);
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+.nav__brand small {
+  display: block;
+  font-size: 10px;
+  color: var(--ink-faint);
+  margin-top: 1px;
+}
+
+/* ---------- لینک‌ها ---------- */
+
+.nav__links {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  margin-inline-end: auto;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.nav__links a {
+  padding-block: var(--sp-2);
+  transition: color var(--dur) var(--ease);
+}
+.nav__links a:hover { color: var(--blue); }
+
+@media (max-width: 1080px) { .nav__links { display: none; } }
+
+/* ---------- کنش‌ها ---------- */
+
+.nav__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-inline-start: auto;
+}
+
+/* آیکون‌های نوبار — نورِ آبی روی هاور.
+
+   به‌جای پس‌زمینه‌ی توپر، یک لکه‌ی نور از پشت آیکون بالا می‌آید:
+   گرادیانت شعاعی که از مرکز باز می‌شود، به‌علاوه‌ی یک درخشش نرم
+   دور خودِ آیکون. حس «نور افتاده روی آیکون» از همین دولایگی می‌آید
+   — سطحِ روشن پشت، و خطِ درخشانِ جلو. */
+.nav__icon {
+  position: relative;
+  isolation: isolate;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  border-radius: var(--r-full);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease);
+}
+
+.nav__icon::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at 50% 45%,
+    color-mix(in srgb, var(--blue) 26%, transparent) 0%,
+    color-mix(in srgb, var(--blue) 12%, transparent) 45%,
+    transparent 72%
+  );
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 260ms var(--ease), transform 320ms var(--ease);
+}
+
+.nav__icon:hover::before,
+.nav__icon:focus-visible::before { opacity: 1; transform: scale(1); }
+
+.nav__icon:hover,
+.nav__icon:focus-visible { color: var(--blue); }
+
+/* خودِ خط آیکون هم کمی می‌درخشد — بدون این، فقط پس‌زمینه عوض
+   می‌شود و نور به نظر نمی‌رسد. */
+.nav__icon svg {
+  width: 18px;
+  height: 18px;
+  transition: filter 260ms var(--ease);
+}
+.nav__icon:hover svg,
+.nav__icon:focus-visible svg {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--blue) 55%, transparent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav__icon::before { transition: opacity 120ms linear; transform: scale(1); }
+}
+.nav__icon--ghost { pointer-events: none; }
+
+.nav__cta { margin-inline-start: var(--sp-3); }
+@media (max-width: 560px) { .nav__cta { display: none; } }
+
+.nav__burger { display: none; }
+@media (max-width: 1080px) { .nav__burger { display: grid; } }
+
+/* ---------- منوی موبایل ---------- */
+
+.nav__mobile {
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+  padding-block: var(--sp-4);
+}
+.nav__mobile .container { display: flex; flex-direction: column; }
+.nav__mobile a {
+  padding-block: var(--sp-3);
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+.nav__mobile a:last-child { border-bottom: 0; }
+.nav__mobile a:hover { color: var(--blue); }
+
+/* ============================================================
+   ابزارهای شناور — بازگشت به بالا، چت، دستیار خرید
+   ============================================================ */
+
+.stop, .chatfab, .assistfab {
+  position: fixed;
+  z-index: 60;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+  box-shadow: var(--shadow-nav);
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease),
+              transform var(--dur) var(--ease);
+}
+.stop:hover, .chatfab:hover, .assistfab:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  transform: translateY(-2px);
+}
+.stop svg, .chatfab svg, .assistfab svg { width: 19px; height: 19px; }
+
+/* چیدمان ستونی در گوشه‌ی پایین — هر کدام یک پله بالاتر */
+.stop      { inset-inline-start: var(--sp-6); bottom: var(--sp-6); }
+.chatfab   { inset-inline-end: var(--sp-6);   bottom: var(--sp-6);  background: var(--blue); border-color: var(--blue); color: #fff; }
+.chatfab:hover { background: var(--blue-hover); border-color: var(--blue-hover); color: #fff; }
+.assistfab { inset-inline-end: var(--sp-6);   bottom: calc(var(--sp-6) + 56px); }
+
+
+/* ============================================================
+   دکمه‌ی دستیار خرید
+
+   قرصِ شیشه‌ای با چهار جرقه که روی هاور پله‌ای باز می‌شوند.
+   جرقه‌ها با clip-path کشیده می‌شوند نه با تصویر — یک ستاره‌ی
+   هشت‌پر که از scale(0) باز می‌شود و کمی می‌چرخد.
+   ============================================================ */
+
+.assistbtn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-inline-start: var(--sp-3);
+  padding: 11px 22px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--blue);
+  background: var(--blue);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 350ms var(--ease), box-shadow 350ms var(--ease);
+}
+
+[data-theme='dark'] .assistbtn { color: #0f1116; }
+
+.assistbtn__glyph {
+  font-style: normal;
+  font-size: 1.1em;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.assistbtn__spark {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  z-index: 1;
+  pointer-events: none;
+  transform: scale(0);
+  background: linear-gradient(140deg, #fff, #7cc4ff);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+.assistbtn__spark--sm { width: 10px; height: 10px; }
+
+.assistbtn:hover,
+.assistbtn:focus-visible {
+  background: var(--blue-hover);
+  border-color: var(--blue-hover);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 0 30px -6px color-mix(in srgb, var(--blue) 60%, transparent),
+    0 0 60px -18px #7c5cff;
+}
+
+.assistbtn:hover .assistbtn__spark,
+.assistbtn:focus-visible .assistbtn__spark {
+  animation: sparkPop 0.75s cubic-bezier(0.2, 0.9, 0.3, 1.4) calc(var(--i) * 90ms) both;
+}
+
+@keyframes sparkPop {
+  0%   { transform: scale(0) rotate(0); }
+  60%  { transform: scale(1.25) rotate(40deg); }
+  100% { transform: scale(1) rotate(45deg); }
+}
+
+@media (max-width: 560px) { .assistbtn { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .assistbtn:hover .assistbtn__spark,
+  .assistbtn:focus-visible .assistbtn__spark {
+    animation: none;
+    transform: scale(1) rotate(45deg);
+  }
+}
+
+/* ============================================================
+   پنل دستیار
+   ============================================================ */
+
+.assist__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  border: 0;
+  background: rgba(10, 14, 26, 0.45);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  cursor: pointer;
+}
+
+.assist {
+  position: fixed;
+  z-index: 71;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: -50% -50%;
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: min(40rem, calc(100vh - 2rem));
+  overflow-y: auto;
+  padding: var(--sp-8);
+  border-radius: 28px;
+  color: var(--ink);
+  background: color-mix(in oklab, var(--paper) 82%, transparent);
+  border: 1px solid rgba(15, 17, 32, 0.12);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.5),
+    0 40px 90px -34px rgba(0, 0, 0, 0.4);
+  animation: sheetIn 320ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+[data-theme='dark'] .assist {
+  background: rgba(26, 30, 42, 0.82);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 40px 90px -34px rgba(0, 0, 0, 0.8);
+}
+
+.assist__close {
+  position: absolute;
+  inset-block-start: var(--sp-5);
+  inset-inline-end: var(--sp-5);
+  width: 36px; height: 36px;
+  display: grid; place-items: center;
+  border-radius: var(--r-full);
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.assist__close:hover { color: var(--blue); border-color: var(--blue); }
+.assist__close svg { width: 16px; height: 16px; }
+
+.assist__kicker { font-size: var(--text-xs); font-weight: 700; color: var(--blue); }
+.assist__title { margin: var(--sp-2) 0 var(--sp-6); font-size: var(--text-xl); }
+
+.assist__q { margin-bottom: var(--sp-5); }
+.assist__label {
+  display: block;
+  margin-bottom: var(--sp-3);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--ink-faint);
+}
+
+.assist__chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.assist__chip {
+  padding: 7px 16px;
+  border-radius: 21px;
+  border: 1px solid var(--line);
+  background: none;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+}
+.assist__chip:hover { border-color: var(--blue-line); color: var(--ink); }
+.assist__chip.is-on {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+  font-weight: 700;
+}
+
+.assist__results {
+  display: grid;
+  gap: var(--sp-2);
+  margin-block: var(--sp-6) var(--sp-5);
+  padding-block-start: var(--sp-5);
+  border-block-start: 1px solid var(--line);
+}
+
+.assist__item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  transition: background var(--dur) var(--ease);
+}
+.assist__item:hover { background: var(--tint); }
+.assist__item-name { font-size: var(--text-sm); font-weight: 600; color: var(--ink); }
+.assist__item-price { font-size: var(--text-xs); color: var(--ink-faint); }
+.assist__item-go { width: 15px; height: 15px; color: var(--blue); }
+
+.assist__empty { font-size: var(--text-sm); color: var(--ink-faint); }
+
+.assist__all {
+  display: block;
+  text-align: center;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--blue);
+}

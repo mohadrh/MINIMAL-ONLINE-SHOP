@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+
+/* توکن‌ها اول از همه — بقیه‌ی فایل‌ها به آن‌ها تکیه دارند */
+@import '../styles/theme.css';
+@import '../styles/tokens.css';
+@import '../styles/base.css';
+@import '../styles/effects.css';
+
+/* کامپوننت‌ها */
+@import '../components/shell/nav.css';
+@import '../components/shell/footer.css';
+@import '../components/home/home.css';

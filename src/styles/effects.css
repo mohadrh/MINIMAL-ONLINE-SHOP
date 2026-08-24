@@ -1,0 +1,305 @@
+/* ============================================================
+   افکت‌ها
+
+   سه چیز اینجاست: آسمان شب، شیشه‌ی دکمه و کارت، و حرکت هاور.
+
+   قاعده‌ای که همه‌جا رعایت شده: هر افکت فقط جایی می‌آید که پشتش
+   چیزی برای دیدن هست. شیشه روی سفیدِ خالی معنی ندارد — چیزی از
+   پشتش رد نمی‌شود که بشکند. برای همین کارت شیشه‌ای فقط روی نوار
+   آبی و در حالت شب فعال است، نه روی هر سطح سفید.
+   ============================================================ */
+
+/* ============================================================
+   دکمه‌ی شیشه‌ای
+
+   «از حالت مستطیل دربیاید» — گوشه‌ها قرصی می‌شوند و یک درخششِ
+   مورب روی سطح می‌لغزد. خودِ درخشش با transform حرکت می‌کند نه با
+   background-position، چون transform روی GPU می‌رود و باعث
+   بازچینش نمی‌شود.
+   ============================================================ */
+
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--r-full);
+}
+
+/* لایه‌ی درخشش — بیرون از قاب می‌ایستد و روی هاور از آن رد می‌شود */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.42) 48%,
+    transparent 66%
+  );
+  transform: translateX(-130%);
+  transition: transform 720ms var(--ease);
+}
+
+.btn:hover::after,
+.btn:focus-visible::after { transform: translateX(130%); }
+
+/* رینگ داخلی — همان چیزی که به سطح ضخامت می‌دهد */
+.btn--primary {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.btn--ghost {
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* بلند شدن ریز روی هاور — روی دکمه، نه روی متن */
+.btn { transition: background var(--dur) var(--ease),
+                   border-color var(--dur) var(--ease),
+                   color var(--dur) var(--ease),
+                   translate 220ms var(--ease); }
+.btn:hover { translate: 0 -2px; }
+.btn:active { translate: 0 0; }
+
+/* ============================================================
+   حرکت هاور
+
+   هر نوع باکس حرکت خودش را دارد، ولی همه‌شان از یک خانواده‌اند:
+   بلند شدن کم + روشن شدن لبه. تفاوتشان در جزئیاتِ داخل است.
+   ============================================================ */
+
+.qa__card, .svc__item, .art, .review {
+  transition: translate 320ms var(--ease),
+              border-color 320ms var(--ease),
+              background 320ms var(--ease);
+}
+
+.qa__card:hover { translate: 0 -5px; }
+.svc__item:hover { translate: 0 -5px; }
+.art:hover { translate: 0 -4px; }
+
+/* آیکون داخل کارت هم کمی جان می‌گیرد */
+.qa__card-head svg,
+.qa__card:hover .qa__card-head svg { transform: scale(1.1) rotate(-4deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sky__stars, .sky__meteor, .sky__nebula { animation: none; }
+  .sky__meteor { opacity: 0.5; }
+  .btn::after { display: none; }
+  .btn:hover, .qa__card:hover, .svc__item:hover, .art:hover { translate: none; }
+  .qa__card:hover .qa__card-head svg,
+}
+
+/* ============================================================
+   لودر
+
+   نقطه دور شکل می‌چرخد و خطِ شکل هم‌زمان کشیده و جمع می‌شود.
+   طولِ خط با stroke-dasharray عوض می‌شود نه با تغییر مسیر — مرورگر
+   فقط الگوی خط‌چین را می‌لغزاند و هندسه دوباره حساب نمی‌شود.
+   ============================================================ */
+
+.loader {
+  --path: var(--line);
+  --dot: var(--blue);
+  --dur: 3s;
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 44px;
+}
+
+.loader__sr {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.loader::before {
+  content: '';
+  position: absolute;
+  top: 37px;
+  left: 19px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dot);
+  transform: translate(-18px, -18px);
+  animation: loadDotSquare var(--dur) cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+}
+
+.loader svg { display: block; width: 100%; height: 100%; }
+
+.loader svg rect,
+.loader svg polygon,
+.loader svg circle {
+  fill: none;
+  stroke: var(--path);
+  stroke-width: 9px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.loader--circle svg circle {
+  stroke-dasharray: 150 50 150 50;
+  stroke-dashoffset: 75;
+  animation: loadPathCircle var(--dur) cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+}
+
+.loader--square svg rect {
+  stroke-dasharray: 192 64 192 64;
+  stroke-dashoffset: 0;
+  animation: loadPathSquare var(--dur) cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+}
+
+.loader--triangle { width: 48px; }
+.loader--triangle::before {
+  left: 21px;
+  transform: translate(-10px, -18px);
+  animation: loadDotTriangle var(--dur) cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+}
+.loader--triangle svg polygon {
+  stroke-dasharray: 145 76 145 76;
+  stroke-dashoffset: 0;
+  animation: loadPathTriangle var(--dur) cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+}
+
+@keyframes loadPathCircle {
+  25%  { stroke-dashoffset: 125; }
+  50%  { stroke-dashoffset: 175; }
+  75%  { stroke-dashoffset: 225; }
+  100% { stroke-dashoffset: 275; }
+}
+
+@keyframes loadPathSquare {
+  25%  { stroke-dashoffset: 64; }
+  50%  { stroke-dashoffset: 128; }
+  75%  { stroke-dashoffset: 192; }
+  100% { stroke-dashoffset: 256; }
+}
+
+@keyframes loadPathTriangle {
+  33%  { stroke-dashoffset: 74; }
+  66%  { stroke-dashoffset: 147; }
+  100% { stroke-dashoffset: 221; }
+}
+
+@keyframes loadDotSquare {
+  25%  { transform: translate(0, 0); }
+  50%  { transform: translate(18px, -18px); }
+  75%  { transform: translate(0, -36px); }
+  100% { transform: translate(-18px, -18px); }
+}
+
+@keyframes loadDotTriangle {
+  33%  { transform: translate(0, 0); }
+  66%  { transform: translate(10px, -18px); }
+  100% { transform: translate(-10px, -18px); }
+}
+
+.loader-block {
+  display: grid;
+  justify-items: center;
+  gap: var(--sp-4);
+  padding-block: var(--sp-20);
+}
+.loader-block__text { font-size: var(--text-sm); color: var(--ink-faint); }
+
+@media (prefers-reduced-motion: reduce) {
+  .loader::before,
+  .loader svg circle,
+  .loader svg rect,
+  .loader svg polygon { animation: none; }
+}
+
+
+/* ============================================================
+   هاله‌ی متحرک
+
+   سه حرکت هم‌زمان و عمداً با دوره‌های نامضرب:
+
+     float — جابه‌جایی. این همان چیزی است که واقعاً دیده می‌شود.
+     morph — تغییر شکل. روی لکه‌ی بلورشده ظریف است، ولی جلوی
+             «دایره‌ی کامل» بودن را می‌گیرد.
+     turn  — چرخش. چون گرادیانت مخروطی است، رنگ هم می‌چرخد.
+
+   نسخه‌ی اول فقط morph و turn داشت با دوره‌های ۲۲ و ۵۰ ثانیه.
+   فنی درست بود ولی هیچ‌کس حرکتی نمی‌دید: لکه سر جایش می‌ماند و
+   فقط لبه‌های محوش کمی تغییر شکل می‌داد.
+   ============================================================ */
+
+.morphblob {
+  animation:
+    float var(--t, 14s) ease-in-out infinite,
+    morph calc(var(--t, 14s) * 1.4) ease-in-out infinite,
+    turn calc(var(--t, 14s) * 3.1) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .morphblob { animation: none; }
+}
+
+
+/* ============================================================
+   نورِ دنبال‌کننده‌ی نشانگر
+
+   مختصات را CursorLight.tsx می‌نویسد (--lx / --ly) و روشن/خاموش
+   بودن را --lon. ظاهر تماماً اینجاست.
+
+   لکه روی ::after می‌نشیند نه ::before: ::before جای رینگ و
+   بازتاب است و اگر هر دو را یک شبه‌المان بگیرد، نمی‌شود مستقل
+   محوشان کرد.
+
+   pointer-events: none حیاتی است — بدون آن، لکه روی خودِ کارت
+   می‌افتد و هاورِ لینک‌های داخلش را می‌خورد.
+   ============================================================ */
+
+.deal, .review, .qa__card, .art {
+  --lx: 50%;
+  --ly: 50%;
+  --lon: 0;
+  position: relative;
+  isolation: isolate;
+}
+
+.deal::after,
+.review::after,
+.qa__card::after,
+.art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    22rem 22rem at var(--lx) var(--ly),
+    color-mix(in srgb, var(--accent, var(--blue)) 22%, transparent) 0%,
+    color-mix(in srgb, var(--accent, var(--blue)) 8%, transparent) 34%,
+    transparent 68%
+  );
+  opacity: var(--lon, 0);
+  transition: opacity 420ms var(--ease);
+}
+
+/* روی نوار آسمان، نور باید سفیدتر باشد وگرنه روی شیشه‌ی تیره
+   دیده نمی‌شود. */
+[data-theme='dark'] .qa__card::after,
+.qa__card::after {
+  background: radial-gradient(
+    22rem 22rem at var(--lx) var(--ly),
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.06) 34%,
+    transparent 68%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deal::after, .review::after, .qa__card::after, .art::after { display: none; }
+}

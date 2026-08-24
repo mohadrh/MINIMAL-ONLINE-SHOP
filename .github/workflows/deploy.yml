@@ -1,0 +1,72 @@
+# انتشار خودکار روی GitHub Pages
+#
+# هر بار که چیزی روی شاخه‌ی main پوش شود، این گردش‌کار سایت را
+# می‌سازد و منتشر می‌کند. بیلد روی سرور گیت‌هاب انجام می‌شود، پس
+# لازم نیست پوشه‌ی خروجی را در مخزن نگه داریم.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # امکان اجرای دستی از تب Actions
+  workflow_dispatch:
+
+# دسترسی لازم برای انتشار
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# اگر چند پوش پشت سر هم آمد، فقط آخری منتشر شود
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: نصب وابستگی‌ها
+        run: npm ci
+
+      - name: ساخت خروجی ایستا
+        env:
+          STATIC_EXPORT: '1'
+          # نام مخزن، چون سایت زیر همین زیرمسیر منتشر می‌شود.
+          # اگر بعداً دامنه‌ی اختصاصی وصل شد، این خط برداشته می‌شود.
+          NEXT_PUBLIC_BASE_PATH: '/MINIMAL-ONLINE-SHOP'
+        run: npm run build
+
+      # فایل خالی .nojekyll لازم است: بدون آن گیت‌هاب پوشه‌های
+      # شروع‌شده با زیرخط را نادیده می‌گیرد و کل _next/ حذف می‌شود.
+      - name: افزودن nojekyll
+        run: touch out/.nojekyll
+
+      - uses: actions/configure-pages@v5
+        with:
+          # خودِ گردش‌کار Pages را روشن می‌کند و روی حالت Actions
+          # می‌گذارد. بدون این، اگر تنظیم دستی انجام نشده باشد بیلد
+          # با «Get Pages site failed» می‌شکند.
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,650 @@
+/* ============================================================
+   کاتالوگ فونیکس شاپ
+   افزودن دسته یا محصول جدید فقط یعنی افزودن یک عضو به آرایه —
+   هیچ کامپوننتی دست نمی‌خوره. همین ساختار خروجی ووکامرس هم خواهد بود.
+   ============================================================ */
+
+export type CategorySlug = 'ai' | 'creative' | 'social' | 'education' | 'gaming';
+
+/** بعد از پرداخت چه اتفاقی می‌افته */
+export type FulfillmentMode =
+  | 'stock_code'      // کد از انبار
+  | 'stock_account'   // یوزر/پسورد از انبار
+  | 'upgrade_on_user' // ارتقای اکانت خودِ مشتری
+  | 'api_topup'       // شارژ خودکار اکانت مشتری
+  | 'manual';
+
+export interface RequiredInput {
+  key: string;
+  label: string;
+  hint?: string;
+  type: 'text' | 'email' | 'number';
+  pattern?: string;
+  example?: string;
+}
+
+export interface Variant {
+  id: string;
+  label: string;
+  price: number;          // تومان
+  compareAt?: number;
+  stock: number | null;   // null = بدون محدودیت انبار
+  isDefault?: boolean;
+}
+
+export interface Product {
+  id: string;
+  slug: string;
+  title: string;
+  englishTitle: string;
+  brand: string;
+  category: CategorySlug;
+  fulfillment: FulfillmentMode;
+  requiredInputs: RequiredInput[];
+  deliveryEstimate: string;
+  warrantyLabel: string;
+  variants: Variant[];
+  media: { thumbnail: string; cover?: string; cutout?: string; accent: string };
+  /** پلتفرم‌ها — روی کارت محصول نمایش داده می‌شود. برای اشتراک‌های
+      نرم‌افزاری معمولاً Web/iOS/Android است، برای بازی کنسول‌ها. */
+  platforms?: string[];
+  shortDescription: string;
+  description: string;
+  features: string[];
+  notes?: string[];
+  /** سوالات پرتکرارِ همین محصول — در ووکامرس متای محصول می‌شود */
+  faq?: { q: string; a: string }[];
+  rating: number;
+  reviewsCount: number;
+  salesCount: number;
+  badges: ('hot' | 'new' | 'bestseller' | 'limited')[];
+  /** برچسب‌های تاکسونومی — کلیدهای TAGS. در ووکامرس product_tag می‌شوند */
+  tags?: string[];
+}
+
+/* ---------------------------------------------------------------
+   تاکسونومی برچسب‌ها
+
+   دسته‌بندی می‌گوید محصول «چیست»؛ برچسب می‌گوید «چه ویژگی‌هایی دارد».
+   همین تفاوت اجازه می‌دهد کسی که دنبال «تحویل آنی» یا «بازی ترسناک»
+   است، بدون دانستن اسم محصول پیدایش کند.
+
+   گروه‌بندی برای رابط کاربری است: فیلترها گروه‌به‌گروه نشان داده
+   می‌شوند، نه یک فهرست بلند بی‌سر و ته.
+--------------------------------------------------------------- */
+
+export type TagGroup = 'delivery' | 'platform' | 'genre' | 'usage' | 'status';
+
+export interface Tag {
+  slug: string;
+  label: string;
+  group: TagGroup;
+  /** توضیح کوتاه — روی هاور و در صفحه‌ی برچسب استفاده می‌شود */
+  hint?: string;
+}
+
+export const TAG_GROUP_LABELS: Record<TagGroup, string> = {
+  delivery: 'نوع تحویل',
+  platform: 'پلتفرم',
+  genre: 'سبک بازی',
+  usage: 'به چه کار می‌آید',
+  status: 'وضعیت',
+};
+
+export const TAGS: Tag[] = [
+  // ---- نوع تحویل ----
+  { slug: 'instant', label: 'تحویل آنی', group: 'delivery', hint: 'بلافاصله بعد از پرداخت تحویل می‌شود' },
+  { slug: 'upgrade-on-account', label: 'ارتقای اکانت خودت', group: 'delivery', hint: 'روی حساب شخصی خودت فعال می‌شود، بدون رمز' },
+  { slug: 'capacity', label: 'اکانت ظرفیتی', group: 'delivery', hint: 'بین چند نفر تقسیم می‌شود، ارزان‌تر' },
+  { slug: 'private-account', label: 'اکانت اختصاصی', group: 'delivery', hint: 'کامل مال خودت، بدون شریک' },
+  { slug: 'preorder', label: 'پیش‌فروش', group: 'delivery', hint: 'قبل از عرضه رزرو می‌شود' },
+
+  // ---- پلتفرم ----
+  { slug: 'ps5', label: 'PlayStation 5', group: 'platform' },
+  { slug: 'ps4', label: 'PlayStation 4', group: 'platform' },
+  { slug: 'pc', label: 'کامپیوتر', group: 'platform' },
+  { slug: 'xbox', label: 'Xbox', group: 'platform' },
+  { slug: 'web', label: 'مرورگر', group: 'platform' },
+  { slug: 'mobile', label: 'موبایل', group: 'platform' },
+
+  // ---- سبک بازی ----
+  { slug: 'shooter', label: 'شوتر', group: 'genre' },
+  { slug: 'action-adventure', label: 'اکشن ماجراجویی', group: 'genre' },
+  { slug: 'rpg', label: 'نقش‌آفرینی', group: 'genre' },
+  { slug: 'sports', label: 'ورزشی', group: 'genre' },
+  { slug: 'horror', label: 'ترسناک', group: 'genre' },
+  { slug: 'open-world', label: 'جهان باز', group: 'genre' },
+  { slug: 'story-driven', label: 'داستان‌محور', group: 'genre' },
+  { slug: 'online', label: 'آنلاین', group: 'genre' },
+  { slug: 'single-player', label: 'تک‌نفره', group: 'genre' },
+  { slug: 'roguelike', label: 'روگ‌لایک', group: 'genre' },
+  { slug: 'stealth', label: 'مخفی‌کاری', group: 'genre' },
+
+  // ---- کاربرد ----
+  { slug: 'writing', label: 'نوشتن و ترجمه', group: 'usage' },
+  { slug: 'coding', label: 'کدنویسی', group: 'usage' },
+  { slug: 'design', label: 'طراحی گرافیک', group: 'usage' },
+  { slug: 'video-editing', label: 'ادیت ویدیو', group: 'usage' },
+  { slug: 'image-gen', label: 'تولید تصویر', group: 'usage' },
+  { slug: 'research', label: 'تحقیق و جست‌وجو', group: 'usage' },
+  { slug: 'language-learning', label: 'یادگیری زبان', group: 'usage' },
+  { slug: 'messaging', label: 'پیام‌رسان', group: 'usage' },
+  { slug: 'ui-design', label: 'طراحی رابط کاربری', group: 'usage' },
+
+  // ---- وضعیت ----
+  { slug: 'new-release', label: 'تازه رسیده', group: 'status' },
+  { slug: 'bestseller', label: 'پرفروش', group: 'status' },
+  { slug: 'limited-stock', label: 'موجودی محدود', group: 'status' },
+  { slug: 'on-sale', label: 'تخفیف‌دار', group: 'status' },
+  { slug: 'budget', label: 'مقرون‌به‌صرفه', group: 'status' },
+];
+
+export const getTag = (slug: string) => TAGS.find((t) => t.slug === slug);
+
+/** برچسب‌های یک محصول، به ترتیب گروه‌ها */
+export const getProductTags = (p: Product): Tag[] => {
+  const order: TagGroup[] = ['status', 'delivery', 'genre', 'usage', 'platform'];
+  return (p.tags ?? [])
+    .map(getTag)
+    .filter((t): t is Tag => Boolean(t))
+    .sort((a, b) => order.indexOf(a.group) - order.indexOf(b.group));
+};
+
+export interface Category {
+  slug: CategorySlug;
+  title: string;
+  tagline: string;
+  icon: string;
+  accent: string;
+  order: number;
+}
+
+/* ---------------------------------------------------------------
+   دسته‌بندی‌ها
+--------------------------------------------------------------- */
+
+export const CATEGORIES: Category[] = [
+  {
+    slug: 'ai',
+    title: 'هوش مصنوعی',
+    tagline: 'دستیارهای گفتگو و ابزارهای تولید محتوا',
+    icon: 'sparkles',
+    accent: '#e8862e',
+    order: 1,
+  },
+  {
+    slug: 'creative',
+    title: 'طراحی و ادیت',
+    tagline: 'ابزار گرافیک، ویدیو و رابط کاربری',
+    icon: 'palette',
+    accent: '#de2e6b',
+    order: 2,
+  },
+  {
+    slug: 'social',
+    title: 'شبکه‌های اجتماعی',
+    tagline: 'اشتراک‌های پریمیوم پیام‌رسان و شبکه‌ها',
+    icon: 'send',
+    accent: '#4aa3e8',
+    order: 3,
+  },
+  {
+    slug: 'education',
+    title: 'آموزشی',
+    tagline: 'یادگیری زبان و مهارت',
+    icon: 'graduation-cap',
+    accent: '#2ecc8f',
+    order: 4,
+  },
+  {
+    slug: 'gaming',
+    title: 'گیم',
+    tagline: 'اکانت بازی، اشتراک و ارز درون‌بازی',
+    icon: 'gamepad-2',
+    accent: '#8b3fd4',
+    order: 5,
+  },
+];
+
+/* ---------------------------------------------------------------
+   ورودی‌های پرتکرار — قبل از پرداخت از مشتری گرفته می‌شن
+--------------------------------------------------------------- */
+
+const INPUT_EMAIL: RequiredInput = {
+  key: 'accountEmail',
+  label: 'ایمیل اکانت شما',
+  hint: 'اشتراک روی همین ایمیل فعال می‌شود. بعد از ثبت قابل تغییر نیست.',
+  type: 'email',
+  example: 'name@example.com',
+};
+
+const INPUT_TELEGRAM: RequiredInput = {
+  key: 'telegramUsername',
+  label: 'یوزرنیم تلگرام شما',
+  hint: 'بدون @ وارد کنید. حساب باید یوزرنیم عمومی داشته باشد.',
+  type: 'text',
+  pattern: '^[A-Za-z0-9_]{5,32}$',
+  example: 'phoenix_user',
+};
+
+/* ---------------------------------------------------------------
+   محصولات
+--------------------------------------------------------------- */
+
+import { GAMES } from './games';
+
+/** محصولات غیرگیم — بازی‌ها از games.ts می‌آیند تا این فایل قابل مدیریت بماند */
+const SUBSCRIPTIONS: Product[] = [
+  /* ===================== هوش مصنوعی ===================== */
+  {
+    id: 'chatgpt',
+    tags: ['upgrade-on-account', 'instant', 'writing', 'coding', 'image-gen', 'research', 'web', 'mobile', 'bestseller'],
+    slug: 'chatgpt',
+    title: 'چت جی‌پی‌تی',
+    englishTitle: 'ChatGPT',
+    brand: 'OpenAI',
+    platforms: ['Web', 'iOS', 'Android'],
+    category: 'ai',
+    fulfillment: 'upgrade_on_user',
+    requiredInputs: [INPUT_EMAIL],
+    deliveryEstimate: 'کمتر از ۱۵ دقیقه',
+    warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
+    variants: [
+      { id: 'chatgpt-go-1m', label: 'Go — یک ماهه', price: 1766000, stock: null, isDefault: true },
+      { id: 'chatgpt-plus-1m', label: 'Plus — یک ماهه', price: 4274000, stock: null },
+    ],
+    media: { thumbnail: '/products/chatgpt.webp', accent: '#10a37f' },
+    shortDescription: 'ارتقای مستقیم روی اکانت شخصی شما',
+    description:
+      'اشتراک روی ایمیل خودتان فعال می‌شود؛ اکانت اشتراکی یا ظرفیتی نیست. نسخه‌ی Go برای استفاده‌ی روزمره و Plus برای دسترسی به مدل‌های پیشرفته و محدودیت بالاتر.',
+    features: [
+      'فعال‌سازی روی ایمیل شخصی شما',
+      'بدون نیاز به تغییر رمز عبور',
+      'دسترسی کامل به تاریخچه‌ی گفتگوهای قبلی',
+      'پشتیبانی در تمام مدت اشتراک',
+    ],
+    notes: ['برای استفاده نیاز به اتصال بدون محدودیت دارید.'],
+    rating: 4.9,
+    reviewsCount: 412,
+    salesCount: 1840,
+    badges: ['bestseller', 'hot'],
+    faq: [
+      { q: 'رمز عبورم را می‌خواهید؟', a: 'خیر. فقط ایمیلی که با آن در ChatGPT ثبت‌نام کرده‌اید لازم است. ارتقا از سمت ما روی همان حساب اعمال می‌شود و شما هیچ‌وقت رمزتان را جایی وارد نمی‌کنید.' },
+      { q: 'تفاوت Go و Plus چیست؟', a: 'Plus سقف استفاده‌ی بالاتر و دسترسی به مدل‌های پیشرفته‌تر دارد. اگر روزی چند بار استفاده می‌کنید Go کافی است؛ اگر کارتان به آن وابسته است، Plus را بگیرید.' },
+      { q: 'روی چند دستگاه کار می‌کند؟', a: 'روی همه‌ی دستگاه‌هایی که با همان حساب وارد شوید — موبایل، مرورگر و اپلیکیشن دسکتاپ، بدون محدودیت تعداد.' },
+    ],
+  },
+  {
+    id: 'claude-pro',
+    tags: ['upgrade-on-account', 'instant', 'writing', 'coding', 'research', 'web', 'mobile', 'new-release'],
+    slug: 'claude-pro',
+    title: 'کلاد پرو',
+    englishTitle: 'Claude Pro',
+    brand: 'Anthropic',
+    platforms: ['Web', 'iOS', 'Android'],
+    category: 'ai',
+    fulfillment: 'upgrade_on_user',
+    requiredInputs: [INPUT_EMAIL],
+    deliveryEstimate: 'کمتر از ۱۵ دقیقه',
+    warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
+    variants: [
+      { id: 'claude-pro-1m', label: 'Pro — یک ماهه', price: 4460000, stock: null, isDefault: true },
+    ],
+    media: { thumbnail: '/products/claude-pro-thumb.webp', cover: '/products/claude-pro.webp', accent: '#e8862e' },
+    shortDescription: 'اکانت شخصی، ارتقای مستقیم',
+    description:
+      'دسترسی به مدل‌های پیشرفته‌ی Claude با محدودیت استفاده‌ی بسیار بالاتر از نسخه‌ی رایگان. ارتقا روی اکانت خودتان انجام می‌شود.',
+    features: [
+      'ارتقای مستقیم روی اکانت شخصی',
+      'محدودیت استفاده‌ی چند برابر نسخه‌ی رایگان',
+      'دسترسی به پروژه‌ها و حافظه‌ی گفتگو',
+      'اولویت در ساعات شلوغی',
+    ],
+    rating: 4.9,
+    reviewsCount: 168,
+    salesCount: 620,
+    badges: ['new', 'hot'],
+    faq: [
+      { q: 'اکانت مشترک است؟', a: 'خیر. اشتراک روی حساب شخصی خودتان فعال می‌شود و هیچ‌کس دیگری به آن دسترسی ندارد.' },
+      { q: 'اگر وسط دوره قطع شد چه؟', a: 'تا پایان دوره‌ای که خریده‌اید پشتیبانی می‌کنیم. اگر مشکلی پیش بیاید یا تمدید می‌کنیم یا باقی‌مانده‌ی مبلغ را برمی‌گردانیم.' },
+      { q: 'برای کدنویسی از Cursor بهتر است؟', a: 'برای فهمیدن و بازنویسی کد بله. ولی Cursor مستقیم داخل ادیتور کار می‌کند و فایل‌ها را خودش ویرایش می‌کند — کار متفاوتی است.' },
+    ],
+  },
+
+  {
+    id: 'gemini-pro',
+    tags: ['private-account', 'instant', 'writing', 'research', 'image-gen', 'web', 'mobile', 'budget', 'on-sale'],
+    slug: 'gemini-pro',
+    title: 'جمنای پرو',
+    englishTitle: 'Gemini Pro',
+    brand: 'Google',
+    platforms: ['Web', 'Android', 'iOS'],
+    category: 'ai',
+    fulfillment: 'upgrade_on_user',
+    requiredInputs: [INPUT_EMAIL],
+    deliveryEstimate: 'کمتر از ۱۵ دقیقه',
+    warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
+    variants: [
+      { id: 'gemini-private-18m', label: 'اختصاصی — ۱۸ ماهه', price: 1_200_000, stock: null, isDefault: true },
+      { id: 'gemini-family-1m', label: 'فمیلی — یک ماهه', price: 200_000, stock: null },
+    ],
+    media: { thumbnail: '/products/gemini-pro-thumb.webp', cover: '/products/gemini-pro.webp', accent: '#4a7cf7' },
+    shortDescription: 'دوره‌ی بلند تا هجده ماه',
+    description:
+      'دسترسی کامل به مدل‌های پیشرفته‌ی گوگل. پلن اختصاصی یعنی اکانت فقط مال شماست و کسی جز خودتان به آن دسترسی ندارد؛ پلن فمیلی زیرمجموعه‌ی اکانت فروشگاه است و به همین دلیل خیلی ارزان‌تر تمام می‌شود. هر دو روی حساب شما فعال می‌شوند.',
+    features: [
+      'دسترسی به مدل‌های پیشرفته‌ی گوگل',
+      'ادغام با Gmail، Docs و Drive',
+      'پلن اختصاصی یا فمیلی، به انتخاب شما',
+      'گارانتی تا آخرین روز اشتراک',
+    ],
+    notes: ['پلن فمیلی زیرمجموعه‌ی اکانت فروشگاه است؛ اگر اکانت کاملاً خصوصی می‌خواهید پلن اختصاصی را انتخاب کنید.'],
+    rating: 4.8,
+    reviewsCount: 96,
+    salesCount: 380,
+    badges: ['hot', 'limited'],
+    faq: [
+      { q: 'تفاوت پلن اختصاصی و فمیلی چیست؟', a: 'اختصاصی کاملاً مال شماست. فمیلی یعنی هزینه بین اعضای یک گروه پخش می‌شود؛ ارزان‌تر است ولی جای شما در گروه تعریف‌شده است.' },
+      { q: 'هجده ماه واقعاً یعنی هجده ماه؟', a: 'بله. دوره از روز فعال‌سازی شروع می‌شود و تا پایان همان مدت اعتبار دارد.' },
+      { q: 'فضای ابری هم شامل می‌شود؟', a: 'بله، پلن‌های Gemini شامل فضای ذخیره‌سازی گوگل هم می‌شوند. مقدارش روی هر پلن نوشته شده.' },
+    ],
+  },
+  {
+    id: 'cursor-pro',
+    tags: ['private-account', 'instant', 'coding', 'pc', 'limited-stock'],
+    slug: 'cursor-pro',
+    title: 'کرسر پرو',
+    englishTitle: 'Cursor',
+    brand: 'Anysphere',
+    platforms: ['Windows', 'macOS', 'Linux'],
+    category: 'ai',
+    fulfillment: 'stock_account',
+    requiredInputs: [],
+    deliveryEstimate: 'تحویل آنی',
+    warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
+    variants: [
+      { id: 'cursor-pro-1m', label: 'Pro — یک ماهه', price: 2_450_000, stock: 12, isDefault: true },
+      { id: 'cursor-proplus-1m', label: 'Pro+ — یک ماهه', price: 4_900_000, stock: 6 },
+      { id: 'cursor-ultra-1m', label: 'Ultra — یک ماهه', price: 9_800_000, stock: 3 },
+    ],
+    media: { thumbnail: '/products/cursor-pro-thumb.webp', cover: '/products/cursor-pro.webp', accent: '#a855f7' },
+    shortDescription: 'اکانت آماده، تحویل فوری',
+    description:
+      'ویرایشگر کدی که هوش مصنوعی در هسته‌اش تعبیه شده — نه به‌عنوان افزونه. کل پروژه را می‌فهمد، چند فایل را هم‌زمان بازنویسی می‌کند و با زبان طبیعی دستور می‌گیرد. اکانت آماده تحویل داده می‌شود و بلافاصله قابل استفاده است.',
+    features: [
+      'اکانت آماده و کاملاً شخصی',
+      'درک کل پروژه، نه فقط فایل باز',
+      'ویرایش چندفایلی با یک دستور',
+      'تحویل فوری پس از پرداخت',
+    ],
+    rating: 4.9,
+    reviewsCount: 74,
+    salesCount: 260,
+    badges: ['new', 'hot'],
+    faq: [
+      { q: 'چه فرقی با ChatGPT دارد؟', a: 'Cursor یک ادیتور کد است، نه چت. فایل‌های پروژه‌تان را می‌خواند و مستقیم ویرایش می‌کند، پس دیگر لازم نیست کد را کپی و پیست کنید.' },
+      { q: 'روی چه سیستم‌عامل‌هایی نصب می‌شود؟', a: 'ویندوز، مک و لینوکس. اکانت روی هر سه یکی است.' },
+      { q: 'تفاوت Pro و Ultra چیست؟', a: 'سقف درخواست‌های ماهانه. اگر تمام‌وقت کد می‌زنید و به سقف Pro می‌خورید، Pro+ یا Ultra را بگیرید.' },
+    ],
+  },
+
+  /* ===================== طراحی و ادیت ===================== */
+  {
+    id: 'canva-pro',
+    tags: ['upgrade-on-account', 'instant', 'design', 'video-editing', 'web', 'mobile', 'budget', 'bestseller'],
+    slug: 'canva-pro',
+    title: 'کنوا پرو',
+    englishTitle: 'Canva Pro',
+    brand: 'Canva',
+    platforms: ['Web', 'iOS', 'Android'],
+    category: 'creative',
+    fulfillment: 'upgrade_on_user',
+    requiredInputs: [INPUT_EMAIL],
+    deliveryEstimate: 'کمتر از ۱۰ دقیقه',
+    warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
+    variants: [
+      { id: 'canva-pro-12m', label: 'یک ساله', price: 205000, stock: null, isDefault: true },
+    ],
+    media: { thumbnail: '/products/canva-pro-thumb.webp', cover: '/products/canva-pro.webp', accent: '#00c4cc' },
+    shortDescription: 'یک سال کامل، روی ایمیل شخصی شما',
+    description:
+      'دسترسی به تمام قالب‌ها، عناصر پریمیوم، حذف پس‌زمینه و فضای ذخیره‌سازی صد گیگابایتی. روی اکانت خودتان فعال می‌شود.',
+    features: [
+      'بیش از صد میلیون عکس و عنصر پریمیوم',
+      'حذف پس‌زمینه با یک کلیک',
+      'کیت برند و تغییر اندازه‌ی خودکار',
+      'صد گیگابایت فضای ابری',
+    ],
+    rating: 4.8,
+    reviewsCount: 530,
+    salesCount: 2410,
+    badges: ['bestseller'],
+    faq: [
+      { q: 'روی حساب خودم فعال می‌شود؟', a: 'بله. فقط ایمیل حساب Canva شما را می‌گیریم و دسترسی Pro روی همان اعمال می‌شود.' },
+      { q: 'طرح‌هایی که قبلاً ساخته‌ام چه می‌شوند؟', a: 'همه سر جایشان می‌مانند و بعد از ارتقا، امکانات Pro رویشان فعال می‌شود.' },
+      { q: 'بعد از پایان یک سال چه اتفاقی می‌افتد؟', a: 'حساب به نسخه‌ی رایگان برمی‌گردد. طرح‌هایتان پاک نمی‌شوند، فقط امکانات Pro غیرفعال می‌شود.' },
+    ],
+  },
+  {
+    id: 'capcut-pro',
+    tags: ['upgrade-on-account', 'instant', 'video-editing', 'design', 'mobile', 'pc'],
+    slug: 'capcut-pro',
+    title: 'کپ‌کات پرو',
+    englishTitle: 'CapCut Pro',
+    brand: 'CapCut',
+    platforms: ['Web', 'iOS', 'Android'],
+    category: 'creative',
+    fulfillment: 'upgrade_on_user',
+    requiredInputs: [INPUT_EMAIL],
+    deliveryEstimate: 'کمتر از ۱۵ دقیقه',
+    warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
+    variants: [
+      { id: 'capcut-pro-1m', label: 'یک ماهه', price: 1208000, stock: null, isDefault: true },
+    ],
+    media: { thumbnail: '/products/capcut-pro-thumb.webp', cover: '/products/capcut-pro.webp', accent: '#000000' },
+    shortDescription: 'ادیت ویدیو حرفه‌ای بدون واترمارک',
+    description:
+      'تمام افکت‌ها، ترنزیشن‌ها و فونت‌های پریمیوم بدون واترمارک، همراه با خروجی چهارکی و فضای ابری.',
+    features: [
+      'خروجی 4K بدون واترمارک',
+      'تمام افکت‌ها و ترنزیشن‌های پریمیوم',
+      'حذف پس‌زمینه و ردیابی حرکت',
+      'همگام‌سازی بین موبایل و دسکتاپ',
+    ],
+    rating: 4.7,
+    reviewsCount: 289,
+    salesCount: 1150,
+    badges: ['hot'],
+    faq: [
+      { q: 'روی موبایل هم کار می‌کند؟', a: 'بله. اشتراک روی حساب شماست، پس روی موبایل و دسکتاپ هر دو فعال است.' },
+      { q: 'واترمارک برداشته می‌شود؟', a: 'بله، خروجی بدون واترمارک و با کیفیت بالاتر گرفته می‌شود.' },
+      { q: 'پروژه‌های نیمه‌تمامم می‌مانند؟', a: 'بله، هیچ پروژه‌ای با ارتقا از بین نمی‌رود.' },
+    ],
+  },
+  {
+    id: 'figma',
+    tags: ['upgrade-on-account', 'instant', 'ui-design', 'design', 'web', 'pc'],
+    slug: 'figma-professional',
+    title: 'فیگما',
+    englishTitle: 'Figma Professional',
+    brand: 'Figma',
+    platforms: ['Web', 'Desktop'],
+    category: 'creative',
+    fulfillment: 'upgrade_on_user',
+    requiredInputs: [INPUT_EMAIL],
+    deliveryEstimate: 'کمتر از ۳۰ دقیقه',
+    warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
+    variants: [
+      { id: 'figma-12m', label: 'یک ساله', price: 2787000, stock: null, isDefault: true },
+    ],
+    media: { thumbnail: '/products/figma.webp', accent: '#a259ff' },
+    shortDescription: 'پلن حرفه‌ای، یک سال کامل',
+    description:
+      'فایل و پروژه‌ی نامحدود، تاریخچه‌ی کامل نسخه‌ها، کتابخانه‌ی کامپوننت اشتراکی و ابزارهای همکاری تیمی.',
+    features: [
+      'فایل و پروژه‌ی نامحدود',
+      'تاریخچه‌ی نامحدود نسخه‌ها',
+      'کتابخانه‌ی کامپوننت و استایل اشتراکی',
+      'دسترسی توسعه‌دهنده و Dev Mode',
+    ],
+    rating: 4.9,
+    reviewsCount: 141,
+    salesCount: 480,
+    badges: ['new'],
+    faq: [
+      { q: 'برای تیم است یا تک‌نفره؟', a: 'روی حساب شخصی خودتان فعال می‌شود. اگر فایل را با تیم به اشتراک بگذارید، امکانات پولی روی همان فایل کار می‌کنند.' },
+      { q: 'فایل‌های قبلی‌ام دست‌نخورده می‌مانند؟', a: 'بله. ارتقا فقط سطح دسترسی را بالا می‌برد و به محتوای فایل‌ها کاری ندارد.' },
+      { q: 'نسخه‌ی دسکتاپ هم فعال می‌شود؟', a: 'بله، اشتراک به حساب وصل است نه به یک برنامه‌ی خاص.' },
+    ],
+  },
+
+  /* ===================== شبکه‌های اجتماعی ===================== */
+  {
+    id: 'telegram-premium',
+    tags: ['upgrade-on-account', 'instant', 'messaging', 'mobile', 'web', 'bestseller'],
+    slug: 'telegram-premium',
+    title: 'تلگرام پریمیوم',
+    englishTitle: 'Telegram Premium',
+    brand: 'Telegram',
+    platforms: ['iOS', 'Android', 'Desktop'],
+    category: 'social',
+    fulfillment: 'api_topup',
+    requiredInputs: [INPUT_TELEGRAM],
+    deliveryEstimate: 'کمتر از ۵ دقیقه',
+    warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
+    variants: [
+      { id: 'tg-3m', label: 'سه ماهه', price: 2695000, stock: null, isDefault: true },
+      { id: 'tg-6m', label: 'شش ماهه', price: 3625000, stock: null },
+      { id: 'tg-12m', label: 'یک ساله', price: 6506000, stock: null },
+    ],
+    media: { thumbnail: '/products/telegram-premium.webp', accent: '#2aabee' },
+    shortDescription: 'فعال‌سازی خودکار روی یوزرنیم شما',
+    description:
+      'فقط یوزرنیم تلگرامتان را وارد کنید؛ اشتراک به‌صورت خودکار و بدون نیاز به رمز عبور روی حساب شما فعال می‌شود.',
+    features: [
+      'بدون نیاز به رمز عبور یا ورود به حساب',
+      'آپلود فایل تا چهار گیگابایت',
+      'دانلود پرسرعت و بدون تبلیغات',
+      'استیکر، ایموجی و آواتار ویژه',
+    ],
+    notes: ['حساب شما باید یوزرنیم عمومی داشته باشد.'],
+    rating: 4.9,
+    reviewsCount: 1204,
+    salesCount: 5830,
+    badges: ['bestseller', 'hot'],
+    faq: [
+      { q: 'یوزرنیم لازم است یا شماره؟', a: 'یوزرنیم. اگر یوزرنیم ندارید، در تنظیمات تلگرام یکی بسازید و همان را وارد کنید.' },
+      { q: 'باید کد ورود بدهم؟', a: 'خیر، هیچ‌وقت. فعال‌سازی از بیرون روی یوزرنیم انجام می‌شود و به حساب شما وارد نمی‌شویم.' },
+      { q: 'اگر یوزرنیمم را عوض کنم چه؟', a: 'اشتراک روی حساب ثبت می‌شود نه روی نام، پس تغییر یوزرنیم مشکلی ایجاد نمی‌کند.' },
+    ],
+  },
+
+  /* ===================== آموزشی ===================== */
+  {
+    id: 'duolingo-super',
+    tags: ['upgrade-on-account', 'instant', 'language-learning', 'mobile', 'web', 'budget'],
+    slug: 'duolingo-super',
+    title: 'دولینگو سوپر',
+    englishTitle: 'Duolingo Super',
+    brand: 'Duolingo',
+    platforms: ['Web', 'iOS', 'Android'],
+    category: 'education',
+    fulfillment: 'upgrade_on_user',
+    requiredInputs: [INPUT_EMAIL],
+    deliveryEstimate: 'کمتر از ۳۰ دقیقه',
+    warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
+    variants: [
+      { id: 'duolingo-5m', label: 'پنج ماهه', price: 837000, stock: null, isDefault: true },
+    ],
+    media: { thumbnail: '/products/duolingo-super-thumb.webp', cover: '/products/duolingo-super.webp', accent: '#58cc02' },
+    shortDescription: 'یادگیری زبان بدون تبلیغات',
+    description:
+      'حذف کامل تبلیغات، جان نامحدود و تمرین اشتباهات شخصی‌سازی‌شده. روی اکانت خودتان فعال می‌شود و پیشرفت قبلی حفظ می‌ماند.',
+    features: [
+      'بدون تبلیغات',
+      'جان نامحدود',
+      'تمرین هدفمند اشتباهات',
+      'آزمون تعیین سطح نامحدود',
+    ],
+    rating: 4.8,
+    reviewsCount: 96,
+    salesCount: 340,
+    badges: ['new'],
+    faq: [
+      { q: 'پیشرفت فعلی‌ام می‌ماند؟', a: 'بله. ارتقا روی همان حساب انجام می‌شود و استریک و درس‌هایتان دست‌نخورده باقی می‌ماند.' },
+      { q: 'محدودیت جان برداشته می‌شود؟', a: 'بله، با Super دیگر محدودیت جان ندارید و تبلیغ هم نمایش داده نمی‌شود.' },
+      { q: 'روی چند دستگاه کار می‌کند؟', a: 'روی هر دستگاهی که با همان حساب وارد شوید.' },
+    ],
+  },
+
+  {
+    id: 'spotify-premium',
+    tags: ['upgrade-on-account', 'instant', 'mobile', 'web', 'family-plan'],
+    slug: 'spotify-premium',
+    title: 'اسپاتیفای پریمیوم',
+    englishTitle: 'Spotify Premium',
+    brand: 'Spotify',
+    platforms: ['Web', 'iOS', 'Android', 'Desktop'],
+    category: 'social',
+    fulfillment: 'upgrade_on_user',
+    requiredInputs: [INPUT_EMAIL],
+    deliveryEstimate: 'کمتر از ۳۰ دقیقه',
+    warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
+    variants: [
+      { id: 'spotify-individual-1m', label: 'اینفرادی — یک ماهه', price: 320_000, stock: null, isDefault: true },
+      { id: 'spotify-individual-3m', label: 'اینفرادی — سه ماهه', price: 850_000, compareAt: 960_000, stock: null },
+      { id: 'spotify-individual-12m', label: 'اینفرادی — یک ساله', price: 2_950_000, compareAt: 3_840_000, stock: null },
+      { id: 'spotify-family-1m', label: 'فمیلی — یک ماهه', price: 520_000, stock: 14 },
+    ],
+    media: { thumbnail: '/products/spotify-premium-thumb.webp', cover: '/products/spotify-premium.webp', accent: '#1db954' },
+    shortDescription: 'موسیقی بدون تبلیغ، روی حساب خودت',
+    description:
+      'روی همان حسابی که پلی‌لیست‌هایت در آن است فعال می‌شود، پس چیزی از دست نمی‌رود. تبلیغ حذف می‌شود، دانلود آفلاین باز می‌شود و کیفیت پخش به بالاترین حالت می‌رود. پلن فمیلی تا شش نفر را پوشش می‌دهد و هزینه بینشان پخش می‌شود.',
+    features: [
+      'بدون تبلیغ، بدون وقفه بین آهنگ‌ها',
+      'دانلود آفلاین روی پنج دستگاه',
+      'کیفیت پخش تا ۳۲۰ کیلوبیت',
+      'رد کردن نامحدود آهنگ',
+      'پلی‌لیست‌ها و لایک‌های فعلی دست‌نخورده',
+    ],
+    notes: [
+      'پلن فمیلی نیاز به آدرس مشترک بین اعضا دارد؛ راهنمایش را موقع تحویل می‌فرستیم.',
+    ],
+    rating: 4.9,
+    reviewsCount: 214,
+    salesCount: 620,
+    badges: ['new', 'hot'],
+    faq: [
+      { q: 'پلی‌لیست‌هایم می‌ماند؟', a: 'بله. ارتقا روی همان حساب خودتان انجام می‌شود و پلی‌لیست‌ها، لایک‌ها و تاریخچه دست‌نخورده باقی می‌ماند.' },
+      { q: 'رمز حسابم را باید بدهم؟', a: 'نه. فقط ایمیل حساب را می‌گیریم و ارتقا از سمت ما انجام می‌شود.' },
+      { q: 'فمیلی برای چند نفر است؟', a: 'تا شش نفر. همه باید یک آدرس خانه‌ی مشترک ثبت کنند که راهنمایش را همراه تحویل می‌فرستیم.' },
+      { q: 'بعد از پایان دوره چه می‌شود؟', a: 'حساب به حالت رایگان برمی‌گردد و چیزی حذف نمی‌شود. می‌توانید دوباره تمدید کنید.' },
+    ],
+  },
+
+];
+
+/** کاتالوگ کامل — اشتراک‌ها و بازی‌ها */
+export const PRODUCTS: Product[] = [...SUBSCRIPTIONS, ...GAMES];
+
+/* ---------------------------------------------------------------
+   کمکی‌ها
+--------------------------------------------------------------- */
+
+export const getProductsByCategory = (slug: CategorySlug) =>
+  PRODUCTS.filter((p) => p.category === slug);
+
+export const getProductBySlug = (slug: string) =>
+  PRODUCTS.find((p) => p.slug === slug);
+
+export const getDefaultVariant = (p: Product) =>
+  p.variants.find((v) => v.isDefault) ?? p.variants[0];
+
+export const getLowestPrice = (p: Product) =>
+  Math.min(...p.variants.map((v) => v.price));
+
+export const getCategoryCount = (slug: CategorySlug) =>
+  PRODUCTS.filter((p) => p.category === slug).length;
+
+/** آیا این محصول قبل از پرداخت به ورودی مشتری نیاز دارد؟ */
+export const needsCustomerInput = (p: Product) => p.requiredInputs.length > 0;
