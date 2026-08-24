@@ -48,7 +48,11 @@ export function ProductView({ product: p }: { product: Product }) {
     if (!canAdd) return;
     const r = e.currentTarget.getBoundingClientRect();
     launch({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
-    add(p, variant);
+    /* ورودی‌ها باید همراه خط سبد بروند.
+
+       بدون این، کاربر ایمیلش را وارد می‌کند و همان‌جا گم می‌شود؛
+       سر تسویه معلوم نیست اشتراک را روی کدام حساب فعال کنیم. */
+    add(p, variant, inputs);
   };
 
   return (
