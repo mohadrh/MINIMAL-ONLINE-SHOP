@@ -112,7 +112,8 @@ a { color: inherit; text-decoration: none; }
   color: var(--blue);
   margin-bottom: var(--sp-3);
 }
-.section--blue .sec-head__kicker { color: #9fbaff; }
+/* روی زمینه‌ی آبیِ سکشن، #9fbaff نسبت ۴٫۰ می‌داد — زیر حد. */
+.section--blue .sec-head__kicker { color: #b3c9ff; }
 
 .sec-head__lead {
   margin-top: var(--sp-3);
@@ -254,6 +255,15 @@ a { color: inherit; text-decoration: none; }
 /* ---------- ریل کشویی موبایل ----------
 
    همان الگویی که در نسخه‌ی یک جواب داد: scroll-snap بومی، بدون JS. */
+
+/* هر بخشی که ریلِ لبه‌به‌لبه دارد، باید افقی ببُرد.
+
+   ریل با حاشیه‌ی منفی از ظرفش بیرون می‌زند تا کارت‌ها تا خودِ
+   لبه اسکرول شوند. بدون بریدن، همان بیرون‌زدگی کل صفحه را
+   اسکرول‌دار می‌کند. clip است نه hidden، تا بیرون‌زدگی عمودیِ
+   کاراکترِ بازی‌ها سرجایش بماند. */
+.section:has(.rail),
+.wrap:has(> .rail) { overflow-x: clip; }
 
 .rail {
   display: flex;

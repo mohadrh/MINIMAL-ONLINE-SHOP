@@ -73,7 +73,10 @@
 .pcard__off {
   padding: 4px 10px;
   border-radius: var(--r-full);
-  background: color-mix(in srgb, var(--accent) 90%, #000);
+  /* ۹۰٪ رنگ محصول برای برندهای روشن (کنوا، دولینگو) هنوز آن‌قدر
+     روشن بود که متن سفید رویش به ۲٫۸ می‌رسید — زیر حد خوانایی.
+     ۵۲٪ هویت رنگ را نگه می‌دارد و کنتراست را از ۴٫۵ رد می‌کند. */
+  background: color-mix(in srgb, var(--accent) 52%, #000);
   color: #fff;
   font-size: 11px;
   font-weight: 800;
