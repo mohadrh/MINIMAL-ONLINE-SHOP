@@ -170,7 +170,9 @@ a { color: inherit; text-decoration: none; }
 }
 .section--blue .btn--primary:hover { background: #eaf0ff; border-color: #eaf0ff; }
 
-.btn--sm { padding: 10px 18px; font-size: var(--text-sm); }
+/* ۱۰ پیکسل padding با متن ۱۳ پیکسلی می‌شد ۳۴ — زیر حداقلِ لمسی.
+   ۱۲ می‌شود ۳۸ و ظاهرش هم عوض نمی‌شود. */
+.btn--sm { padding: 12px 18px; font-size: var(--text-sm); }
 .btn--block { width: 100%; }
 
 /* ---------- کارت ----------

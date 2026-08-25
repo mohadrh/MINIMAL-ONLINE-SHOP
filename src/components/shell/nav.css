@@ -27,6 +27,9 @@
   align-items: center;
   gap: var(--sp-3);
   flex-shrink: 0;
+  /* روی موبایل فقط نشان می‌ماند و نشان ۲۸ پیکسل است؛ بدون این
+     padding، ناحیه‌ی قابل زدنِ «خانه» زیر حداقل می‌رود. */
+  padding-block: 6px;
 }
 .nav__brand b {
   display: block;
@@ -260,6 +263,38 @@
 }
 
 @media (max-width: 560px) { .assistbtn { display: none; } }
+
+/* ============================================================
+   نوبار روی موبایل
+
+   روی ۳۷۵ پیکسل، برند (۱۵۳) + آیکون‌ها (۲۰۶) + فاصله (۲۴) +
+   حاشیه (۴۰) می‌شد ۴۲۳ — یعنی ۴۸ پیکسل بیشتر از عرض دستگاه، و
+   کل صفحه اسکرول افقی می‌گرفت.
+
+   جای بریدن یا اسکرول کردن، سه چیزِ کم‌ارزش‌تر حذف می‌شوند:
+   شرحِ زیر نام برند، فاصله‌ی بین گروه‌ها، و کمی از فاصله‌ی
+   آیکون‌ها. نامِ برند و همه‌ی آیکون‌ها سرجایشان می‌مانند.
+   ============================================================ */
+@media (max-width: 560px) {
+  .nav__inner { gap: var(--sp-2); }
+  .nav__brand { gap: var(--sp-2); min-width: 0; }
+  .nav__brand small { display: none; }
+  .nav__brand b { font-size: var(--text-sm); }
+  .nav__brand img { width: 28px; height: 28px; }
+  .nav__actions { gap: 2px; }
+  .nav__icon { width: 38px; }
+}
+
+/* زیر ۴۲۰ پیکسل، حتی نام برند هم جا نمی‌شود.
+
+     نشان + نام (۱۳۵) + پنج آیکون (۱۹۸) + حاشیه (۴۰) = ۳۷۳
+
+   نشان تنها می‌ماند، چون هویت را نگه می‌دارد و کلیکش هم همان
+   خانه است. آیکون‌ها می‌مانند چون هرکدام یک کار است، نه تزئین. */
+@media (max-width: 420px) {
+  .nav__brand b { display: none; }
+  .wrap { padding-inline: var(--sp-3); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .assistbtn:hover .assistbtn__spark,
