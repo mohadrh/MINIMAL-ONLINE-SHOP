@@ -93,18 +93,35 @@
   gap: 0;
   z-index: 2;
 }
+/* دایره می‌ماند، بیضی نمی‌شود.
+
+   نسخه‌ی قبل عرضِ دات فعال را به ۲۲ پیکسل می‌برد و کشیده می‌شد.
+   حالا فقط رنگ عوض می‌شود و کمی بزرگ‌تر — شکلْ همان دایره است.
+
+   فاصله هم بیشتر شد: هشت پیکسل padding افقی، دات‌ها را به هم
+   می‌چسباند. */
 .hero__dots button {
   box-sizing: content-box;
-  width: 7px; height: 7px;
-  padding: 14px 8px;
+  width: 9px; height: 9px;
+  padding: 14px 10px;
   border: 0;
   background: var(--line);
   background-clip: content-box;
   border-radius: var(--r-full);
   cursor: pointer;
-  transition: background var(--dur) var(--ease), width var(--dur) var(--ease);
+  transition: background var(--dur) var(--ease), scale var(--dur) var(--ease);
 }
-.hero__dots button.is-on { background: var(--blue); background-clip: content-box; width: 22px; }
+.hero__dots button.is-on {
+  background: var(--blue);
+  background-clip: content-box;
+  scale: 1.35;
+}
+[data-theme='dark'] .hero__dots button { background: rgba(255, 255, 255, 0.28); background-clip: content-box; }
+[data-theme='dark'] .hero__dots button.is-on { background: var(--blue); background-clip: content-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__dots button.is-on { scale: 1; }
+}
 
 /* ---------- جعبه‌ی محاسبه ----------
 
