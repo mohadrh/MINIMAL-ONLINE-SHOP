@@ -1390,23 +1390,52 @@
 }
 .track__node svg { width: 22px; height: 22px; }
 
-/* گامِ فعلی — حلقه‌ی آبی، هنوز تیک نخورده */
+/* هر گام تیوب رنگیِ خودش را دارد.
+
+   سه رنگ از همان پالت نئونی که روی تیتر هیرو هست. گام که تمام
+   شد، آیکون رنگش را می‌گیرد و نور می‌دهد — نه تیک می‌خورد.
+
+   تیک، آیکونِ هر گام را با یک علامتِ عمومی عوض می‌کرد و شخصیتش را
+   می‌گرفت؛ نورِ رنگی همان «انجام شد» را می‌گوید بدون اینکه چیزی
+   را پاک کند. */
+.track__step:nth-child(1) { --tube: #f59440; }
+.track__step:nth-child(2) { --tube: #ff4d9f; }
+.track__step:nth-child(3) { --tube: #3ddcff; }
+
+/* گامِ فعلی — حلقه‌ی رنگی، هنوز خاموش */
 .is-now .track__node {
-  border-color: var(--blue);
-  color: var(--blue);
+  border-color: var(--tube);
+  color: var(--tube);
   scale: 1.06;
   box-shadow:
-    0 0 0 6px color-mix(in srgb, var(--blue) 12%, transparent),
-    0 12px 28px -14px color-mix(in srgb, var(--blue) 70%, transparent);
+    0 0 0 6px color-mix(in srgb, var(--tube) 14%, transparent),
+    0 12px 28px -14px color-mix(in srgb, var(--tube) 60%, transparent);
 }
 
-/* گامِ تمام‌شده — پر و تیک‌خورده */
+/* گامِ تمام‌شده — تیوب روشن.
+
+   نورِ آیکون با drop-shadow ساخته می‌شود نه box-shadow: دومی هاله
+   را دور جعبه می‌کشد، اولی خطوط واقعی SVG را دنبال می‌کند و نور
+   از خودِ آیکون بیرون می‌زند. */
 .is-done .track__node {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: #fff;
-  box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--blue) 80%, transparent);
+  border-color: var(--tube);
+  color: var(--tube);
+  background: color-mix(in srgb, var(--tube) 10%, var(--paper));
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--tube) 16%, transparent),
+    0 14px 32px -14px color-mix(in srgb, var(--tube) 70%, transparent);
 }
+[data-theme='dark'] .is-done .track__node {
+  background: color-mix(in srgb, var(--tube) 14%, var(--tint));
+}
+
+.is-done .track__icon svg {
+  filter:
+    drop-shadow(0 0 3px color-mix(in srgb, var(--tube) 70%, transparent))
+    drop-shadow(0 0 10px color-mix(in srgb, var(--tube) 45%, transparent))
+    drop-shadow(0 0 22px color-mix(in srgb, var(--tube) 30%, transparent));
+}
+.track__icon svg { transition: filter 420ms var(--ease); }
 
 .track__n {
   position: absolute;
@@ -1422,7 +1451,7 @@
   transition: background 380ms var(--ease), color 380ms var(--ease);
 }
 [data-theme='dark'] .track__n { background: rgba(255, 255, 255, 0.12); }
-.is-now .track__n, .is-done .track__n { background: var(--blue); color: #fff; }
+.is-now .track__n, .is-done .track__n { background: var(--tube); color: #fff; }
 
 .track__icon { display: inline-flex; }
 

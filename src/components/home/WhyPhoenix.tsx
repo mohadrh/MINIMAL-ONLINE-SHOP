@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
-  Check, ChevronDown, CreditCard, MousePointerClick, Sparkles,
+  ChevronDown, CreditCard, MousePointerClick, Sparkles,
 } from 'lucide-react';
 import { HELP_ARTICLES } from '../../data/helpArticles';
 
@@ -14,9 +14,9 @@ import { HELP_ARTICLES } from '../../data/helpArticles';
  * و پشت سر هم می‌آمدند: ۲٬۳۷۳ پیکسل توضیحِ پیوسته بدون یک محصول.
  * حالا یکی‌اند و جای آزادشده به ردیف‌های محصول رسید.
  *
- * مسیر می‌چسبد و با اسکرول جلو می‌رود: هر گام که کامل شد تیک
- * می‌خورد و بعد نوبت بعدی. کاربر خودش مسیر را طی می‌کند نه اینکه
- * فقط تماشا کند.
+ * مسیر می‌چسبد و با اسکرول جلو می‌رود: هر گام که کامل شد، تیوبِ
+ * رنگیِ خودش روشن می‌شود و بعد نوبت بعدی. کاربر خودش مسیر را طی
+ * می‌کند نه اینکه فقط تماشا کند.
  *
  * ارتفاع چسبندگی عمداً کوتاه است — کمی بیش از دو صفحه برای سه گام.
  * سکشنی که کاربر را زیاد نگه دارد، از توضیح به مانع تبدیل می‌شود.
@@ -58,7 +58,16 @@ export function WhyPhoenix() {
 
     let frame = 0;
     const onScroll = () => {
-      if (frame) return;
+      /* فریمِ در انتظار را لغو کن و تازه‌اش را بگذار.
+
+         نسخه‌ی اول اگر فریمی در انتظار بود، رویداد را دور می‌ریخت.
+         نتیجه‌اش این بود که آخرین موقعیتِ اسکرول هیچ‌وقت حساب
+         نمی‌شد: رویدادِ آخر دور ریخته می‌شد و دیگر رویدادی نمی‌آمد
+         که جایش را بگیرد، پس مسیر روی گام دوم گیر می‌کرد.
+
+         با لغو و زمان‌بندی دوباره، همیشه تازه‌ترین موقعیت برنده
+         است و بار محاسبه هم همان یکی در هر فریم می‌ماند. */
+      if (frame) window.cancelAnimationFrame(frame);
       frame = window.requestAnimationFrame(() => {
         frame = 0;
         const el = wrapRef.current;
@@ -108,8 +117,14 @@ export function WhyPhoenix() {
                 const state = i < done ? 'is-done' : i === done ? 'is-now' : '';
                 return (
                   <li key={s.t} className={`track__step ${state}`} style={{ ['--i' as string]: i }}>
+                    {/* آیکون خودِ گام می‌ماند و تیک نمی‌خورد.
+
+                        وقتی گام تمام شد، آیکون رنگ خودش را می‌گیرد و
+                        نور می‌دهد — مثل تیوبی که روشن شده. تیک،
+                        آیکون را با یک علامتِ عمومی عوض می‌کرد و
+                        شخصیتِ هر گام از بین می‌رفت. */}
                     <span className="track__node" aria-hidden="true">
-                      <span className="track__icon">{i < done ? <Check /> : s.icon}</span>
+                      <span className="track__icon">{s.icon}</span>
                       <span className="track__n num">{(i + 1).toLocaleString('fa-IR')}</span>
                     </span>
 
