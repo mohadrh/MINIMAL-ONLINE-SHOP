@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, Layers, Plus, ShieldCheck, Star, Zap } from 'lucide-react';
+import { Clock, Layers, Plus, ShieldCheck, Star } from 'lucide-react';
 import {
   getDefaultVariant, getLowestPrice, needsCustomerInput, type Product,
 } from '../../data/catalog';
@@ -29,20 +29,14 @@ const arcStop = (seed: string) => {
   return ARC[h % ARC.length];
 };
 
-/* سرعت تحویل تنها چیزی است که این بازار واقعاً رویش تصمیم می‌گیرد،
-   پس روی کارت نشان خودش را دارد نه یک خط متن خاکستری کنار بقیه.
+/* زمان تحویل دیگر عددی نیست.
 
-   داده‌ها «کمتر از ۱۵ دقیقه» و مثل آن‌اند، نه فقط «آنی». پس عدد را
-   درمی‌آوریم: تا یک ربع، برای خریدارِ این بازار یعنی همان آنی. */
-const FA_DIGITS = '۰۱۲۳۴۵۶۷۸۹';
-const toEnDigits = (s: string) =>
-  s.replace(/[۰-۹]/g, (d) => String(FA_DIGITS.indexOf(d)));
+   قبلاً داده‌ها «کمتر از ۱۵ دقیقه» و مثل آن بودند و کارت از رویشان
+   نشان سبزِ «آنی» می‌ساخت. کارفرما گفت این ادعاها اغراق است و همه
+   به یک جمله‌ی واحد رفتند: «در اسرع وقت، توسط سیستم».
 
-const deliveryMinutes = (p: Product): number | null => {
-  if (/آنی|فوری|بلافاصله/.test(p.deliveryEstimate)) return 0;
-  const m = toEnDigits(p.deliveryEstimate).match(/(\d+)\s*دقیقه/);
-  return m ? Number(m[1]) : null;
-};
+   پس نشان سبز هم برداشته شد. نشانی که از عددی می‌آمد که دیگر وجود
+   ندارد، فقط تزئین است. */
 
 /* مجموع موجودی، نه کمترینش.
 
@@ -85,17 +79,46 @@ export function ProductCard({ product: p }: { product: Product }) {
   const scarce = stock !== null && stock > 0 && stock <= 5;
   const sold = stock === 0;
   const plans = p.variants.length;
-  const mins = deliveryMinutes(p);
-  /* نشان سبز فقط برای واقعاً استثنایی‌ها.
-
-     آستانه‌ی اول ۱۵ دقیقه بود و نتیجه‌اش این شد که ۲۴ کارت از ۲۷
-     نشان گرفتند. نشانی که تقریباً همه دارند، چیزی را از بقیه جدا
-     نمی‌کند و فقط جای بصری می‌گیرد. زمان تحویل برای همه در ردیف
-     آرامِ نشانه‌ها می‌آید؛ سبزِ پررنگ سهم آن‌هایی است که واقعاً
-     سریع‌ترند. */
-  const exceptional = mins !== null && mins <= 5;
 
   const isGame = p.category === 'gaming';
+
+  /* انتخاب سریع پلن، روی خود کارت.
+
+     قبلاً + برای محصول چندپلنی فقط به صفحه‌ی محصول می‌رفت. منطقش
+     درست بود — نباید کورکورانه پلنی را اضافه کرد — ولی از دید
+     کاربر دکمه‌ای که «افزودن» می‌گوید و بعد صفحه عوض می‌کند، یعنی
+     کار نکرد. و چون بیشتر محصولات چند پلن دارند، تقریباً هیچ +ی
+     کار نمی‌کرد.
+
+     حالا فهرست کوتاه پلن‌ها همان‌جا باز می‌شود. محصولی که ورودی
+     لازم دارد (ایمیل، یوزرنیم) همچنان به صفحه می‌رود، چون آن را
+     نمی‌شود در یک پاپ‌آور کوچک گرفت. */
+  const [picking, setPicking] = useState(false);
+  const pickRef = useRef<HTMLDivElement>(null);
+
+  const needsPage = needsCustomerInput(p);
+  const multiPlan = p.variants.length > 1;
+
+  useEffect(() => {
+    if (!picking) return;
+    const onDown = (e: PointerEvent) => {
+      if (!pickRef.current?.contains(e.target as Node)) setPicking(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPicking(false); };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [picking]);
+
+  const addVariant = (variant: typeof v, el: HTMLElement) => {
+    const r = el.getBoundingClientRect();
+    launch({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    add(p, variant);
+    setPicking(false);
+  };
 
   const open = () => router.push(`/product/${p.slug}`);
 
@@ -133,12 +156,6 @@ export function ProductCard({ product: p }: { product: Product }) {
         {/* نشان‌ها روی تصویر می‌نشینند تا از بدنه‌ی متنی جا نگیرند */}
         <span className="pcard__flags">
           {off !== null && <span className="pcard__off num">٪{fmt(off)}−</span>}
-          {exceptional && (
-            <span className="pcard__instant">
-              <Zap aria-hidden="true" />
-              {mins === 0 ? 'آنی' : 'فوری'}
-            </span>
-          )}
         </span>
 
         {sold && <span className="pcard__sold">فعلاً ناموجود</span>}
@@ -180,28 +197,65 @@ export function ProductCard({ product: p }: { product: Product }) {
         )}
 
         <span className="pcard__foot">
-          <button
-            type="button"
-            className="pcard__add"
-            disabled={sold}
-            aria-label={`افزودن ${p.title} به سبد`}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (sold) return;
-              /* محصولی که چند پلن یا ورودی لازم دارد نباید کورکورانه
-                 اضافه شود — کاربر باید خودش انتخاب کند. */
-              if (p.variants.length > 1 || needsCustomerInput(p)) {
-                router.push(`/product/${p.slug}`);
-                return;
+          <div className="pcard__addwrap" ref={pickRef}>
+            <button
+              type="button"
+              className="pcard__add"
+              disabled={sold}
+              aria-expanded={multiPlan && !needsPage ? picking : undefined}
+              aria-label={
+                needsPage ? `انتخاب و خرید ${p.title}`
+                : multiPlan ? `انتخاب پلن ${p.title}`
+                : `افزودن ${p.title} به سبد`
               }
-              const r = e.currentTarget.getBoundingClientRect();
-              launch({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
-              add(p, v);
-            }}
-          >
-            <Plus aria-hidden="true" />
-            <span className="pcard__add-text">افزودن</span>
-          </button>
+              onClick={(e) => {
+                e.stopPropagation();
+                if (sold) return;
+                if (needsPage) { router.push(`/product/${p.slug}`); return; }
+                if (multiPlan) { setPicking((x) => !x); return; }
+                addVariant(v, e.currentTarget);
+              }}
+            >
+              <Plus aria-hidden="true" />
+              <span className="pcard__add-text">
+                {needsPage ? 'انتخاب' : multiPlan ? 'پلن‌ها' : 'افزودن'}
+              </span>
+            </button>
+
+            {picking && (
+              <div className="pcard__picker" role="menu" onClick={(e) => e.stopPropagation()}>
+                <span className="pcard__picker-title">کدام پلن؟</span>
+                {p.variants.map((variant) => (
+                  <button
+                    key={variant.id}
+                    type="button"
+                    role="menuitem"
+                    className="pcard__picker-row"
+                    disabled={variant.stock === 0}
+                    onClick={(e) => { e.stopPropagation(); addVariant(variant, e.currentTarget); }}
+                  >
+                    <span>{variant.label}</span>
+                    <b className="num">
+                      {variant.stock === 0 ? 'ناموجود' : fmt(variant.price)}
+                    </b>
+                  </button>
+                ))}
+
+                {/* راه خروج برای کسی که نمی‌داند کدام را بردارد.
+
+                    بدون این، فهرستِ پلن‌ها برای آدمِ مردد بن‌بست است:
+                    سه اسم و سه قیمت می‌بیند و هیچ‌کدام نمی‌گوید چه
+                    فرقی دارند. */}
+                <button
+                  type="button"
+                  className="pcard__picker-help"
+                  onClick={(e) => { e.stopPropagation(); router.push(`/product/${p.slug}`); }}
+                >
+                  فرقشان را نمی‌دانم، توضیح بده
+                </button>
+              </div>
+            )}
+          </div>
 
           <span className="pcard__prices">
             {v.compareAt && <s className="pcard__was num">{fmt(v.compareAt)}</s>}

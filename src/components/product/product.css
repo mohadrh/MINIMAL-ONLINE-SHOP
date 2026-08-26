@@ -723,24 +723,99 @@
 
 .spec { max-width: 52rem; }
 
+/* ---------- جدول مشخصات ----------
+
+   از فهرستِ راه‌راهِ یک‌ستونه به شبکه‌ای از کارت‌های شیشه‌ای.
+
+   دلیلش خوانایی است نه تزئین: ردیف‌های راه‌راه چشم را افقی می‌کشند و
+   کاربر مجبور است نُه بار از راست به چپ برود. کارت‌های کنار هم را
+   می‌شود اسکن کرد — هر کدام یک واحد بسته است و چشم فقط دنبال آنی
+   می‌گردد که می‌خواهد.
+
+   پشتشان یک مِش خیلی کم‌رنگ هست تا شیشه چیزی برای شکستن داشته باشد؛
+   بدون آن، هر بلوری فقط یک سطح مات می‌سازد. */
+
 .spec__table {
+  position: relative;
+  isolation: isolate;
   margin: 0;
+  padding: var(--sp-5);
+  border-radius: 20px;
   border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  overflow: hidden;
+  background: var(--tint);
+  overflow: clip;
+
+  display: grid;
+  gap: var(--sp-2);
+}
+[data-theme='dark'] .spec__table {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* مِش پشت شیشه — دو لکه‌ی خیلی محو به رنگ خود محصول */
+.spec__table::before {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  z-index: -1;
+  filter: blur(60px);
+  opacity: 0.5;
+  background:
+    radial-gradient(40% 40% at 18% 20%, color-mix(in srgb, var(--accent, var(--blue)) 40%, transparent), transparent 68%),
+    radial-gradient(38% 38% at 82% 78%, color-mix(in srgb, var(--blue) 32%, transparent), transparent 66%);
+}
+
+/* همان ردیفِ برچسب-مقدار که بود، فقط شیشه‌ای و با تراشه‌ی آیکون */
 .spec__row {
   display: grid;
   grid-template-columns: 15rem 1fr;
+  align-items: center;
   gap: var(--sp-4);
-  padding: var(--sp-4) var(--sp-6);
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: color-mix(in oklab, #ffffff 52%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.4);
+  transition: translate 220ms var(--ease), box-shadow 220ms var(--ease);
 }
-.spec__row + .spec__row { border-top: 1px solid var(--line); }
-.spec__row:nth-child(odd) { background: var(--tint); }
-[data-theme='dark'] .spec__row:nth-child(odd) { background: rgba(255, 255, 255, 0.03); }
-[data-theme='dark'] .spec__row + .spec__row { border-top-color: rgba(255, 255, 255, 0.08); }
+.spec__row:hover {
+  translate: 0 -2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.5),
+    0 14px 30px -20px rgba(30, 26, 60, 0.4);
+}
 
+[data-theme='dark'] .spec__row {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: color-mix(in oklab, #ffffff 8%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+}
+[data-theme='dark'] .spec__row:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 16px 34px -18px rgba(0, 0, 0, 0.7);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .spec__row {
+    -webkit-backdrop-filter: blur(20px) saturate(165%);
+    backdrop-filter: blur(20px) saturate(165%);
+  }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .spec__row { background: var(--paper); }
+  [data-theme='dark'] .spec__row { background: var(--sunken); }
+}
+
+/* برچسب بالا و کوچک، مقدار پایین و درشت — چشم اول مقدار را
+   می‌خواند و برچسب فقط وقتی لازم است نگاه می‌شود. */
 .spec__row dt {
   display: flex; align-items: center; gap: var(--sp-2);
   font-size: var(--text-sm);
@@ -749,17 +824,41 @@
 .spec__row dd {
   margin: 0;
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 700;
+  line-height: 1.7;
   color: var(--ink);
 }
 
-.spec__icon { display: inline-flex; color: var(--blue); }
-.spec__icon svg { width: 15px; height: 15px; }
+/* ردیف وضعیت از بقیه جدا می‌شود — تنها چیزی که ممکن است
+   «نه» باشد و کل تصمیم را عوض کند. */
+/* ردیف وضعیت — تنها مشخصه‌ای که ممکن است جواب «نه» بدهد */
+.spec__row--head {
+  background: color-mix(in oklab, var(--blue) 10%, transparent);
+  border-color: color-mix(in srgb, var(--blue) 26%, transparent);
+}
+.spec__row--head dd { font-size: var(--text-md); color: var(--blue); }
 
-/* روی موبایل، دو ستون به دو سطر می‌شکند — ۱۵ رم برچسب روی
-   عرض ۳۷۵ پیکسل جایی برای مقدار نمی‌گذارد. */
+/* آیکون در تراشه‌ی رنگی — بدون آن، آیکون‌ها کنار متنِ خاکستری
+   گم می‌شوند و ردیف‌ها همه یک شکل به نظر می‌رسند. */
+.spec__icon {
+  width: 22px; height: 22px;
+  display: inline-grid; place-items: center;
+  flex-shrink: 0;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
+  color: var(--blue);
+}
+.spec__icon svg { width: 13px; height: 13px; }
+.spec__row--head .spec__icon { background: color-mix(in srgb, var(--blue) 20%, transparent); }
+
 @media (max-width: 640px) {
-  .spec__row { grid-template-columns: 1fr; gap: 4px; }
+  .spec__table { padding: var(--sp-3); }
+  /* ۱۵ رم برچسب روی عرض ۳۷۵ جایی برای مقدار نمی‌گذارد */
+  .spec__row { grid-template-columns: 1fr; align-items: start; gap: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spec__row:hover { translate: none; }
 }
 
 .spec__notes {
@@ -877,3 +976,90 @@
   cursor: pointer;
 }
 .shop__clear svg { width: 13px; height: 13px; }
+
+/* ---------- انتخاب سریع پلن روی کارت ----------
+
+   بالای دکمه باز می‌شود نه پایینش: کارت‌ها در شبکه‌اند و پایینِ
+   دکمه، لبه‌ی کارت است — فهرستی که آن‌جا باز شود زیر کارت بعدی
+   می‌رود. بالا همیشه فضای بدنه‌ی کارت را دارد. */
+
+.pcard__addwrap { position: relative; }
+
+.pcard__picker {
+  position: absolute;
+  inset-block-end: calc(100% + 8px);
+  inset-inline-start: 0;
+  z-index: 6;
+  min-width: 13rem;
+  padding: var(--sp-2);
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: 0 22px 48px -22px rgba(15, 17, 32, 0.32);
+  display: grid;
+  gap: 2px;
+  animation: pickIn 160ms var(--ease);
+}
+[data-theme='dark'] .pcard__picker {
+  background: var(--tint);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 24px 52px -20px rgba(0, 0, 0, 0.7);
+}
+
+@keyframes pickIn {
+  from { opacity: 0; translate: 0 6px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+.pcard__picker-title {
+  padding: 6px var(--sp-3) 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+.pcard__picker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 9px var(--sp-3);
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  text-align: start;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.pcard__picker-row:hover {
+  background: color-mix(in srgb, var(--pick, var(--accent)) 12%, transparent);
+  color: var(--ink);
+}
+.pcard__picker-row b { color: var(--ink); font-size: var(--text-xs); white-space: nowrap; }
+.pcard__picker-row:disabled { opacity: 0.45; cursor: not-allowed; }
+.pcard__picker-row:disabled b { color: var(--ink-faint); font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pcard__picker { animation: none; }
+}
+
+/* راه خروج از فهرست پلن‌ها برای کسی که مردد است */
+.pcard__picker-help {
+  margin-top: 4px;
+  padding: 8px var(--sp-3);
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 9px 9px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--blue);
+  text-align: start;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease);
+}
+.pcard__picker-help:hover { background: var(--blue-wash); }
+[data-theme='dark'] .pcard__picker-help { border-top-color: rgba(255, 255, 255, 0.12); }

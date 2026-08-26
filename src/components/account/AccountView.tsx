@@ -13,6 +13,7 @@ import {
 } from '../../data/account';
 import { listOrders } from '../../lib/orders';
 import { listTickets, type Ticket } from '../../lib/tickets';
+import { NewTicketFlow } from './NewTicketFlow';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -98,6 +99,7 @@ export function AccountView() {
   const [shown, setShown] = useState<Record<string, boolean>>({});
   const [copied, setCopied] = useState(false);
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [newTicket, setNewTicket] = useState(false);
 
   /* تیکت‌ها هم مثل سفارش‌ها فقط در مرورگر وجود دارند، پس بعد از
      سوار شدن خوانده می‌شوند نه در رندر. */
@@ -464,7 +466,13 @@ export function AccountView() {
         {/* ---------- پشتیبانی و تیکت ---------- */}
         {tab === 'tickets' && (
           <>
-            {tickets.length === 0 ? (
+            {newTicket ? (
+              <NewTicketFlow
+                orders={orders.slice(0, 8).map((o) => ({ id: o.code, label: `${o.code} — ${o.lines[0]?.title ?? ''}` }))}
+                onCancel={() => { setNewTicket(false); setTickets(listTickets()); }}
+                onSubmitted={() => setTickets(listTickets())}
+              />
+            ) : tickets.length === 0 ? (
               <div className="acc__empty">
                 <LifeBuoy aria-hidden="true" />
                 <h2>تیکتی باز نکرده‌ای</h2>
@@ -472,10 +480,19 @@ export function AccountView() {
                   اگر سفارشی مشکل دارد یا سوالی مانده، از اینجا بپرس.
                   معمولاً زیر یک ساعت جواب می‌گیری.
                 </p>
-                <Link href="/faq" className="btn btn--primary btn--sm">دیدن سوالات متداول</Link>
+                <button type="button" className="btn btn--primary btn--sm" onClick={() => setNewTicket(true)}>
+                  ثبت تیکت تازه
+                </button>
               </div>
             ) : (
               <div className="acc__list">
+                <button
+                  type="button"
+                  className="btn btn--primary btn--sm acc__newticket"
+                  onClick={() => setNewTicket(true)}
+                >
+                  ثبت تیکت تازه
+                </button>
                 {tickets.map((t) => (
                   <article key={t.id} className="acc__order">
                     <header>

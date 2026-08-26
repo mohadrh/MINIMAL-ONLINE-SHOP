@@ -137,8 +137,12 @@ export function ProductSpecs({ p }: { p: Product }) {
           </div>
 
           <dl className="spec__table">
-            {rows.map((r) => (
-              <div key={r.k} className="spec__row">
+            {rows.map((r, i) => (
+              /* ردیف اول «وضعیت» است و ته‌رنگ آبی می‌گیرد.
+
+                 تنها مشخصه‌ای که ممکن است جواب «نه» بدهد و کل تصمیم
+                 را عوض کند؛ بقیه جزئیات‌اند. */
+              <div key={r.k} className={`spec__row ${i === 0 ? 'spec__row--head' : ''}`}>
                 <dt>
                   <span className="spec__icon" aria-hidden="true">{r.icon}</span>
                   {r.k}

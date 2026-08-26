@@ -247,7 +247,7 @@ const SUBSCRIPTIONS: Product[] = [
     category: 'ai',
     fulfillment: 'upgrade_on_user',
     requiredInputs: [INPUT_EMAIL],
-    deliveryEstimate: 'کمتر از ۱۵ دقیقه',
+    deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
       { id: 'chatgpt-go-1m', label: 'Go — یک ماهه', price: 1766000, stock: null, isDefault: true },
@@ -285,7 +285,7 @@ const SUBSCRIPTIONS: Product[] = [
     category: 'ai',
     fulfillment: 'upgrade_on_user',
     requiredInputs: [INPUT_EMAIL],
-    deliveryEstimate: 'کمتر از ۱۵ دقیقه',
+    deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
       { id: 'claude-pro-1m', label: 'Pro — یک ماهه', price: 4460000, stock: null, isDefault: true },
@@ -322,7 +322,7 @@ const SUBSCRIPTIONS: Product[] = [
     category: 'ai',
     fulfillment: 'upgrade_on_user',
     requiredInputs: [INPUT_EMAIL],
-    deliveryEstimate: 'کمتر از ۱۵ دقیقه',
+    deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
       { id: 'gemini-private-18m', label: 'اختصاصی — ۱۸ ماهه', price: 1_200_000, stock: null, isDefault: true },
@@ -360,7 +360,7 @@ const SUBSCRIPTIONS: Product[] = [
     category: 'ai',
     fulfillment: 'stock_account',
     requiredInputs: [],
-    deliveryEstimate: 'تحویل آنی',
+    deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
       { id: 'cursor-pro-1m', label: 'Pro — یک ماهه', price: 2_450_000, stock: 12, isDefault: true },
@@ -400,7 +400,7 @@ const SUBSCRIPTIONS: Product[] = [
     category: 'creative',
     fulfillment: 'upgrade_on_user',
     requiredInputs: [INPUT_EMAIL],
-    deliveryEstimate: 'کمتر از ۱۵ دقیقه',
+    deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
       { id: 'canva-pro-12m', label: 'یک ساله', price: 205000, stock: null, isDefault: true },
@@ -436,7 +436,7 @@ const SUBSCRIPTIONS: Product[] = [
     category: 'creative',
     fulfillment: 'upgrade_on_user',
     requiredInputs: [INPUT_EMAIL],
-    deliveryEstimate: 'کمتر از ۱۵ دقیقه',
+    deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
       { id: 'capcut-pro-1m', label: 'یک ماهه', price: 1208000, stock: null, isDefault: true },
@@ -472,7 +472,7 @@ const SUBSCRIPTIONS: Product[] = [
     category: 'creative',
     fulfillment: 'upgrade_on_user',
     requiredInputs: [INPUT_EMAIL],
-    deliveryEstimate: 'کمتر از ۳۰ دقیقه',
+    deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
       { id: 'figma-12m', label: 'یک ساله', price: 2787000, stock: null, isDefault: true },
@@ -510,7 +510,7 @@ const SUBSCRIPTIONS: Product[] = [
     category: 'social',
     fulfillment: 'api_topup',
     requiredInputs: [INPUT_TELEGRAM],
-    deliveryEstimate: 'کمتر از ۱۵ دقیقه',
+    deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
       { id: 'tg-3m', label: 'سه ماهه', price: 2695000, stock: null, isDefault: true },
@@ -551,7 +551,7 @@ const SUBSCRIPTIONS: Product[] = [
     category: 'education',
     fulfillment: 'upgrade_on_user',
     requiredInputs: [INPUT_EMAIL],
-    deliveryEstimate: 'کمتر از ۳۰ دقیقه',
+    deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
       { id: 'duolingo-5m', label: 'پنج ماهه', price: 837000, stock: null, isDefault: true },
@@ -588,7 +588,7 @@ const SUBSCRIPTIONS: Product[] = [
     category: 'social',
     fulfillment: 'upgrade_on_user',
     requiredInputs: [INPUT_EMAIL],
-    deliveryEstimate: 'کمتر از ۳۰ دقیقه',
+    deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
       { id: 'spotify-individual-1m', label: 'اینفرادی — یک ماهه', price: 320_000, stock: null, isDefault: true },

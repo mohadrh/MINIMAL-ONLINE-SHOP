@@ -46,7 +46,7 @@ function game(cfg: {
     category: 'gaming',
     fulfillment: cfg.fulfillment ?? 'stock_account',
     requiredInputs: [],
-    deliveryEstimate: cfg.delivery ?? 'کمتر از ۱۵ دقیقه',
+    deliveryEstimate: cfg.delivery ?? 'در اسرع وقت، توسط سیستم',
     warrantyLabel: cfg.warranty ?? 'گارانتی مادام‌العمر فونیکس',
     variants: cfg.variants,
     media: {

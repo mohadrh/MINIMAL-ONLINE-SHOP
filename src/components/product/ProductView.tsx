@@ -8,6 +8,7 @@ import {
 } from '../../data/catalog';
 import { asset } from '../../lib/asset';
 import { ProductSpecs } from './ProductSpecs';
+import { getArticlesForCategory } from '../../data/articles';
 import { ProductArt } from '../ui/ProductArt';
 import { useCart, useFlight } from '../../app/providers';
 import { ProductCard } from './ProductCard';
@@ -42,6 +43,9 @@ export function ProductView({ product: p }: { product: Product }) {
   const related = getProductsByCategory(p.category)
     .filter((x) => x.slug !== p.slug)
     .slice(0, 4);
+
+  /* مقاله‌های هم‌موضوع با دسته‌ی این محصول */
+  const helpful = getArticlesForCategory(p.category, 3);
 
   const missing = p.requiredInputs.filter((i) => !inputs[i.key]?.trim());
   const canAdd = missing.length === 0;
@@ -266,6 +270,38 @@ export function ProductView({ product: p }: { product: Product }) {
           <Link href="/shop" className="btn btn--ghost btn--sm">دیدن همه‌ی محصولات</Link>
         </div>
       </section>
+
+      {/* ---------- مطالب مرتبط ----------
+
+           کسی که تا اینجا خوانده هنوز مردد است، وگرنه بالا سفارش
+           داده بود. مقاله‌ی هم‌موضوع دقیقاً همان چیزی است که تصمیم
+           را می‌بندد — و اگر امروز نخرد، بهانه‌ای برای برگشتن
+           می‌سازد. */}
+      {helpful.length > 0 && (
+        <section className="section section--tint" id="reads">
+          <div className="wrap">
+            <div className="sec-head">
+              <h2>مطالبی که کمک می‌کند</h2>
+              <p className="sec-head__lead">
+                قبل از خرید بخوان، یا بعدش برای اینکه بیشتر ازش دربیاوری.
+              </p>
+            </div>
+
+            <div className="rail grid--3">
+              {helpful.map((a) => (
+                <Link key={a.slug} href={`/blog/${a.slug}`} className="art">
+                  <span className="art__topic" style={{ ['--accent' as string]: a.accent }}>
+                    {a.topicLabel}
+                  </span>
+                  <b>{a.title}</b>
+                  <p>{a.excerpt}</p>
+                  <span className="art__meta num">{a.readMinutes} دقیقه خواندن</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ---------- ۹ بستنِ صفحه ----------
 

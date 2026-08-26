@@ -1215,3 +1215,313 @@
   .deal__add { transform: none; }
   .deal__add:hover { scale: 1; }
 }
+
+/* ============================================================
+   نور نئونی تیتر هیرو — فقط در حالت شب
+
+   حرکت و زمان‌بندی دقیقاً همان نسخه‌ی یک است. رنگ‌ها ولی از دو تا
+   به پنج رفت: کارفرما تابلوی رنگی‌رنگی خواست، نه دو رنگِ
+   یک‌درمیان.
+
+   نئون روی زمینه‌ی تیره معنی دارد؛ روی کاغذ سفید فقط یک متنِ محوِ
+   بدرنگ می‌شود. برای همین کل افکت زیر [data-theme='dark'] است و
+   حالت روز همان تیترِ توپرِ خودش را نگه می‌دارد.
+   ============================================================ */
+
+.hero__neon-word {
+  display: inline-block;
+  margin-inline-end: 0.28em;
+}
+.hero__neon-word:last-child { margin-inline-end: 0; }
+
+/* دو رنگ یک‌درمیان — تابلوی واقعی هم با چند تیوب ساخته می‌شود و
+   همه‌شان دقیقاً یک رنگ نیستند. */
+/* پنج رنگ، چرخشی روی کلمه‌ها.
+
+   تابلوی نئون واقعی با چند تیوبِ رنگی ساخته می‌شود و هیچ‌کدام
+   دقیقاً هم‌رنگ بعدی نیست. دو رنگِ یک‌درمیان الگویش خیلی زود
+   خوانده می‌شود؛ پنج‌تا، تا آخر تیتر تکرار حس نمی‌شود.
+
+   رنگِ متن هم با نئون هم‌خانواده است، نه سفیدِ خالص — تیوبِ نارنجی
+   شیشه‌اش هم گرم دیده می‌شود. */
+[data-theme='dark'] .hero__neon-word {
+  animation: heroNeonOn 2.4s cubic-bezier(0.3, 0.7, 0.3, 1)
+             calc(var(--i) * 340ms + 500ms) both;
+}
+
+[data-theme='dark'] .hero__neon-word[data-tube='0'] { --neon: #f59440; --neon-ink: #fff6ec; }
+[data-theme='dark'] .hero__neon-word[data-tube='1'] { --neon: #8b3fd4; --neon-ink: #f5ecff; }
+[data-theme='dark'] .hero__neon-word[data-tube='2'] { --neon: #ff4d9f; --neon-ink: #ffecf4; }
+[data-theme='dark'] .hero__neon-word[data-tube='3'] { --neon: #3ddcff; --neon-ink: #e9fbff; }
+[data-theme='dark'] .hero__neon-word[data-tube='4'] { --neon: #4fe08a; --neon-ink: #ecfff4; }
+
+@keyframes heroNeonOn {
+  /* تیوبِ خاموش */
+  0%, 16% { color: rgba(255, 255, 255, 0.14); text-shadow: none; }
+  /* اولین جرقه */
+  18%, 21% { color: var(--neon-ink); text-shadow: 0 0 4px #fff, 0 0 14px var(--neon); }
+  /* دوباره می‌پرد */
+  23%, 31% { color: rgba(255, 255, 255, 0.14); text-shadow: none; }
+  /* می‌گیرد ولی هنوز ناپایدار */
+  33%, 41% { color: var(--neon-ink); text-shadow: 0 0 4px #fff, 0 0 16px var(--neon); }
+  44%, 48% { color: rgba(255, 255, 255, 0.2); text-shadow: none; }
+  /* پایدار.
+
+     var(--neon-ink) است نه inherit: inherit رنگِ والد را می‌گیرد نه
+     رنگِ خود کلمه، پس هر پنج تیوب سفیدِ یکسان می‌شدند و فقط هاله‌شان
+     فرق می‌کرد. */
+  52%, 100% {
+    color: var(--neon-ink);
+    text-shadow:
+      0 0 5px #fff,
+      0 0 14px var(--neon),
+      0 0 32px var(--neon),
+      0 0 68px color-mix(in oklab, var(--neon) 70%, transparent);
+  }
+}
+
+/* بعد از روشن شدن، تابلو آرام نفس می‌کشد — نئون واقعی هیچ‌وقت
+   کاملاً ثابت نیست. */
+[data-theme='dark'] .hero__neon {
+  animation: heroNeonHum 4.2s ease-in-out 3.4s infinite;
+}
+
+@keyframes heroNeonHum {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.09); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='dark'] .hero__neon-word {
+    animation: none;
+    color: var(--neon-ink);
+    text-shadow: 0 0 5px #fff, 0 0 14px var(--neon), 0 0 32px var(--neon);
+  }
+  [data-theme='dark'] .hero__neon { animation: none; }
+}
+
+/* ============================================================
+   چرا فونیکس شاپ — سه سکشن در یکی
+
+   دو ستون کنار هم به‌جای سه سکشن پشت سر هم. ارتفاع از ۲٬۳۷۳ پیکسل
+   به حدود یک‌سوم می‌رسد و هیچ حرفی هم حذف نشده.
+   ============================================================ */
+
+.whyx__safe {
+  list-style: none;
+  margin: var(--sp-14) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: var(--sp-8);
+}
+
+.whyx__safe li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-4);
+  align-items: start;
+}
+
+.whyx__safe b {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.whyx__safe p {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: var(--leading);
+  color: var(--ink-faint);
+}
+
+/* آیکون تضمین — بدون قاب، فقط نشان.
+   قانون این سایت: آیکون خودش می‌ایستد، نه داخل جعبه. */
+.whyx__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding-top: 2px;
+  color: var(--blue);
+}
+.whyx__icon svg { width: 22px; height: 22px; }
+
+/* ---------- نوار آمار ---------- */
+
+.whyx__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: var(--sp-6);
+  margin: var(--sp-12) 0 0;
+  padding-top: var(--sp-8);
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+[data-theme='dark'] .whyx__stats { border-top-color: rgba(255, 255, 255, 0.1); }
+
+.whyx__stats dt {
+  font-size: var(--text-xl);
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.whyx__stats dd {
+  margin: 2px 0 0;
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+}
+
+/* ---------- سرِ سکشنِ ردیف محصول ---------- */
+
+.sec-head--row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  flex-wrap: wrap;
+}
+.sec-head--row .sec-head__lead { margin-bottom: 0; }
+.sec-head--row svg { width: 14px; height: 14px; }
+
+/* ============================================================
+   مسیر خرید — نقشه‌ی مرحله‌های بازی
+
+   سه گره روی یک خط، و خط با اسکرول کاربر پر می‌شود.
+
+   کاری که می‌کند این نیست که سرگرم کند: پیشرفتِ دیداری می‌گوید
+   «سه تاست و تمام»، و همان چیزی است که ترسِ «نمی‌دانم چقدر طول
+   می‌کشد» را برمی‌دارد. کسی که نمی‌داند مسیر چقدر است، وسطش
+   بیرون می‌رود.
+
+   خطِ پرشونده با scaleX ساخته می‌شود نه با width — دومی هر فریم
+   بازچینش می‌خواهد، اولی روی GPU می‌رود.
+   ============================================================ */
+
+.track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-8);
+}
+
+/* ریلِ خاکستری — پس‌زمینه‌ی مسیر */
+.track::before,
+.track::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 27px;
+  inset-inline: 12%;
+  height: 3px;
+  border-radius: 99px;
+}
+.track::before { background: var(--sunken); }
+[data-theme='dark'] .track::before { background: rgba(255, 255, 255, 0.09); }
+
+/* خطِ پرشده — به اندازه‌ی گره‌های روشن جلو می‌رود */
+.track::after {
+  background: linear-gradient(to left, var(--blue), #7aa5ff);
+  transform-origin: right center;
+  transform: scaleX(calc(var(--lit, 0) / 3));
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.track__step {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: var(--sp-4);
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- گره ---------- */
+
+.track__node {
+  position: relative;
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  border-radius: var(--r-full);
+  background: var(--paper);
+  border: 3px solid var(--sunken);
+  color: var(--ink-faint);
+  transition:
+    border-color 420ms var(--ease),
+    color 420ms var(--ease),
+    box-shadow 420ms var(--ease),
+    scale 420ms cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+[data-theme='dark'] .track__node {
+  background: var(--tint);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.track__node svg { width: 22px; height: 22px; }
+
+/* روشن شدن — یکی‌یکی، با تأخیر پله‌ای */
+.is-lit .track__node {
+  border-color: var(--blue);
+  color: var(--blue);
+  scale: 1.06;
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--blue) 12%, transparent),
+    0 12px 28px -14px color-mix(in srgb, var(--blue) 70%, transparent);
+  transition-delay: calc(var(--i) * 140ms);
+}
+
+/* شماره‌ی گام روی گوشه‌ی گره می‌نشیند */
+.track__n {
+  position: absolute;
+  inset-block-start: -6px;
+  inset-inline-start: -6px;
+  width: 24px; height: 24px;
+  display: grid; place-items: center;
+  border-radius: var(--r-full);
+  background: var(--sunken);
+  color: var(--ink-faint);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  transition: background 420ms var(--ease), color 420ms var(--ease);
+}
+.is-lit .track__n {
+  background: var(--blue);
+  color: #fff;
+  transition-delay: calc(var(--i) * 140ms);
+}
+[data-theme='dark'] .track__n { background: rgba(255, 255, 255, 0.12); }
+
+.track__icon { display: inline-flex; }
+
+/* ---------- متن گام ---------- */
+
+.track__body b {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.track__body p {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: var(--leading);
+  color: var(--ink-faint);
+  max-width: 24ch;
+  margin-inline: auto;
+}
+
+/* روی موبایل، مسیر عمودی می‌شود — سه ستون روی ۳۷۵ پیکسل یعنی
+   متنِ سه‌کلمه‌ای در هر ستون. */
+@media (max-width: 760px) {
+  .track { grid-template-columns: 1fr; gap: var(--sp-6); }
+  .track::before, .track::after { display: none; }
+  .track__step { grid-template-columns: auto 1fr; justify-items: start; text-align: start; }
+  .track__body p { max-width: none; margin-inline: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track::after { transition: none; }
+  .is-lit .track__node { scale: 1; transition-delay: 0s; }
+  .is-lit .track__n { transition-delay: 0s; }
+}

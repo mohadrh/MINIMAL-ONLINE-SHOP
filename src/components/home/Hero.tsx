@@ -88,7 +88,38 @@ export function Hero() {
           >
             <div className="wrap hero__slide-inner">
               <div className="hero__txt">
-                <h2>{s.titleLead} {s.titleAccent}</h2>
+                {/* تیتر کلمه‌به‌کلمه، برای نور نئونی حالت شب.
+
+                    هر کلمه باید عنصر خودش را داشته باشد تا بتواند
+                    جدا روشن شود — تابلوی نئون واقعی هم چند تیوب
+                    جداست، نه یکی.
+
+                    فاصله‌ی بین کلمه‌ها از margin می‌آید نه از فضای
+                    متنی: با map ساخته می‌شوند و فاصله‌ی متنی به
+                    آخرین کلمه هم می‌چسبید. */}
+                <h2 className="hero__neon">
+                  {`${s.titleLead} ${s.titleAccent}`.split(' ').filter(Boolean).map((w, wi) => (
+                    <span
+                      key={wi}
+                      className="hero__neon-word"
+                      /* رنگِ تیوب از ترکیب اسلاید و کلمه می‌آید، نه از
+                         nth-child.
+
+                         با nth-child، شمارش داخل هر تیتر از صفر شروع
+                         می‌شد و چون تیترها دو کلمه‌اند، همیشه فقط دو
+                         رنگ اول می‌آمد. اینجا ایندکس اسلاید هم در
+                         شمارش هست، پس هر اسلاید از رنگ دیگری شروع
+                         می‌کند و هر پنج تیوب دیده می‌شوند. */
+                      style={{
+                        ['--i' as string]: wi,
+                        ['--c' as string]: (idx * 2 + wi) % 5,
+                      }}
+                      data-tube={(idx * 2 + wi) % 5}
+                    >
+                      {w}
+                    </span>
+                  ))}
+                </h2>
                 <p>{s.description}</p>
                 <Link href={s.href} className="btn btn--primary">
                   {s.ctaLabel}

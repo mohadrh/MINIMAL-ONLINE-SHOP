@@ -365,3 +365,28 @@ export const getRelatedArticles = (slug: string, limit = 3) => {
   const rest = ARTICLES.filter((a) => a.slug !== slug && a.topic !== current.topic);
   return [...sameTopic, ...rest].slice(0, limit);
 };
+
+/* ---------------------------------------------------------------
+   مقاله‌های مرتبط با یک محصول.
+
+   دسته‌ی محصول مستقیم به موضوع مقاله نگاشت می‌شود. دو دسته‌ای که
+   موضوع اختصاصی ندارند — شبکه‌های اجتماعی و آموزش — به «راهنما»
+   می‌روند، چون مقاله‌های آن‌جا عمومی‌اند و به هر خریدی می‌خورند.
+
+   اگر هم‌موضوع کم بود، با راهنماها پر می‌شود: بهتر است کاربر سه
+   مقاله‌ی کمی مرتبط ببیند تا یک مقاله و دو جای خالی.
+--------------------------------------------------------------- */
+const CATEGORY_TOPIC: Record<string, ArticleTopic> = {
+  ai: 'ai',
+  gaming: 'gaming',
+  creative: 'creative',
+  social: 'guide',
+  education: 'guide',
+};
+
+export const getArticlesForCategory = (category: string, limit = 3): Article[] => {
+  const topic = CATEGORY_TOPIC[category] ?? 'guide';
+  const onTopic = ARTICLES.filter((a) => a.topic === topic);
+  const guides = ARTICLES.filter((a) => a.topic === 'guide' && a.topic !== topic);
+  return [...onTopic, ...guides].slice(0, limit);
+};
