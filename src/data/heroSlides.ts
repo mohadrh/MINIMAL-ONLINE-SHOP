@@ -118,7 +118,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
       'همان دسترسی پلن اختصاصی',
       'بدون نیاز به کارت خارجی',
     ],
-    backdrop: '/hero/banner/slide-ai.png',
+    backdrop: '/hero/banner/slide-gift.png',
     tint: '#7c5cf0',
     ctaLabel: 'دیدن پلن فمیلی',
     href: '/product/gemini-pro',
