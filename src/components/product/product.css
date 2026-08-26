@@ -21,12 +21,20 @@
               box-shadow 340ms var(--ease);
 }
 
+/* هاور کم و آرام.
+
+   بلند شدنِ ۵ پیکسلی با بزرگ‌نماییِ ۸ درصدیِ تصویر، در یک شبکه‌ی
+   چهارستونه حس به‌هم‌ریختگی می‌داد — چشم فکر می‌کرد کل ردیف تکان
+   خورد.
+
+   هیچ‌کدام از این‌ها هم روی چیدمان اثر ندارند: translate و scale
+   فقط رسم را جابه‌جا می‌کنند، پس کارت‌های کناری سرجایشان می‌مانند. */
 .pcard:hover {
-  translate: 0 -5px;
+  translate: 0 -2px;
   border-color: color-mix(in srgb, var(--accent) 45%, transparent);
   box-shadow:
-    0 18px 34px -22px rgba(15, 17, 32, 0.18),
-    0 0 40px -12px color-mix(in srgb, var(--accent) 42%, transparent);
+    0 12px 26px -20px rgba(15, 17, 32, 0.16),
+    0 0 28px -14px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 [data-theme='dark'] .pcard {
@@ -169,11 +177,11 @@
   filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.28));
   transition: scale 700ms var(--ease), translate 500ms var(--ease);
 }
-.pcard:hover .pcard__art--game img { scale: 1.04; translate: 0 -4px; }
+.pcard:hover .pcard__art--game img { scale: 1.02; translate: 0 -2px; }
 
 /* لایه‌ی نشان‌ها باید بالای کاراکتر بماند */
 .pcard__over { z-index: 3; }
-.pcard:hover .pcard__art img { scale: 1.08; }
+.pcard:hover .pcard__art img { scale: 1.03; }
 
 /* صفحه‌ی جایگزین — وقتی تصویر محصول هنوز ساخته نشده */
 .art-plate {
