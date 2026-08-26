@@ -1560,3 +1560,100 @@
 }
 
 .askd__more { justify-self: start; margin-top: var(--sp-4); }
+
+/* ============================================================
+   تخفیف‌های امروز — حالت ویژه
+
+   باید از ردیف‌های عادیِ محصول جدا دیده شود، وگرنه «تخفیف» فقط
+   یک تیتر است. جدایی از قابِ گرم می‌آید نه از رنگِ جیغ: یک هاله‌ی
+   نارنجیِ خیلی محو پشت سکشن، و یک نوار باریکِ رنگی بالایش.
+   ============================================================ */
+
+.deals {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+}
+
+/* هاله‌ی گرم — فقط آن‌قدر که سکشن «داغ» به نظر برسد */
+.deals::before {
+  content: '';
+  position: absolute;
+  inset: 0 -10% auto;
+  height: 60%;
+  z-index: -1;
+  filter: blur(70px);
+  opacity: 0.4;
+  background:
+    radial-gradient(40% 60% at 20% 0%, rgba(255, 138, 60, 0.5), transparent 70%),
+    radial-gradient(36% 56% at 78% 10%, rgba(255, 92, 140, 0.34), transparent 68%);
+}
+[data-theme='dark'] .deals::before { opacity: 0.3; }
+
+.deals__head { align-items: flex-end; }
+
+.deals__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #e0631d;
+}
+.deals__kicker svg { width: 14px; height: 14px; }
+[data-theme='dark'] .deals__kicker { color: #ff9c53; }
+
+/* ---------- ریل دسته ---------- */
+
+.deals__lanes { margin-bottom: var(--sp-2); }
+
+.deals__count {
+  margin-inline-start: 6px;
+  padding: 1px 6px;
+  border-radius: var(--r-full);
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  font-size: 10px;
+  font-weight: 700;
+}
+.shop__chip.is-on .deals__count { background: rgba(255, 255, 255, 0.25); }
+
+/* ---------- دکمه‌های حرکت دستی ---------- */
+
+.deals__nav { display: flex; align-items: center; gap: var(--sp-2); }
+
+.deals__nav button {
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease),
+              background var(--dur) var(--ease);
+}
+.deals__nav button:hover { color: var(--blue); border-color: var(--blue-line); }
+.deals__nav button svg { width: 16px; height: 16px; }
+[data-theme='dark'] .deals__nav button {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* روی موبایل دکمه‌ها جا نمی‌گیرند — کشیدن با انگشت کافی است */
+@media (max-width: 560px) { .deals__nav button { display: none; } }
+
+/* ---------- ریل کارت‌ها ---------- */
+
+.deals__rail { scroll-behavior: smooth; }
+
+/* نوارِ باریکِ رنگی بالای هر کارتِ تخفیف‌دار — نشانِ اینکه این
+   ردیف با بقیه فرق دارد. */
+.deals__rail .pcard { position: relative; }
+.deals__rail .pcard::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: var(--sp-6);
+  height: 3px;
+  border-radius: 0 0 99px 99px;
+  background: linear-gradient(to left, #ff8a3c, #ff5c8c);
+  z-index: 4;
+}

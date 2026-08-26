@@ -1,128 +1,168 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Clock, Flame, Plus } from 'lucide-react';
-import { PRODUCTS, getDefaultVariant, getLowestPrice, needsCustomerInput } from '../../data/catalog';
-import { asset } from '../../lib/asset';
-import { useCart, useFlight } from '../../app/providers';
-
-const fmt = (n: number) => n.toLocaleString('fa-IR');
+import { ArrowLeft, ArrowRight, Flame } from 'lucide-react';
+import { PRODUCTS, type CategorySlug } from '../../data/catalog';
+import { ProductCard } from '../product/ProductCard';
 
 /**
  * تخفیف‌های امروز.
  *
- * جای همان سکشنِ زیر هیرو در نسخه‌ی قبل، ولی بدون چرخ‌فلک: کارت‌ها
- * در یک شبکه می‌نشینند و روی موبایل کشویی می‌شوند.
+ * سه چیز اینجا با بقیه‌ی ردیف‌های سایت فرق دارد:
  *
- * چرا چرخ‌فلک برنگشت: آنجا کارت‌ها می‌چرخیدند و کاربر برای دیدن
- * چیزی که رد شده بود باید صبر می‌کرد یا می‌کشید. شبکه همه را
- * هم‌زمان نشان می‌دهد و مقایسه را ممکن می‌کند — که کارِ یک سکشن
- * تخفیف است.
+ *   ۱ ریلِ دسته بالای سکشن است، پس تخفیف هر دنیا جدا دیده می‌شود.
+ *     خریدارِ گیم و خریدارِ اشتراک، تخفیفِ هم را لازم ندارند.
+ *
+ *   ۲ خودش می‌چرخد و با دست هم می‌شود چرخاند. چرخش با هر تعاملِ
+ *     کاربر — کشیدن، کلیک روی دکمه، یا حتی هاور — متوقف می‌شود و
+ *     دیگر برنمی‌گردد. چرخشی که روی دستِ کاربر ادامه پیدا کند،
+ *     آزاردهنده است نه کمک.
+ *
+ *   ۳ حالت ویژه دارد: قابِ گرم، درصد تخفیفِ درشت، و یک نوارِ
+ *     دورانِ رنگی. باید از ردیف‌های عادیِ محصول جدا دیده شود،
+ *     وگرنه «تخفیف» فقط یک تیتر است.
  *
  * فقط محصولاتی می‌آیند که واقعاً قیمت خط‌خورده دارند. اگر هیچ
- * تخفیفی فعال نباشد، سکشن اصلاً رندر نمی‌شود؛ سکشن تخفیفِ خالی
- * بدتر از نبودنش است.
+ * تخفیفی نباشد، سکشن اصلاً رندر نمی‌شود؛ سکشن تخفیفِ خالی بدتر از
+ * نبودنش است.
  */
+
+const LANES: { id: string; title: string; cats: CategorySlug[] }[] = [
+  { id: 'all',      title: 'همه',           cats: ['ai', 'creative', 'social', 'education', 'gaming'] },
+  { id: 'ai',       title: 'هوش مصنوعی',    cats: ['ai'] },
+  { id: 'apps',     title: 'اکانت و اشتراک', cats: ['creative', 'social', 'education'] },
+  { id: 'gaming',   title: 'گیم',            cats: ['gaming'] },
+];
+
+const AUTO_MS = 4200;
+
 export function HotDeals() {
-  const { add } = useCart();
-  const { launch } = useFlight();
-  const router = useRouter();
+  const [lane, setLane] = useState('all');
+  const [paused, setPaused] = useState(false);
+  const railRef = useRef<HTMLDivElement>(null);
 
-  const deals = PRODUCTS
-    .map((p) => {
-      const v = getDefaultVariant(p);
-      if (!v.compareAt || v.compareAt <= v.price) return null;
-      const off = Math.round((1 - v.price / v.compareAt) * 100);
-      return { p, v, off };
-    })
-    .filter((x): x is NonNullable<typeof x> => x !== null)
-    .sort((a, b) => b.off - a.off)
-    .slice(0, 4);
+  /* همه‌ی تخفیف‌ها، یک بار حساب می‌شوند.
 
-  if (deals.length === 0) return null;
+     بهترین تخفیفِ *هر پلن* حساب می‌شود، نه فقط پلن پیش‌فرض.
+     نسخه‌ی اول فقط پیش‌فرض را می‌سنجید و نتیجه‌اش این بود که
+     اشتراک‌هایی که تخفیفشان روی پلن یک‌ساله بود اصلاً دیده
+     نمی‌شدند — هر ۱۷ تخفیفِ سکشن مالِ گیم می‌شد و ریلِ دسته
+     بی‌فایده. */
+  const all = useMemo(() => {
+    return PRODUCTS
+      .map((p) => {
+        const offs = p.variants
+          .filter((v) => v.compareAt && v.compareAt > v.price)
+          .map((v) => Math.round((1 - v.price / v.compareAt!) * 100));
+        if (offs.length === 0) return null;
+        return { p, off: Math.max(...offs) };
+      })
+      .filter((x): x is NonNullable<typeof x> => x !== null)
+      .sort((a, b) => b.off - a.off);
+  }, []);
+
+  const deals = useMemo(() => {
+    const l = LANES.find((x) => x.id === lane)!;
+    /* حداکثر هشت — بیشترش دیگر مرور نیست، خستگی است. بقیه در
+       فروشگاه‌اند و لینکش همین بالاست. */
+    return all.filter((d) => l.cats.includes(d.p.category)).slice(0, 8);
+  }, [all, lane]);
+
+  /* ---------- چرخش خودکار ----------
+
+     با scrollBy جلو می‌رود نه با ایندکس: ریل خودش اسکرول‌شونده
+     است و کاربر ممکن است وسطش دست برده باشد. حرکت نسبی، هرجا که
+     هست را محترم می‌شمارد. */
+  useEffect(() => {
+    if (paused || deals.length < 2) return;
+    const el = railRef.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const id = window.setInterval(() => {
+      const card = el.querySelector('.pcard') as HTMLElement | null;
+      const step = card ? card.offsetWidth + 16 : el.clientWidth * 0.8;
+      /* به آخر که رسید، برمی‌گردد سر خط */
+      const atEnd = Math.abs(el.scrollLeft) + el.clientWidth >= el.scrollWidth - 8;
+      el.scrollBy({ left: atEnd ? -el.scrollWidth : -step, behavior: 'smooth' });
+    }, AUTO_MS);
+
+    return () => window.clearInterval(id);
+  }, [paused, deals.length, lane]);
+
+  /* هر تعاملی چرخش را برای همیشه می‌خواباند */
+  const stop = () => setPaused(true);
+
+  const nudge = (dir: 1 | -1) => {
+    stop();
+    const el = railRef.current;
+    if (!el) return;
+    const card = el.querySelector('.pcard') as HTMLElement | null;
+    const step = card ? card.offsetWidth + 16 : el.clientWidth * 0.8;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
+
+  if (all.length === 0) return null;
 
   return (
     <section className="section deals reveal">
       <div className="wrap">
         <div className="sec-head deals__head">
           <div>
-            <span className="sec-head__kicker">
-              <Flame aria-hidden="true" className="deals__kicker-icon" />
+            <span className="sec-head__kicker deals__kicker">
+              <Flame aria-hidden="true" />
               تا وقتی هست
             </span>
             <h2>تخفیف‌های امروز</h2>
           </div>
-          <Link href="/shop" className="btn btn--ghost btn--sm">
-            همه‌ی محصولات
-            <ArrowLeft aria-hidden="true" />
-          </Link>
+
+          <div className="deals__nav">
+            <button type="button" onClick={() => nudge(1)} aria-label="قبلی">
+              <ArrowRight aria-hidden="true" />
+            </button>
+            <button type="button" onClick={() => nudge(-1)} aria-label="بعدی">
+              <ArrowLeft aria-hidden="true" />
+            </button>
+            <Link href="/shop" className="btn btn--ghost btn--sm">همه‌ی محصولات</Link>
+          </div>
         </div>
 
-        <div className="rail deals__grid">
-          {deals.map(({ p, v, off }, idx) => (
-            <div
-              key={p.slug}
-              className="deal"
-              style={{ ['--i' as string]: idx, ['--accent' as string]: p.media.accent }}
-              onClick={() => router.push(`/product/${p.slug}`)}
-            >
-              <span className="deal__off num">٪{fmt(off)}−</span>
-
-              <span className="deal__art">
-                <img
-                  src={asset(p.media.thumbnail)}
-                  alt=""
-                  aria-hidden="true"
-                  loading="lazy"
-                />
-              </span>
-
-              <span className="deal__body">
-                <b className="deal__name">{p.title}</b>
-                <span className="deal__note">{p.shortDescription}</span>
-
-                <span className="deal__meta">
-                  <Clock aria-hidden="true" />
-                  {p.deliveryEstimate}
-                </span>
-
-                <span className="deal__prices">
-                  {/* دکمه‌ی افزودن.
-
-                      stopPropagation لازم است، وگرنه کلیک به کارت
-                      می‌رسد و به‌جای افزودن، صفحه‌ی محصول باز می‌شود.
-
-                      محصولی که چند پلن یا ورودی لازم دارد نباید
-                      کورکورانه اضافه شود — آنجا به صفحه‌ی محصول
-                      می‌رود تا کاربر خودش انتخاب کند. */}
-                  <button
-                    type="button"
-                    className="deal__add"
-                    aria-label={`افزودن ${p.title} به سبد`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (p.variants.length > 1 || needsCustomerInput(p)) {
-                        router.push(`/product/${p.slug}`);
-                        return;
-                      }
-                      const r = e.currentTarget.getBoundingClientRect();
-                      launch({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
-                      add(p, v);
-                    }}
-                  >
-                    <Plus aria-hidden="true" />
-                  </button>
-
-                  <s className="deal__was num">{fmt(v.compareAt!)}</s>
-                  <b className="deal__now num">{fmt(getLowestPrice(p))}</b>
-                  <span className="deal__unit">تومان</span>
-                </span>
-              </span>
-            </div>
-          ))}
+        {/* ---------- ریل دسته ---------- */}
+        <div className="shop__rail deals__lanes" role="group" aria-label="دسته‌ی تخفیف">
+          {LANES.map((l) => {
+            const n = all.filter((d) => l.cats.includes(d.p.category)).length;
+            if (n === 0) return null;
+            return (
+              <button
+                key={l.id}
+                className={`shop__chip ${lane === l.id ? 'is-on' : ''}`}
+                aria-pressed={lane === l.id}
+                onClick={() => { setLane(l.id); stop(); }}
+              >
+                {l.title}
+                <span className="deals__count num">{n.toLocaleString('fa-IR')}</span>
+              </button>
+            );
+          })}
         </div>
+
+        {/* ---------- کارت‌ها ---------- */}
+        {deals.length === 0 ? (
+          <p className="shop__empty">در این دسته الان تخفیفی فعال نیست.</p>
+        ) : (
+          <div
+            ref={railRef}
+            className="rail grid--4 deals__rail"
+            onPointerDown={stop}
+            onMouseEnter={stop}
+            onWheel={stop}
+          >
+            {deals.map((d) => (
+              <ProductCard key={d.p.slug} product={d.p} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
