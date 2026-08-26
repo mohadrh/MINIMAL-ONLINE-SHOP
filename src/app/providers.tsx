@@ -128,6 +128,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [flight, setFlight] = useState<FlightRequest | null>(null);
   const [cartAnchor, setCartAnchor] = useState<{ x: number; y: number } | null>(null);
 
+  /* موتور صدا باید انتخاب قبلی کاربر را از حافظه بخواند.
+
+     بدون این، کلاس با enabled=false شروع می‌شد و هیچ‌وقت localStorage
+     را نگاه نمی‌کرد — یعنی حتی اگر کاربر صدا را روشن کرده بود، دفعه‌ی
+     بعد خاموش برمی‌گشت. عملاً موتور همیشه ساکت بود. */
+  useEffect(() => { sound.init(); }, []);
+
   const add: CartContextValue['add'] = useCallback((product, variant, inputs = {}) => {
     sound.addToCart();
     const key = `${product.id}::${variant.id}`;
@@ -175,10 +182,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
       launch: (from) =>
         setFlight((f) => {
           if (f) return f;
-          /* سه صدا روی هم: پرتاب کوتاه، آفتربرنر، و عبور جت با داپلر.
-             هرکدام یک لایه از یک اتفاق‌اند، نه سه صدای جدا. */
-          sound.launch();
-          sound.afterburner();
+          /* فقط jetFlyby.
+
+             قبلاً هر سه صدا با هم پخش می‌شدند — launch، afterburner
+             و jetFlyby. ولی خودِ jetFlyby از قبل سه لایه دارد (غرش،
+             سوت توربین، هوای عبوری) و آن دوتای دیگر همان بازه‌ی
+             فرکانسی را دوباره پر می‌کردند. نتیجه گِل‌آلود بود، نه
+             پرحجم. */
           sound.jetFlyby(1.6);
           return { id: Date.now(), from };
         }),

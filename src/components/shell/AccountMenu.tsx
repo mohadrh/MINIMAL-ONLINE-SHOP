@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import {
   Award, Bookmark, ChevronLeft, LifeBuoy, LogOut, Moon, Package,
-  ShieldCheck, User, Wallet,
+  ShieldCheck, User, Volume2, Wallet,
 } from 'lucide-react';
 import { PROFILE } from '../../data/account';
+import { sound } from '../../lib/sound';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -30,9 +31,14 @@ export function AccountMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [soundOn, setSoundOn] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => setMounted(true), []);
+
+  /* موتور صدا خودش وضعیتش را پخش می‌کند و subscribe تابع لغو
+     اشتراک برمی‌گرداند، پس مستقیم به‌عنوان cleanup می‌رود. */
+  useEffect(() => sound.subscribe(setSoundOn), []);
 
   /* Escape می‌بندد، و کلیک بیرون هم. بدون این دو، منو روی موبایل
      تله می‌شود. */
@@ -104,10 +110,33 @@ export function AccountMenu({
             ))}
           </nav>
 
-          <button type="button" className="amenu__item amenu__theme" onClick={onToggleTheme}>
+          <button
+            type="button"
+            className="amenu__item amenu__theme"
+            onClick={onToggleTheme}
+            aria-pressed={theme === 'dark'}
+          >
             <span className="amenu__ic" aria-hidden="true"><Moon /></span>
             حالت شب
             <span className={`amenu__switch ${theme === 'dark' ? 'is-on' : ''}`} aria-hidden="true">
+              <i />
+            </span>
+          </button>
+
+          {/* صدا پیش‌فرض خاموش است و باید بماند.
+
+              صدای خودکار در بازدید اول آزاردهنده است. ولی تا حالا
+              اصلاً کلیدی نداشت، یعنی موتوری که ساخته شده بود هیچ‌وقت
+              شنیده نمی‌شد. */}
+          <button
+            type="button"
+            className="amenu__item amenu__theme"
+            onClick={() => sound.toggle()}
+            aria-pressed={soundOn}
+          >
+            <span className="amenu__ic" aria-hidden="true"><Volume2 /></span>
+            صدای سایت
+            <span className={`amenu__switch ${soundOn ? 'is-on' : ''}`} aria-hidden="true">
               <i />
             </span>
           </button>

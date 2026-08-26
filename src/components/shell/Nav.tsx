@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Menu, Moon, Search, ShoppingBag, Sun, X } from 'lucide-react';
 import { AccountMenu } from './AccountMenu';
 import { ShoppingAssistant } from './ShoppingAssistant';
 import { CATEGORIES } from '../../data/catalog';
 import { asset } from '../../lib/asset';
+import { useFlight } from '../../app/providers';
 
 /**
  * نوبار.
@@ -21,6 +22,35 @@ export function Nav() {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
   const [assistOpen, setAssistOpen] = useState(false);
+
+  /* مقصد پروازِ جت.
+
+     پرووایدر از اول registerCartAnchor را داشت ولی هیچ‌کس صدایش
+     نمی‌زد، پس cartAnchor همیشه null می‌ماند و اورلیِ پرواز بلافاصله
+     complete() می‌کرد — یعنی زدنِ + هیچ اتفاقی نمی‌انداخت.
+
+     جای آیکون با resize و اسکرول عوض می‌شود، پس دوباره اندازه
+     گرفته می‌شود؛ نوبار چسبان است ولی موقعیت افقی‌اش با عرض پنجره
+     تغییر می‌کند. */
+  const { registerCartAnchor } = useFlight();
+  const cartRef = useRef<HTMLAnchorElement>(null);
+
+  const measureCart = useCallback(() => {
+    const el = cartRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    registerCartAnchor({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+  }, [registerCartAnchor]);
+
+  useEffect(() => {
+    measureCart();
+    window.addEventListener('resize', measureCart);
+    window.addEventListener('scroll', measureCart, { passive: true });
+    return () => {
+      window.removeEventListener('resize', measureCart);
+      window.removeEventListener('scroll', measureCart);
+    };
+  }, [measureCart]);
 
   useEffect(() => {
     const t = document.documentElement.dataset.theme;
@@ -82,7 +112,7 @@ export function Nav() {
 
           <AccountMenu theme={theme} onToggleTheme={toggleTheme} />
 
-          <Link href="/cart" className="nav__icon" aria-label="سبد خرید">
+          <Link ref={cartRef} href="/cart" className="nav__icon" aria-label="سبد خرید">
             <ShoppingBag />
           </Link>
 
