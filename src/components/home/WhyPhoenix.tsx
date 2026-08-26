@@ -1,167 +1,158 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import {
-  CreditCard, MousePointerClick, RotateCcw, Sparkles, Zap,
+  Check, ChevronDown, CreditCard, MousePointerClick, Sparkles,
 } from 'lucide-react';
+import { HELP_ARTICLES } from '../../data/helpArticles';
 
 /**
- * چرا فونیکس شاپ — سه سکشن در یکی، با مسیر خریدِ مرحله‌به‌مرحله.
+ * چرا فونیکس شاپ — مسیر خرید اسکرول‌محور.
  *
  * قبلاً «خرید چطور است»، «چرا امن است» و «آمار» سه سکشن جدا بودند
  * و پشت سر هم می‌آمدند: ۲٬۳۷۳ پیکسل توضیحِ پیوسته بدون یک محصول.
  * حالا یکی‌اند و جای آزادشده به ردیف‌های محصول رسید.
  *
- * مسیر خرید مثل نقشه‌ی مرحله‌های یک بازی کشیده شده: سه گره روی یک
- * خط، و خط با اسکرول کاربر پر می‌شود. دلیلش سرگرمی نیست —
- * پیشرفتِ دیداری به آدم می‌گوید «سه تاست و تمام»، و همان چیزی است
- * که ترسِ «نمی‌دانم چقدر طول می‌کشد» را برمی‌دارد.
+ * مسیر می‌چسبد و با اسکرول جلو می‌رود: هر گام که کامل شد تیک
+ * می‌خورد و بعد نوبت بعدی. کاربر خودش مسیر را طی می‌کند نه اینکه
+ * فقط تماشا کند.
  *
- * گره‌ها یکی‌یکی روشن می‌شوند نه با هم: ترتیب اینجا واقعاً معنی
- * دارد و باید حس شود، نه فقط شماره‌گذاری.
+ * ارتفاع چسبندگی عمداً کوتاه است — کمی بیش از دو صفحه برای سه گام.
+ * سکشنی که کاربر را زیاد نگه دارد، از توضیح به مانع تبدیل می‌شود.
  */
 
 const STEPS = [
   {
-    n: '۱',
     icon: <MousePointerClick />,
     t: 'سرویس و پلن را انتخاب کن',
     d: 'مدت اشتراک و نوع تحویل را خودت مشخص می‌کنی. قیمت پیش از پرداخت کامل معلوم است.',
   },
   {
-    n: '۲',
     icon: <CreditCard />,
     t: 'با کارت بانکی خودت پرداخت کن',
     d: 'درگاه ریالی داخلی. نه ارز لازم داری، نه حساب خارجی.',
   },
   {
-    n: '۳',
     icon: <Sparkles />,
     t: 'روی حساب خودت فعال می‌شود',
     d: 'ایمیلت را می‌گیریم و اشتراک روی همان حساب فعال می‌شود. رمزت را هیچ‌وقت نمی‌خواهیم.',
   },
 ];
 
-/* سه وعده، نه سه شعار.
-
-   نسخه‌ی اول «روی حساب خودت»، «رمزت را نمی‌خواهیم» و «گارانتی
-   داریم» بود — حرف‌هایی که هر فروشگاهی می‌زند و هیچ‌کدام چیزی را
-   ثابت نمی‌کند.
-
-   این سه، هرکدام یک مانعِ واقعیِ خریدِ ایرانی را برمی‌دارند و
-   هرکدام قابل سنجش‌اند: یا کارت ایرانی کار می‌کند یا نه، یا سیستم
-   خودکار تحویل می‌دهد یا آدم، یا پول برمی‌گردد یا نه. */
-const SAFE = [
-  {
-    icon: <CreditCard />,
-    t: 'نه کارت خارجی، نه ارز',
-    d: 'با همان کارت بانکی ایرانی خودت پرداخت می‌کنی. پیدا کردن ویزاکارت و خریدن دلار، مشکلِ ما می‌شود نه تو.',
-  },
-  {
-    icon: <Zap />,
-    t: 'سیستم تحویل می‌دهد، نه اپراتور',
-    d: 'سفارش که ثبت شد، خودکار می‌رود جلو. منتظر نمی‌مانی کسی پیامت را ببیند و شیفتش شروع شود.',
-  },
-  {
-    icon: <RotateCcw />,
-    t: 'نشد؟ پولت برمی‌گردد',
-    d: 'اگر اشتراک فعال نشد یا وسط دوره خوابید، جایگزینش می‌کنیم. نشد، کل مبلغ برمی‌گردد.',
-  },
-];
-
-const STATS = [
-  { num: '۲۴٬۸۰۰', label: 'سفارش تحویل‌شده' },
-  { num: '۶٬۱۰۰',  label: 'نظر ثبت‌شده' },
-  { num: '۲۷',     label: 'سرویس فعال' },
-  { num: '۲۴/۷',   label: 'پشتیبانی' },
-];
+/* سه سوالی که واقعاً پرسیده می‌شوند، با جوابشان.
+   جای سه شعارِ اعتمادسازیِ قبلی را گرفتند: «روی حساب خودت» و
+   «رمزت را نمی‌خواهیم» چیزهایی بودند که هر فروشگاهی می‌گوید و
+   هیچ‌کدام تردیدی را برطرف نمی‌کرد. سوال و جواب، تردید را
+   مستقیم هدف می‌گیرد. */
+const ASKED = HELP_ARTICLES.slice(0, 3);
 
 export function WhyPhoenix() {
-  /* تا کدام گره روشن شده. با IntersectionObserver پیش می‌رود، نه با
-     تایمر: اگر با تایمر بود، کسی که سریع اسکرول می‌کند انیمیشن را
-     از دست می‌داد و کسی که کند می‌آید، نصفه‌کاره می‌دیدش. */
-  const [lit, setLit] = useState(0);
-  const nodes = useRef<(HTMLLIElement | null)[]>([]);
+  const [done, setDone] = useState(0);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [openQ, setOpenQ] = useState<string | null>(null);
 
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) { setLit(STEPS.length); return; }
+    if (reduce) { setDone(STEPS.length); return; }
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (!e.isIntersecting) return;
-          const i = nodes.current.indexOf(e.target as HTMLLIElement);
-          if (i >= 0) setLit((v) => Math.max(v, i + 1));
-        });
-      },
-      { threshold: 0.6, rootMargin: '0px 0px -12% 0px' },
-    );
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const el = wrapRef.current;
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        /* چقدر از ناحیه‌ی چسبنده رد شده‌ایم، بین صفر و یک.
+           ارتفاع قابل اسکرول = کل ارتفاع منهای یک صفحه، چون آخرین
+           صفحه همان جایی است که مسیر هنوز چسبیده. */
+        const scrollable = el.offsetHeight - window.innerHeight;
+        if (scrollable <= 0) { setDone(STEPS.length); return; }
+        const p = Math.min(1, Math.max(0, -r.top / scrollable));
+        setDone(Math.min(STEPS.length, Math.floor(p * STEPS.length + 0.34)));
+      });
+    };
 
-    nodes.current.forEach((n) => n && io.observe(n));
-    return () => io.disconnect();
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   return (
-    <section className="section section--tint reveal" id="why">
-      <div className="wrap">
+    <section className="section section--tint" id="why">
+      {/* ظرف بلند — چسبندگی از ارتفاع همین می‌آید */}
+      <div className="tracked" ref={wrapRef}>
+        <div className="tracked__stick">
+          <div className="wrap">
+            <div className="sec-head">
+              <span className="sec-head__kicker">سه قدم</span>
+              <h2>خرید از فونیکس شاپ چطور است؟</h2>
+              <p className="sec-head__lead">
+                بیشتر سرویس‌های بین‌المللی کارت ایرانی را قبول نمی‌کنند. کاری که ما
+                می‌کنیم این است که آن پرداخت را از طرف تو انجام می‌دهیم.
+              </p>
+            </div>
+
+            <ol
+              className="track"
+              style={{ ['--done' as string]: done }}
+              aria-label="سه مرحله‌ی خرید"
+            >
+              {STEPS.map((s, i) => {
+                const state = i < done ? 'is-done' : i === done ? 'is-now' : '';
+                return (
+                  <li key={s.t} className={`track__step ${state}`} style={{ ['--i' as string]: i }}>
+                    <span className="track__node" aria-hidden="true">
+                      <span className="track__icon">{i < done ? <Check /> : s.icon}</span>
+                      <span className="track__n num">{(i + 1).toLocaleString('fa-IR')}</span>
+                    </span>
+
+                    <div className="track__body">
+                      <b>{s.t}</b>
+                      <p>{s.d}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+
+            <p className="track__hint" aria-hidden="true">
+              {done < STEPS.length ? 'اسکرول کن' : 'همین سه قدم، تمام.'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ---------- سه سوالی که واقعاً پرسیده می‌شود ---------- */}
+      <div className="wrap askd">
         <div className="sec-head">
-          <span className="sec-head__kicker">سه قدم، سه تضمین</span>
-          <h2>خرید از فونیکس شاپ چطور است؟</h2>
-          <p className="sec-head__lead">
-            بیشتر سرویس‌های بین‌المللی کارت ایرانی را قبول نمی‌کنند. کاری که ما
-            می‌کنیم این است که آن پرداخت را از طرف تو انجام می‌دهیم.
-          </p>
+          <h2>سه سوالی که بیشتر از همه می‌پرسند</h2>
         </div>
 
-        {/* ---------- مسیر خرید ---------- */}
-        <ol
-          className="track"
-          style={{ ['--lit' as string]: lit }}
-          aria-label="سه مرحله‌ی خرید"
-        >
-          {STEPS.map((s, i) => (
-            <li
-              key={s.n}
-              ref={(el) => { nodes.current[i] = el; }}
-              className={`track__step ${i < lit ? 'is-lit' : ''}`}
-              style={{ ['--i' as string]: i }}
+        {ASKED.map((a) => (
+          <div key={a.id} className="askd__item">
+            <button
+              type="button"
+              className="askd__q"
+              aria-expanded={openQ === a.id}
+              onClick={() => setOpenQ(openQ === a.id ? null : a.id)}
             >
-              <span className="track__node" aria-hidden="true">
-                <span className="track__icon">{s.icon}</span>
-                <span className="track__n num">{s.n}</span>
-              </span>
+              <b>{a.title}</b>
+              <ChevronDown aria-hidden="true" />
+            </button>
+            {openQ === a.id && <p className="askd__a">{a.answer}</p>}
+          </div>
+        ))}
 
-              <div className="track__body">
-                <b>{s.t}</b>
-                <p>{s.d}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-
-        {/* ---------- سه تضمین ---------- */}
-        <ul className="whyx__safe">
-          {SAFE.map((s) => (
-            <li key={s.t}>
-              <span className="whyx__icon" aria-hidden="true">{s.icon}</span>
-              <div>
-                <b>{s.t}</b>
-                <p>{s.d}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        {/* ---------- آمار ---------- */}
-        <dl className="whyx__stats">
-          {STATS.map((s) => (
-            <div key={s.label}>
-              <dt className="num">{s.num}</dt>
-              <dd>{s.label}</dd>
-            </div>
-          ))}
-        </dl>
+        <Link href="/faq" className="btn btn--ghost btn--sm askd__more">
+          دیدن همه‌ی سوال‌ها
+        </Link>
       </div>
     </section>
   );
