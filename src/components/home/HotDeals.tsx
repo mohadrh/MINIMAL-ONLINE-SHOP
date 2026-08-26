@@ -28,17 +28,21 @@ import { ProductCard } from '../product/ProductCard';
  * نبودنش است.
  */
 
+/* تبِ «همه» عمداً وجود ندارد.
+
+   با «همه» ریل دوباره همان قاطیِ قبل می‌شد: تخفیفِ گیم و اشتراکِ
+   هوش مصنوعی کنار هم و هیچ‌کدام برای کسی که دنبال یکی‌شان است
+   مفید نبود. هر تب یک دنیاست و کاربر خودش انتخاب می‌کند کدام. */
 const LANES: { id: string; title: string; cats: CategorySlug[] }[] = [
-  { id: 'all',      title: 'همه',           cats: ['ai', 'creative', 'social', 'education', 'gaming'] },
-  { id: 'ai',       title: 'هوش مصنوعی',    cats: ['ai'] },
-  { id: 'apps',     title: 'اکانت و اشتراک', cats: ['creative', 'social', 'education'] },
-  { id: 'gaming',   title: 'گیم',            cats: ['gaming'] },
+  { id: 'ai',     title: 'هوش مصنوعی',     cats: ['ai'] },
+  { id: 'apps',   title: 'اکانت و اشتراک', cats: ['creative', 'social', 'education'] },
+  { id: 'gaming', title: 'گیم',            cats: ['gaming'] },
 ];
 
 const AUTO_MS = 4200;
 
 export function HotDeals() {
-  const [lane, setLane] = useState('all');
+  const [lane, setLane] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
   const railRef = useRef<HTMLDivElement>(null);
 
@@ -62,12 +66,25 @@ export function HotDeals() {
       .sort((a, b) => b.off - a.off);
   }, []);
 
+  /* پرتخفیف‌ترین دسته پیش‌فرض باز می‌شود — نه اولین تبِ فهرست.
+     اگر امروز فقط گیم تخفیف داشته باشد، تبِ خالیِ هوش مصنوعی
+     نباید اولین چیزی باشد که کاربر می‌بیند. */
+  const lanes = useMemo(
+    () => LANES.map((l) => ({ ...l, n: all.filter((d) => l.cats.includes(d.p.category)).length }))
+               .filter((l) => l.n > 0),
+    [all],
+  );
+  const active = lane && lanes.some((l) => l.id === lane)
+    ? lane
+    : lanes.slice().sort((a, b) => b.n - a.n)[0]?.id;
+
   const deals = useMemo(() => {
-    const l = LANES.find((x) => x.id === lane)!;
+    const l = LANES.find((x) => x.id === active);
+    if (!l) return [];
     /* حداکثر هشت — بیشترش دیگر مرور نیست، خستگی است. بقیه در
        فروشگاه‌اند و لینکش همین بالاست. */
     return all.filter((d) => l.cats.includes(d.p.category)).slice(0, 8);
-  }, [all, lane]);
+  }, [all, active]);
 
   /* ---------- چرخش خودکار ----------
 
@@ -89,7 +106,7 @@ export function HotDeals() {
     }, AUTO_MS);
 
     return () => window.clearInterval(id);
-  }, [paused, deals.length, lane]);
+  }, [paused, deals.length, active]);
 
   /* هر تعاملی چرخش را برای همیشه می‌خواباند */
   const stop = () => setPaused(true);
@@ -130,21 +147,17 @@ export function HotDeals() {
 
         {/* ---------- ریل دسته ---------- */}
         <div className="shop__rail deals__lanes" role="group" aria-label="دسته‌ی تخفیف">
-          {LANES.map((l) => {
-            const n = all.filter((d) => l.cats.includes(d.p.category)).length;
-            if (n === 0) return null;
-            return (
-              <button
-                key={l.id}
-                className={`shop__chip ${lane === l.id ? 'is-on' : ''}`}
-                aria-pressed={lane === l.id}
-                onClick={() => { setLane(l.id); stop(); }}
-              >
-                {l.title}
-                <span className="deals__count num">{n.toLocaleString('fa-IR')}</span>
-              </button>
-            );
-          })}
+          {lanes.map((l) => (
+            <button
+              key={l.id}
+              className={`shop__chip ${active === l.id ? 'is-on' : ''}`}
+              aria-pressed={active === l.id}
+              onClick={() => { setLane(l.id); stop(); }}
+            >
+              {l.title}
+              <span className="deals__count num">{l.n.toLocaleString('fa-IR')}</span>
+            </button>
+          ))}
         </div>
 
         {/* ---------- کارت‌ها ---------- */}

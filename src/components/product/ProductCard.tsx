@@ -2,11 +2,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, Layers, Plus, ShieldCheck, Star } from 'lucide-react';
+import { Clock, Columns2, Layers, Plus, ShieldCheck, Star } from 'lucide-react';
+import { ShareBubble } from './ShareBubble';
 import {
   getDefaultVariant, getLowestPrice, needsCustomerInput, type Product,
 } from '../../data/catalog';
 import { ProductArt } from '../ui/ProductArt';
+import { useCompare } from '../shop/Compare';
 import { useCart, useFlight } from '../../app/providers';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
@@ -64,10 +66,13 @@ const totalStock = (p: Product): number | null => {
  * دارد، و آیا اصلاً مانده. هرچیز دیگری کارت را شلوغ می‌کند بدون
  * اینکه تصمیم را جلو ببرد.
  */
-export function ProductCard({ product: p }: { product: Product }) {
+export function ProductCard(
+  { product: p, style }: { product: Product; style?: React.CSSProperties },
+) {
   const router = useRouter();
   const { add } = useCart();
   const { launch } = useFlight();
+  const compare = useCompare();
 
   const v = getDefaultVariant(p);
   const off =
@@ -114,6 +119,13 @@ export function ProductCard({ product: p }: { product: Product }) {
   }, [picking]);
 
   const addVariant = (variant: typeof v, el: HTMLElement) => {
+    /* اگر محصول ورودی لازم دارد (ایمیل، یوزرنیم)، نمی‌شود از روی
+       کارت اضافه‌اش کرد — بدون آن ورودی، سر تسویه معلوم نیست
+       اشتراک را روی کدام حساب فعال کنیم. */
+    if (needsCustomerInput(p)) {
+      router.push(`/product/${p.slug}?plan=${encodeURIComponent(variant.id)}`);
+      return;
+    }
     const r = el.getBoundingClientRect();
     launch({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
     add(p, variant);
@@ -128,6 +140,7 @@ export function ProductCard({ product: p }: { product: Product }) {
       style={{
         ['--accent' as string]: p.media.accent,
         ['--pick' as string]: `var(${arcStop(p.slug)})`,
+        ...style,
       }}
       onClick={open}
       onKeyDown={(e) => {
@@ -159,6 +172,28 @@ export function ProductCard({ product: p }: { product: Product }) {
         </span>
 
         {sold && <span className="pcard__sold">فعلاً ناموجود</span>}
+
+        {/* مقایسه و اشتراک‌گذاری — گوشه‌ی مقابل نشان‌ها.
+
+            همیشه دیده می‌شوند. قبلاً تا هاور نکنی نبودند و روی
+            موبایل که هاوری در کار نیست، عملاً وجود نداشتند؛ کاربر
+            نمی‌تواند قابلیتی را کشف کند که پیدا نیست. حباب‌های
+            شیشه‌ای‌اند و کم‌رنگ، پس شلوغ هم نمی‌کنند. */}
+        <span className="pcard__acts">
+          <button
+            type="button"
+            className={`bub ${compare.has(p.slug) ? 'is-on' : ''}`}
+            data-tip={compare.has(p.slug) ? 'حذف از مقایسه' : 'مقایسه'}
+            aria-pressed={compare.has(p.slug)}
+            aria-label={compare.has(p.slug) ? `حذف ${p.title} از مقایسه` : `افزودن ${p.title} به مقایسه`}
+            disabled={!compare.has(p.slug) && compare.full}
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); compare.toggle(p); }}
+          >
+            <Columns2 aria-hidden="true" />
+          </button>
+
+          <ShareBubble title={p.title} path={`/product/${p.slug}`} />
+        </span>
       </span>
 
       <span className="pcard__body">
@@ -211,15 +246,23 @@ export function ProductCard({ product: p }: { product: Product }) {
               onClick={(e) => {
                 e.stopPropagation();
                 if (sold) return;
-                if (needsPage) { router.push(`/product/${p.slug}`); return; }
-                if (multiPlan) { setPicking((x) => !x); return; }
+                /* محصولی که ورودی لازم دارد هم اول فهرست پلن را
+                   نشان می‌دهد. آنجا دکمه‌ی «توضیح بده» هست که به
+                   صفحه‌ی محصول می‌برد — همان‌جا که ایمیل و آیدی
+                   گرفته می‌شود. */
+                if (multiPlan || needsPage) { setPicking((x) => !x); return; }
                 addVariant(v, e.currentTarget);
               }}
             >
               <Plus aria-hidden="true" />
-              <span className="pcard__add-text">
-                {needsPage ? 'انتخاب' : multiPlan ? 'پلن‌ها' : 'افزودن'}
-              </span>
+              {/* برچسبِ یکسان برای همه.
+
+                  قبلاً سه حالت داشت — «انتخاب»، «پلن‌ها»، «افزودن» —
+                  و کاربر با یک ردیف کارت روبه‌رو می‌شد که هر دکمه‌اش
+                  چیز دیگری می‌گفت. یک برچسبِ ثابت یعنی یک انتظارِ
+                  ثابت؛ اینکه پشتش پاپ‌آور باز شود یا مستقیم اضافه
+                  شود، جزئیاتِ ماست نه دغدغه‌ی او. */}
+              <span className="pcard__add-text">خرید</span>
             </button>
 
             {picking && (
@@ -251,7 +294,7 @@ export function ProductCard({ product: p }: { product: Product }) {
                   className="pcard__picker-help"
                   onClick={(e) => { e.stopPropagation(); router.push(`/product/${p.slug}`); }}
                 >
-                  فرقشان را نمی‌دانم، توضیح بده
+                  نمی‌دانم کدام را بگیرم، توضیح بده
                 </button>
               </div>
             )}

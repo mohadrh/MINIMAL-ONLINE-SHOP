@@ -8,6 +8,7 @@ import { Reveal } from '../components/motion/Reveal';
 import { CursorLight } from '../components/motion/CursorLight';
 import { ScrollTop } from '../components/shell/ScrollTop';
 import { LiveChat } from '../components/shell/LiveChat';
+import { CompareProvider, CompareBar } from '../components/shop/Compare';
 
 export const metadata: Metadata = {
   title: 'فونیکس شاپ — اشتراک هوش مصنوعی، گیم و شماره مجازی',
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>
+          <CompareProvider>
           <Nav />
           <main>{children}</main>
           <Footer />
@@ -60,6 +62,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* پروازِ جت هنگام افزودن به سبد — روی همه‌ی صفحه‌ها */}
           <JetFlightOverlay />
           <ScrollTop />
+          <CompareBar />
+          </CompareProvider>
           <LiveChat />
           <Reveal />
           <CursorLight />

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ChevronLeft, Check, Clock, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, Check, Clock, Columns2, ShieldCheck, Sparkles } from 'lucide-react';
 import {
-  CATEGORIES, PRODUCTS, getProductsByCategory, type Product,
+  CATEGORIES, PRODUCTS, getProductsByCategory, type Product, type Variant,
 } from '../../data/catalog';
 import { asset } from '../../lib/asset';
 import { ProductSpecs } from './ProductSpecs';
@@ -12,9 +12,51 @@ import { getArticlesForCategory } from '../../data/articles';
 import { ProductArt } from '../ui/ProductArt';
 import { useCart, useFlight } from '../../app/providers';
 import { ProductCard } from './ProductCard';
+import { ShareBubble } from './ShareBubble';
+import { useCompare } from '../shop/Compare';
 import { Faq } from '../ui/Faq';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
+
+/* توضیح هر پلن، ساخته‌شده از خود داده.
+
+   نوشتن یک جمله برای هر پلنِ هر محصول یعنی بیش از پنجاه متن که
+   باید دستی نگه داشته شوند و اولین باری که قیمتی عوض شود، کهنه
+   می‌شوند. این تابع از همان چیزی می‌سازد که در داده هست: مدت،
+   صرفه‌جویی نسبت به کوتاه‌ترین پلن، و موجودی. */
+function planNote(p: Product, v: Variant): string {
+  const bits: string[] = [];
+
+  const cheapest = p.variants.reduce((a, b) => (a.price <= b.price ? a : b));
+  if (v.id !== cheapest.id) {
+    const months = (label: string) => {
+      if (/سال/.test(label)) return 12;
+      if (/شش|۶/.test(label)) return 6;
+      if (/سه|۳/.test(label)) return 3;
+      return 1;
+    };
+    const m = months(v.label), mc = months(cheapest.label);
+    if (m > mc) {
+      const perMonth = v.price / m;
+      const basePerMonth = cheapest.price / mc;
+      const save = Math.round((1 - perMonth / basePerMonth) * 100);
+      if (save > 2) bits.push(`ماهی ${fmt(Math.round(perMonth))} تومان — ${fmt(save)}٪ ارزان‌تر از پلن ماهانه`);
+    }
+  } else if (p.variants.length > 1) {
+    bits.push('کوتاه‌ترین دوره — برای امتحان کردن');
+  }
+
+  if (v.compareAt && v.compareAt > v.price) {
+    bits.push(`${fmt(Math.round((1 - v.price / v.compareAt) * 100))}٪ تخفیف نسبت به قیمت قبلی`);
+  }
+
+  if (v.stock !== null) {
+    bits.push(v.stock === 0 ? 'فعلاً ناموجود' : `${fmt(v.stock)} عدد موجود`);
+  }
+
+  bits.push(p.warrantyLabel);
+  return bits.join(' · ');
+}
 
 /**
  * صفحه‌ی محصول.
@@ -33,8 +75,20 @@ const fmt = (n: number) => n.toLocaleString('fa-IR');
 export function ProductView({ product: p }: { product: Product }) {
   const { add } = useCart();
   const { launch } = useFlight();
+  const compare = useCompare();
 
-  const [variantId, setVariantId] = useState(p.variants[0].id);
+  const [variantId, setVariantId] = useState(
+    p.variants.find((v) => v.isDefault)?.id ?? p.variants[0].id,
+  );
+
+  /* اگر از فهرست پلنِ روی کارت آمده، همان پلن از قبل انتخاب باشد.
+
+     خواندن از window انجام می‌شود نه useSearchParams، چون این
+     صفحه استاتیک اکسپورت می‌شود و آن هوک مرز Suspense می‌خواهد. */
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('plan');
+    if (q && p.variants.some((v) => v.id === q)) setVariantId(q);
+  }, [p]);
   const [inputs, setInputs] = useState<Record<string, string>>({});
 
   const variant = p.variants.find((v) => v.id === variantId) ?? p.variants[0];
@@ -94,6 +148,25 @@ export function ProductView({ product: p }: { product: Product }) {
               <span className="pill"><ShieldCheck aria-hidden="true" />{p.warrantyLabel}</span>
             </div>
 
+            {/* مقایسه و اشتراک‌گذاری، بالای انتخاب پلن.
+
+                این‌جا در دیدِ کاربر است ولی قبل از تصمیم — کسی که
+                هنوز شک دارد همین‌جا محصول را به مقایسه اضافه
+                می‌کند یا لینکش را برای کسی می‌فرستد که نظر بدهد. */}
+            <div className="pdp-hero__acts">
+              <button
+                type="button"
+                className={`bub bub--wide ${compare.has(p.slug) ? 'is-on' : ''}`}
+                aria-pressed={compare.has(p.slug)}
+                disabled={!compare.has(p.slug) && compare.full}
+                onClick={() => compare.toggle(p)}
+              >
+                <Columns2 aria-hidden="true" />
+                <span>{compare.has(p.slug) ? 'در مقایسه' : 'مقایسه'}</span>
+              </button>
+              <ShareBubble title={p.title} path={`/product/${p.slug}`} variant="wide" />
+            </div>
+
             {/* انتخاب پلن */}
             <div className="pdp-plans" role="radiogroup" aria-label="انتخاب پلن">
               {p.variants.map((v) => (
@@ -109,6 +182,16 @@ export function ProductView({ product: p }: { product: Product }) {
                   {v.compareAt && <s className="pdp-plan__was num">{fmt(v.compareAt)}</s>}
                 </button>
               ))}
+            </div>
+
+            {/* توضیح پلنِ انتخاب‌شده.
+
+                فهرستِ پلن‌ها فقط اسم و قیمت می‌دهد؛ اینکه هر کدام
+                چه فرقی دارند، جای دیگری نوشته نشده بود. حالا هر
+                انتخابی که بشود، توضیحش همان‌جا زیرش می‌آید. */}
+            <div className="pdp-plan-note">
+              <span className="pdp-plan-note__k">{variant.label}</span>
+              <p>{planNote(p, variant)}</p>
             </div>
 
             {/* ورودی‌های لازم — ایمیل، آیدی بازی و مانند این‌ها */}
@@ -156,7 +239,7 @@ export function ProductView({ product: p }: { product: Product }) {
       </section>
 
       {/* ---------- ۳ تصویر و متن ---------- */}
-      <section className="section" id="about">
+      <section className="section reveal" id="about">
         <div className="wrap mediatext">
           <div className="mediatext__body">
             <h2>{p.title} به چه کارت می‌آید؟</h2>
@@ -194,7 +277,7 @@ export function ProductView({ product: p }: { product: Product }) {
       <ProductSpecs p={p} />
 
       {/* ---------- ۴ نوار مزایا ---------- */}
-      <section className="section section--blue" id="why">
+      <section className="section section--blue reveal" id="why">
         <div className="wrap">
           <div className="sec-head sec-head--center">
             <span className="sec-head__kicker">چرا از ما</span>
@@ -219,14 +302,16 @@ export function ProductView({ product: p }: { product: Product }) {
 
       {/* ---------- ۵ مرتبط‌ها ---------- */}
       {related.length > 0 && (
-        <section className="section" id="related">
+        <section className="section reveal" id="related">
           <div className="wrap">
             <div className="sec-head">
               <h2>سرویس‌های مشابه</h2>
             </div>
             <div className="rail grid--4">
-              {related.map((r) => (
-                <ProductCard key={r.slug} product={r} />
+              {related.map((r, i) => (
+                /* --i پله‌ی تأخیرِ ورود را می‌سازد؛ CSS خودش
+                   ضربدر شصت میلی‌ثانیه می‌کند */
+                <ProductCard key={r.slug} product={r} style={{ ['--i' as string]: i }} />
               ))}
             </div>
           </div>
@@ -235,7 +320,7 @@ export function ProductView({ product: p }: { product: Product }) {
 
       {/* ---------- ۶ و ۷ فهرست مطالب و سوالات ---------- */}
       {p.faq && p.faq.length > 0 && (
-        <section className="section section--tint" id="faq">
+        <section className="section section--tint reveal" id="faq">
           <div className="wrap pdp-faq">
             <aside className="pdp-toc" aria-label="فهرست مطالب">
               <h3>فهرست مطالب</h3>
@@ -260,7 +345,7 @@ export function ProductView({ product: p }: { product: Product }) {
       )}
 
       {/* ---------- ۸ امتیاز ---------- */}
-      <section className="section pdp-rate">
+      <section className="section pdp-rate reveal">
         <div className="wrap pdp-rate__row">
           <span className="pdp-rate__num num">{p.rating.toLocaleString('fa-IR')}</span>
           <span className="pdp-rate__text">
@@ -278,7 +363,7 @@ export function ProductView({ product: p }: { product: Product }) {
            را می‌بندد — و اگر امروز نخرد، بهانه‌ای برای برگشتن
            می‌سازد. */}
       {helpful.length > 0 && (
-        <section className="section section--tint" id="reads">
+        <section className="section section--tint reveal" id="reads">
           <div className="wrap">
             <div className="sec-head">
               <h2>مطالبی که کمک می‌کند</h2>
@@ -308,7 +393,7 @@ export function ProductView({ product: p }: { product: Product }) {
            کسی که تا اینجا خوانده، تصمیمش را گرفته. اگر آخر صفحه
            راهی به بالا نگذاریم، باید خودش اسکرول کند تا جعبه‌ی
            سفارش را پیدا کند — و بعضی‌ها نمی‌کنند. */}
-      <section className="section pdp-close">
+      <section className="section pdp-close reveal">
         <div className="wrap pdp-close__box">
           <h2>همین حالا {p.title} را بگیر</h2>
           <p>

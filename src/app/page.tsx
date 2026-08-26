@@ -3,7 +3,7 @@ import { HotDeals } from '../components/home/HotDeals';
 import { QuickAccess } from '../components/home/QuickAccess';
 import { AiPicker } from '../components/home/AiPicker';
 import { WhyPhoenix } from '../components/home/WhyPhoenix';
-import { ProductRow, bestOf, newest } from '../components/home/ProductRow';
+import { ProductRow, bestOf } from '../components/home/ProductRow';
 import { Reviews } from '../components/home/Reviews';
 import { Articles } from '../components/home/Articles';
 import { CallToAction } from '../components/home/CallToAction';
@@ -59,13 +59,15 @@ export default function HomePage() {
       {/* سه سکشن توضیحی که قبلاً جدا بودند، حالا یکی */}
       <WhyPhoenix />
 
-      {/* فروش — قبل از اینکه صفحه به بخش اجتماعی برود */}
+      {/* دنیای سوم. «تازه‌رسیده‌ها» بود و از هر دسته یکی می‌آورد —
+          همان قاطی‌شدنی که قرار بود نباشد. حالا سه ردیفِ صفحه‌ی
+          اصلی دقیقاً سه دنیای جداست: هوش مصنوعی، گیم، اشتراک. */}
       <ProductRow
-        title="تازه‌رسیده‌ها"
-        lead="آخرین چیزهایی که به فروشگاه اضافه شدند."
-        href="/shop"
-        hrefLabel="دیدن فروشگاه"
-        pick={newest()}
+        title="اکانت و اشتراک"
+        lead="کنوا، کپ‌کات، فیگما، تلگرام پرمیوم، اسپاتیفای و دولینگو."
+        href="/shop?cat=creative"
+        hrefLabel="دیدن همه"
+        pick={bestOf(['creative', 'social', 'education'])}
         tone="tint"
       />
 

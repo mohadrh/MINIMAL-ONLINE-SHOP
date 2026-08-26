@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 /**
  * ظهور آرام سکشن‌ها هنگام اسکرول.
@@ -20,8 +21,16 @@ import { useEffect } from 'react';
  *
  * ۲. بعد از دیده شدن، عنصر از رصد بیرون می‌رود. سکشن‌ها زیادند و
  *    نگه‌داشتنشان در observer فقط کار بی‌فایده است.
+ *
+ * ۳. با هر تغییر مسیر دوباره اسکن می‌شود. این کامپوننت در layout
+ *    است و یک بار mount می‌شود؛ اگر فقط همان یک بار پرس‌وجو
+ *    می‌کرد، هر صفحه‌ای که با ناوبری داخلی باز شود عنصرهای
+ *    .reveal‌اش هیچ‌وقت رصد نمی‌شدند و — چون حالت پیش‌فرضشان
+ *    opacity صفر است — برای همیشه نامرئی می‌ماندند.
  */
 export function Reveal() {
+  const pathname = usePathname();
+
   useEffect(() => {
     const root = document.documentElement;
 
@@ -47,7 +56,7 @@ export function Reveal() {
 
     targets.forEach((t) => io.observe(t));
     return () => io.disconnect();
-  }, []);
+  }, [pathname]);
 
   return null;
 }
