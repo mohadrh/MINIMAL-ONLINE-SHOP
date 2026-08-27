@@ -258,7 +258,12 @@
 .abt__way:hover {
   translate: 0 -3px;
   border-color: color-mix(in srgb, var(--blue) 45%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--blue) 22%, transparent),
+    0 20px 42px -30px color-mix(in srgb, var(--blue) 80%, transparent);
 }
+/* نورِ دنبال‌کننده باید داخل قاب بماند */
+.abt__way { overflow: hidden; }
 .abt__way b { font-size: var(--text-sm); }
 .abt__way > span:last-child { font-size: var(--text-xs); line-height: 1.85; color: var(--ink-faint); }
 
@@ -419,4 +424,108 @@
 @keyframes ct-run {
   from { offset-distance: 0%; }
   to   { offset-distance: 100%; }
+}
+
+/* ============================================================
+   هاورِ باکس‌های باشگاه
+   ============================================================
+
+   دو لایه، و هر دو از چیزی می‌آیند که قبلاً در سایت هست:
+
+   ۱ نورِ دنبال‌کننده‌ی نشانگر — همان لکه‌ای که روی کارت محصول و
+     نظرها هست. مختصاتش را CursorLight.tsx می‌نویسد و ظاهرش در
+     effects.css است؛ اینجا فقط رنگش را به رنگِ همان پله می‌بندیم
+     تا هر کارت با رنگِ خودش روشن شود نه با یک آبیِ مشترک.
+
+   ۲ گلوله‌ای که از چراغِ ایستگاه رد می‌شود. این یکی مخصوص همین
+     صفحه است: پس‌زمینه‌اش شبکه‌ای است که گلوله‌ها در آن راه
+     می‌روند، پس وقتی نشانگر روی یک ایستگاه می‌ایستد، منطقی است
+     که یکی هم از خودِ آن ایستگاه رد شود. حرکت روی
+     background-position است، نه روی عرض یا موقعیت — هیچ بازچینشی
+     لازم نمی‌شود.
+   ============================================================ */
+
+.tier { --accent: var(--tube); }
+
+/* چراغِ ایستگاه، حالا با گلوله‌ی عبوری */
+.tier::before {
+  background-color: var(--tube);
+  background-image: linear-gradient(
+    to left,
+    transparent 42%,
+    rgba(255, 255, 255, 0.95) 50%,
+    transparent 58%);
+  background-size: 260% 100%;
+  background-position: 160% 0;
+  background-repeat: no-repeat;
+}
+
+.tier:hover::before {
+  opacity: 1;
+  box-shadow: 0 0 12px 1px color-mix(in srgb, var(--tube) 75%, transparent);
+  animation: tier-sweep 900ms var(--ease);
+}
+@keyframes tier-sweep {
+  from { background-position: 160% 0; }
+  to   { background-position: -70% 0; }
+}
+
+/* کارت کمی بالا می‌آید و لبه‌اش رنگِ پله را می‌گیرد.
+
+   روی پله‌ی کاربر، انیمیشنِ نفس‌کشیدن باید کنار برود: انیمیشن بر
+   اعلانِ ساده مقدم است و اگر بماند، سایه‌ی هاور اصلاً دیده
+   نمی‌شود. */
+.tier:hover {
+  animation: none;
+  translate: 0 -3px;
+  border-color: color-mix(in srgb, var(--tube) 62%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tube) 34%, transparent),
+    0 22px 46px -28px color-mix(in srgb, var(--tube) 85%, transparent);
+}
+.tier {
+  transition:
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    translate var(--dur) var(--ease);
+}
+.tier:hover .tier__ico svg {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--tube) 75%, transparent));
+}
+
+/* ---------- سلول‌های ماشین‌حساب ----------
+
+   اینها عدد نشان می‌دهند، پس هاورشان نباید حواس را از عدد پرت کند:
+   فقط لبه روشن می‌شود و آیکون نور می‌گیرد. بدون جابه‌جایی — سه
+   عدد که کنار هم بالا و پایین بروند، خواندنشان سخت می‌شود. */
+.clubcalc__cell {
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.clubcalc__cell:hover {
+  border-color: color-mix(in srgb, var(--tube, var(--blue)) 55%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tube, var(--blue)) 26%, transparent);
+}
+.clubcalc__cell:hover .clubcalc__ico svg {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--tube, var(--blue)) 70%, transparent));
+}
+
+/* ---------- ژتونِ امتیاز ----------
+
+   حاشیه‌ی نقطه‌چین روی هاور می‌چرخد، مثل ژتونی که در دست می‌گردانی.
+   کوچک و بی‌صدا — همان «بامزه ولی نه فانتزی». */
+.earn__item { --accent: var(--blue); }
+.earn__pts {
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+              rotate 420ms cubic-bezier(0.34, 1.5, 0.64, 1);
+}
+.earn__item:hover .earn__pts {
+  rotate: -4deg;
+  border-color: color-mix(in srgb, var(--blue) 70%, transparent);
+  background: color-mix(in srgb, var(--blue) 18%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tier:hover { translate: none; }
+  .tier:hover::before { animation: none; }
+  .earn__item:hover .earn__pts { rotate: none; }
 }

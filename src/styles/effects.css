@@ -275,7 +275,8 @@
    می‌افتد و هاورِ لینک‌های داخلش را می‌خورد.
    ============================================================ */
 
-.deal, .review, .qa__card, .art {
+.deal, .review, .qa__card, .art,
+.tier, .clubcalc__cell, .abt__way {
   --lx: 50%;
   --ly: 50%;
   --lon: 0;
@@ -286,7 +287,10 @@
 .deal::after,
 .review::after,
 .qa__card::after,
-.art::after {
+.art::after,
+.tier::after,
+.clubcalc__cell::after,
+.abt__way::after {
   content: '';
   position: absolute;
   inset: 0;
