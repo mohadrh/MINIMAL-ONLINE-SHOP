@@ -99,7 +99,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
     backdrop: '/hero/banner/slide-ai2-v2.png',
     tint: '#4a7cf7',
     ctaLabel: 'مقایسه‌ی پلن‌ها',
-    href: '/shop/ai',
+    href: '/ai',
     platforms: ['Web', 'Android', 'iOS'],
   },
   {
@@ -149,7 +149,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
     id: 'gaming-gta',
     kind: 'gaming',
     kindLabel: 'گیم',
-    badge: 'پرفروش',
+    badge: 'به‌زودی',
     titleLead: 'جی‌تی‌ای',
     titleAccent: 'شش',
     englishTitle: 'Grand Theft Auto VI',
@@ -163,8 +163,8 @@ export const HERO_SLIDES: HeroSlideData[] = [
     ],
     backdrop: '/hero/banner/slide-gta-v2.png',
     tint: '#d977b8',
-    ctaLabel: 'مشاهده‌ی محصول',
-    href: '/product/gta-vi',
+    ctaLabel: 'دیدن اکانت‌های گیم',
+    href: '/gaming',
     platforms: ['PS5', 'Xbox'],
   },
   {
@@ -185,7 +185,43 @@ export const HERO_SLIDES: HeroSlideData[] = [
     backdrop: '/hero/banner/slide-tools-v2.png',
     tint: '#00c4cc',
     ctaLabel: 'دیدن دسته',
-    href: '/shop/creative',
+    href: '/creative',
     platforms: ['Web', 'Desktop', 'Mobile'],
   },
 ];
+
+/* ============================================================
+   نگهبانِ مقصدها
+
+   دکمه‌ی اسلاید پرکلیک‌ترین چیزِ صفحه‌ی اصلی است و مقصدش فقط یک
+   رشته‌ی متنی است — تایپ‌اسکریپت نمی‌داند آن رشته به جایی می‌رسد
+   یا نه. سه اسلاید مدت‌ها به ۴۰۴ می‌رفتند و هیچ‌چیز صدا نکرد؛
+   /shop/ai و /shop/creative اصلاً مسیر نبودند و محصولی به نام
+   gta-vi وجود نداشت. تنها نشانه، چند خطای بی‌صدا در کنسول بود.
+
+   این بررسی فقط در حالت توسعه اجرا می‌شود: در همان ثانیه‌ای که
+   کسی اسلاید تازه‌ای اضافه کند و اسلاگ را اشتباه بنویسد، پیام
+   می‌دهد. در بیلد نهایی هیچ هزینه‌ای ندارد.
+   ============================================================ */
+if (process.env.NODE_ENV !== 'production') {
+  /* وارد کردن تنبل، تا کاتالوگ به باندلِ نهایی گره نخورد */
+  import('./catalog').then(({ PRODUCTS, CATEGORIES }) => {
+    const slugs = new Set(PRODUCTS.map((p) => p.slug));
+    const cats = new Set<string>(CATEGORIES.map((c) => c.slug));
+    const pages = new Set(['', 'shop', 'blog', 'faq', 'rules', 'numbers', 'cart', 'checkout', 'track', 'account']);
+
+    for (const s of HERO_SLIDES) {
+      const path = s.href.split('?')[0].replace(/^\/|\/$/g, '');
+      const parts = path.split('/');
+      const ok = parts[0] === 'product'
+        ? slugs.has(parts[1])
+        : parts.length === 1 && (cats.has(parts[0]) || pages.has(parts[0]));
+      if (!ok) {
+        console.error(
+          `[heroSlides] مقصدِ اسلاید «${s.id}» به جایی نمی‌رسد: ${s.href}\n` +
+          'مسیرهای مجاز: /product/<اسلاگ محصول>، /<اسلاگ دسته>، یا یکی از صفحه‌های ثابت.',
+        );
+      }
+    }
+  });
+}
