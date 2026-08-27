@@ -1,18 +1,14 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ARTICLES } from '../../data/articles';
 import { ExternalLink, Youtube } from 'lucide-react';
 import {
   CHANNEL_TOPICS, getChannelsByTopic, type ChannelTopic,
 } from '../../data/channels';
-import { asset } from '../../lib/asset';
+import { BlogBrowser } from '../../components/blog/BlogBrowser';
 
 export const metadata: Metadata = {
   title: 'مقالات و راهنماها | فونیکس شاپ',
   description: 'راهنمای خرید اشتراک، مقایسه‌ی سرویس‌ها و آموزش‌های کاربردی.',
 };
-
-const fmt = (n: number) => n.toLocaleString('fa-IR');
 
 export default function BlogPage() {
   return (
@@ -27,23 +23,7 @@ export default function BlogPage() {
       </header>
 
       <div className="wrap shop">
-        <div className="shop__grid">
-          {ARTICLES.map((a) => (
-            <Link key={a.slug} href={`/blog/${a.slug}`} className="art">
-              {a.cover && (
-                <span className="art__cover">
-                  <img src={asset(a.cover)} alt="" aria-hidden="true" loading="lazy" />
-                </span>
-              )}
-              <span className="pill art__topic">{a.topicLabel}</span>
-              <h3>{a.title}</h3>
-              <p className="small muted">{a.excerpt}</p>
-              <span className="xsmall muted art__meta num">
-                {fmt(a.readMinutes)} دقیقه مطالعه
-              </span>
-            </Link>
-          ))}
-        </div>
+        <BlogBrowser />
 
         {/* ---------- کانال‌های یوتیوب ----------
 

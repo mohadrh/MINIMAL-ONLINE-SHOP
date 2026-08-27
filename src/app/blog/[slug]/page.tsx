@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import { ARTICLES, getArticleBySlug, getRelatedArticles } from '../../../data/articles';
 import { asset } from '../../../lib/asset';
+import { ArticleCard } from '../../../components/blog/ArticleCard';
 
 export function generateStaticParams() {
   return ARTICLES.map((a) => ({ slug: a.slug }));
@@ -75,19 +76,7 @@ export default async function ArticlePage(
           <div className="wrap">
             <div className="sec-head"><h2>مطالب مرتبط</h2></div>
             <div className="rail grid--3">
-              {related.map((r) => (
-                <Link key={r.slug} href={`/blog/${r.slug}`} className="art">
-                  {r.cover && (
-                    <span className="art__cover">
-                      <img src={asset(r.cover)} alt="" aria-hidden="true" loading="lazy" />
-                    </span>
-                  )}
-                  <span className="pill art__topic">{r.topicLabel}</span>
-                  <h3>{r.title}</h3>
-                  <p className="small muted">{r.excerpt}</p>
-                  <span className="xsmall muted art__meta" />
-                </Link>
-              ))}
+              {related.map((r, i) => <ArticleCard key={r.slug} a={r} i={i} />)}
             </div>
           </div>
         </section>

@@ -529,11 +529,45 @@
   transition: border-color var(--dur) var(--ease);
 }
 .art:hover { border-color: var(--blue-line); }
-.art__cover { display: block; aspect-ratio: 16 / 9; background: var(--sunken); overflow: hidden; }
+/* کاور مقاله.
+
+   تصویرها دو شکل دارند: بنرهای پهن (۱۴۲۰×۸۵۰) و تصویرهای مربعِ
+   محصول (۹۰۰×۹۰۰). با object-fit: cover، مربع‌ها در قابِ ۱۶:۹
+   بریده می‌شدند و از یک لوگوی وسط‌چین فقط نوارِ میانی می‌ماند —
+   که تقریباً پس‌زمینه‌ی خالی است. کارت بی‌تصویر به نظر می‌رسید در
+   حالی که تصویر آنجا بود و درست هم بارگذاری می‌شد.
+
+   حالا contain است و پشتش رنگِ خودِ مقاله می‌نشیند: لوگو کامل
+   دیده می‌شود و قاب هم خالی نمی‌ماند. همان کاری که ProductArt در
+   جاهای دیگر سایت می‌کند. */
+.art__cover {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 140% at 50% 0%,
+      color-mix(in srgb, var(--art-accent, var(--blue)) 26%, transparent) 0%,
+      transparent 70%),
+    color-mix(in srgb, var(--art-accent, var(--blue)) 9%, var(--paper));
+}
+[data-theme='dark'] .art__cover {
+  background:
+    radial-gradient(120% 140% at 50% 0%,
+      color-mix(in srgb, var(--art-accent, var(--blue)) 30%, transparent) 0%,
+      transparent 70%),
+    color-mix(in srgb, var(--art-accent, var(--blue)) 14%, #12141b);
+}
 .art__cover img {
-  width: 100%; height: 100%; object-fit: cover;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  /* بنرهای پهن قاب را پر می‌کنند، مربع‌ها کمی از لبه فاصله
+     می‌گیرند تا لوگو نچسبد */
+  padding: var(--sp-2) var(--sp-4);
   transition: transform 600ms var(--ease);
 }
+/* بنرِ پهن نیازی به حاشیه ندارد */
+.art__cover img[data-wide='1'] { padding: 0; object-fit: cover; }
 .art:hover .art__cover img { transform: scale(1.04); }
 .art .pill, .art h3, .art p, .art__meta { margin-inline: var(--sp-6); }
 .art__topic { align-self: flex-start; margin-top: var(--sp-6); }

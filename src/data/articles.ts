@@ -30,6 +30,18 @@ export interface Article {
   accent: string;
   /** تصویر کاور — نبودش کارت را نمی‌شکند، فقط بی‌تصویر می‌ماند */
   cover?: string;
+  /**
+   * کاور پهن است یا مربع.
+   *
+   * قابِ کارت ۱۶:۹ است. بنرهای پهن آن را پر می‌کنند، ولی تصویرهای
+   * مربعِ محصول اگر پر کنند بریده می‌شوند و از یک لوگوی وسط‌چین
+   * فقط نوارِ میانی می‌ماند — کارت بی‌تصویر به نظر می‌رسید در حالی
+   * که تصویر آنجا بود.
+   *
+   * پس مربع‌ها کامل نشان داده می‌شوند روی رنگِ خودِ مقاله. این
+   * پرچم می‌گوید کدام کدام است.
+   */
+  coverWide?: boolean;
   body: Block[];
 }
 
@@ -37,6 +49,7 @@ export const ARTICLES: Article[] = [
   {
     slug: 'chatgpt-vs-claude-vs-gemini',
     cover: '/hero/banner/banner-b.webp',
+    coverWide: true,
     title: 'ChatGPT، Claude یا Gemini؟ کدام به کار تو می‌آید',
     excerpt:
       'مقایسه بر اساس کاری که واقعاً می‌خواهی انجام دهی: نوشتن فارسی، کدنویسی، تحلیل فایل یا تولید تصویر. با مثال از هر سه.',
@@ -147,6 +160,7 @@ export const ARTICLES: Article[] = [
   {
     slug: 'capacity-accounts-explained',
     cover: '/games/battlefield-6.webp',
+    coverWide: true,
     title: 'اکانت ظرفیتی دقیقاً یعنی چه؟',
     excerpt:
       'تفاوت ظرفیت دو و سه، اینکه چه چیزی را از دست می‌دهی و چه چیزی را نه، و اینکه کِی ارزش دارد به‌جایش اکانت اختصاصی بگیری.',
