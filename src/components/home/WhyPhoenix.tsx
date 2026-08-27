@@ -22,6 +22,22 @@ import { HELP_ARTICLES } from '../../data/helpArticles';
  * سکشنی که کاربر را زیاد نگه دارد، از توضیح به مانع تبدیل می‌شود.
  */
 
+/* ارتفاعِ گام‌ها — متقارن.
+
+   نسخه‌ی قبل موج‌دار بود (بالا، پایین، وسط) و بی‌نظم دیده می‌شد:
+   سه ارتفاعِ متفاوت هیچ قاعده‌ای نداشت که چشم بتواند بگیرد.
+
+   حالا دو طرف قرینه‌اند و وسط در اوج. نظم از تقارن می‌آید، نه از
+   صاف بودن — و مسیر همچنان یک کمانِ پرش است نه یک خطِ افقی.
+
+   عدد، فاصله‌ی هر گام از سقفِ ناحیه است: وسط صفر یعنی بالاترین. */
+const LIFTS = ['56px', '0px', '56px'];
+
+/* کمانِ پرش. مختصات با جای واقعیِ گره‌ها اندازه‌گیری شده، نه حدس:
+   سه ستونِ مساوی با فاصله، مرکزشان روی ۰٫۱۵۷، ۰٫۵ و ۰٫۸۴۳ از عرض
+   می‌افتد. ارتفاع هم lift به‌علاوه‌ی نصفِ قطرِ گره (۲۸). */
+const WIRE = 'M 758 84 Q 604 28 450 28 Q 296 28 142 84';
+
 const STEPS = [
   {
     icon: <MousePointerClick />,
@@ -99,7 +115,7 @@ export function WhyPhoenix() {
       <div className="tracked" ref={wrapRef}>
         <div className="tracked__stick">
           <div className="wrap">
-            <div className="sec-head">
+            <div className="sec-head sec-head--mid">
               <span className="sec-head__kicker">سه قدم</span>
               <h2>خرید از فونیکس شاپ چطور است؟</h2>
               <p className="sec-head__lead">
@@ -109,26 +125,65 @@ export function WhyPhoenix() {
             </div>
 
             <ol
-              className="track"
+              className="buypath"
               style={{ ['--done' as string]: done }}
               aria-label="سه مرحله‌ی خرید"
             >
+              {/* کمانِ پرش.
+
+                  یک نکته‌ی ساخت که بار اول از قلم افتاد و گره‌ها را
+                  سی‌ودو پیکسل زیرِ خط انداخت: inset-block-start روی
+                  فرزندِ absolute از لبه‌ی *padding-box* حساب می‌شود،
+                  ولی گام‌ها از لبه‌ی content شروع می‌شوند. پس این
+                  عدد باید دقیقاً برابرِ padding-block-start خودِ
+                  .buypath باشد — هر دو در CSS روی ۸۰ پیکسل ثابت‌اند و
+                  با هم عوض می‌شوند. */}
+              <svg
+                className="buypath__wire"
+                viewBox="0 0 900 112"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <defs>
+                  <linearGradient id="trackGrad" x1="1" y1="0" x2="0" y2="0">
+                    <stop offset="0%" stopColor="#f59440" />
+                    <stop offset="50%" stopColor="#ff4d9f" />
+                    <stop offset="100%" stopColor="#3ddcff" />
+                  </linearGradient>
+                </defs>
+                <path className="buypath__wire-bed" d={WIRE} pathLength={1} vectorEffect="non-scaling-stroke" />
+                <path
+                  className="buypath__wire-lit"
+                  d={WIRE}
+                  pathLength={1}
+                  vectorEffect="non-scaling-stroke"
+                  stroke="url(#trackGrad)"
+                />
+              </svg>
+
               {STEPS.map((s, i) => {
                 const state = i < done ? 'is-done' : i === done ? 'is-now' : '';
                 return (
-                  <li key={s.t} className={`track__step ${state}`} style={{ ['--i' as string]: i }}>
+                  <li
+                    key={s.t}
+                    className={`buypath__step ${state}`}
+                    /* موج، نه شیب: بالا، پایین، وسط. مرحله‌ای که
+                       فقط بالا برود، همان خطِ صاف است با زاویه. */
+                    style={{ ['--i' as string]: i, ['--lift' as string]: LIFTS[i] }}
+                  >
                     {/* آیکون خودِ گام می‌ماند و تیک نمی‌خورد.
 
                         وقتی گام تمام شد، آیکون رنگ خودش را می‌گیرد و
                         نور می‌دهد — مثل تیوبی که روشن شده. تیک،
                         آیکون را با یک علامتِ عمومی عوض می‌کرد و
                         شخصیتِ هر گام از بین می‌رفت. */}
-                    <span className="track__node" aria-hidden="true">
-                      <span className="track__icon">{s.icon}</span>
-                      <span className="track__n num">{(i + 1).toLocaleString('fa-IR')}</span>
+                    <span className="buypath__node" aria-hidden="true">
+                      <span className="buypath__icon">{s.icon}</span>
+                      <span className="buypath__n num">{(i + 1).toLocaleString('fa-IR')}</span>
                     </span>
 
-                    <div className="track__body">
+                    <div className="buypath__body">
                       <b>{s.t}</b>
                       <p>{s.d}</p>
                     </div>
@@ -137,7 +192,7 @@ export function WhyPhoenix() {
               })}
             </ol>
 
-            <p className="track__hint" aria-hidden="true">
+            <p className="buypath__hint" aria-hidden="true">
               {done < STEPS.length ? 'اسکرول کن' : 'همین سه قدم، تمام.'}
             </p>
           </div>

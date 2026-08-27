@@ -366,6 +366,7 @@
 }
 .svc__item:hover { translate: 0 -4px; }
 
+
 /* آیکون بدون قاب. نور آبی از پشتش باز می‌شود — همان چیزی که جای
    کادر را می‌گیرد. */
 .svc__icon {
@@ -725,48 +726,116 @@
 
    خواسته: روی هاور بدرخشند و کمی بزرگ‌تر شوند. */
 
-.qa__other { color: var(--ink-soft); transition: color 300ms var(--ease); }
-.qa__other:hover { color: var(--blue); }
+/* ---------- دیگر خدمات ----------
+
+   قبلاً شش ستونِ باریک بود: آیکونی داخل یک کادرِ شیشه‌ای و زیرش دو
+   کلمه. دو مشکل داشت. اول اینکه کادر، همان قابی بود که قرار نیست
+   دور آیکون‌های این سایت باشد. دوم اینکه دو کلمه چیزی توضیح
+   نمی‌داد — «پرداخت ریالی» یعنی چه؟
+
+   حالا سه ستونِ پهن است، هر مورد یک ردیف: آیکونِ بی‌قاب، عنوان، و
+   یک جمله که کار را توضیح می‌دهد. رنگ هم برای هرکدام جداست. */
+
+.qa__title {
+  margin: var(--sp-16) 0 var(--sp-2);
+  text-align: center;
+  font-size: var(--text-lg);
+  font-weight: 800;
+}
+.qa__lead {
+  margin: 0 auto var(--sp-10);
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+}
+
+.qa__others {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4) var(--sp-8);
+}
+@media (max-width: 900px) { .qa__others { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .qa__others { grid-template-columns: 1fr; gap: var(--sp-2); } }
+
+.qa__other {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-2);
+  color: var(--ink-soft);
+  transition: color 300ms var(--ease), translate 300ms var(--ease);
+}
+.qa__other:hover { color: var(--ink); translate: -3px 0; }
 [data-theme='dark'] .qa__other { color: rgba(255, 255, 255, 0.75); }
 [data-theme='dark'] .qa__other:hover { color: #fff; }
 
+/* آیکونِ بی‌قاب.
+
+   هیچ پس‌زمینه، حاشیه یا کادری ندارد — فقط خطِ خودش. آنچه جای
+   کادر را می‌گیرد، هاله‌ی رنگی است که روی هاور از پشتش باز
+   می‌شود، به‌علاوه‌ی نوری که روی خودِ خطوطِ SVG می‌نشیند. */
 .qa__other-icon {
   position: relative;
   isolation: isolate;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px) saturate(170%);
-  -webkit-backdrop-filter: blur(20px) saturate(170%);
-  color: var(--blue);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  transition: scale 320ms var(--ease), box-shadow 320ms var(--ease);
+  display: grid;
+  place-items: center;
+  width: 44px; height: 44px;
+  color: var(--tube, var(--blue));
+  transition: scale 320ms var(--ease);
 }
-
-[data-theme='dark'] .qa__other-icon {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #9fbaff;
+.qa__other-icon svg {
+  width: 30px; height: 30px;
+  transition: filter 320ms var(--ease);
 }
-
-/* درخشش: هاله‌ی آبی از پشت باز می‌شود و خودِ خط آیکون هم می‌درخشد.
-   دولایه بودنش عمدی است — فقط بزرگ شدن، «درخشان» به نظر نمی‌رسد. */
 .qa__other-icon::after {
   content: '';
   position: absolute;
-  inset: -8px;
+  inset: -10px;
   z-index: -1;
-  border-radius: inherit;
+  border-radius: 50%;
   background: radial-gradient(circle,
-    color-mix(in srgb, var(--blue) 40%, transparent) 0%, transparent 70%);
+    color-mix(in srgb, var(--tube, var(--blue)) 34%, transparent) 0%, transparent 70%);
   opacity: 0;
   transition: opacity 320ms var(--ease);
 }
+.qa__other:hover .qa__other-icon { scale: 1.08; }
+.qa__other:hover .qa__other-icon::after { opacity: 1; }
+.qa__other:hover .qa__other-icon svg {
+  filter:
+    drop-shadow(0 0 4px color-mix(in srgb, var(--tube, var(--blue)) 70%, transparent))
+    drop-shadow(0 0 12px color-mix(in srgb, var(--tube, var(--blue)) 42%, transparent));
+}
 
-.qa__other:hover .qa__other-icon {
-  scale: 1.12;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 0 24px -4px color-mix(in srgb, var(--blue) 55%, transparent);
+.qa__other-txt b {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  margin-bottom: 3px;
+  color: var(--ink);
+}
+[data-theme='dark'] .qa__other-txt b { color: #eef1f7; }
+.qa__other-txt span {
+  display: block;
+  font-size: var(--text-xs);
+  line-height: 1.8;
+  color: var(--ink-faint);
+}
+
+.qa__other-go {
+  width: 15px; height: 15px;
+  flex-shrink: 0;
+  color: var(--tube, var(--blue));
+  opacity: 0;
+  translate: 6px 0;
+  transition: opacity 280ms var(--ease), translate 280ms var(--ease);
+}
+.qa__other:hover .qa__other-go { opacity: 1; translate: 0 0; }
+@media (hover: none) { .qa__other-go { opacity: 0.5; translate: 0 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .qa__other:hover { translate: none; }
+  .qa__other:hover .qa__other-icon { scale: 1; }
 }
 .qa__other:hover .qa__other-icon::after { opacity: 1; }
 .qa__other:hover .qa__other-icon svg {
@@ -1371,53 +1440,89 @@
   padding-block: var(--sp-16);
 }
 
-.track {
+/* ============================================================
+   مسیر خرید — کمانِ پرش
+   ============================================================
+
+   دو نسخه قبل‌تر یک ردیفِ افقیِ صاف بود: همان «۱-۲-۳»ی که هر
+   سایتی دارد. بعد قوسِ صعودی شد و باز خط بود، فقط با زاویه. بعد
+   ارتفاع‌های موج‌دار شد و بی‌نظم دیده می‌شد — سه ارتفاعِ متفاوت
+   بدون هیچ قاعده‌ای که چشم بتواند بگیرد.
+
+   حالا متقارن است: گامِ وسط در اوج، دو طرف قرینه، و یک کمان که
+   هر سه را وصل می‌کند. نظم از تقارن می‌آید و حرکت از کمان.
+
+   ⚠ padding-block-start این بلوک و inset-block-start سیم باید
+   همیشه یکی بمانند. inset روی فرزندِ absolute از padding-box
+   اندازه می‌گیرد ولی گام‌ها از content شروع می‌شوند؛ هر اختلافی
+   بین این دو، همان‌قدر گره‌ها را از روی سیم می‌اندازد.
+   ============================================================ */
+
+.buypath {
   list-style: none;
   margin: 0;
   padding: 0;
+  padding-block-start: 80px;      /* ← با inset سیم یکی بماند */
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--sp-8);
+  align-items: start;
+  gap: var(--sp-6);
 }
 
-/* ریلِ خاکستری و خطِ پرشونده */
-.track::before,
-.track::after {
-  content: '';
+/* ---------- سیم ---------- */
+
+.buypath__wire {
   position: absolute;
-  inset-block-start: 27px;
-  inset-inline: 12%;
-  height: 3px;
-  border-radius: 99px;
+  inset-block-start: 80px;        /* ← با padding بالا یکی بماند */
+  inset-inline: 0;
+  width: 100%;
+  height: 112px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
 }
-.track::before { background: var(--sunken); }
-[data-theme='dark'] .track::before { background: rgba(255, 255, 255, 0.09); }
+.buypath__wire path {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.buypath__wire-bed {
+  stroke: var(--sunken);
+  stroke-dasharray: 2 7;
+}
+[data-theme='dark'] .buypath__wire-bed { stroke: rgba(255, 255, 255, 0.14); }
 
-/* scaleX است نه width — دومی هر فریم بازچینش می‌خواهد */
-.track::after {
-  background: linear-gradient(to left, var(--blue), #7aa5ff);
-  transform-origin: right center;
-  transform: scaleX(calc(var(--done, 0) / 3));
-  transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+/* کشیده‌شدن با اسکرول.
+
+   pathLength=۱ طول را نرمال می‌کند، پس dasharray یک است و offset
+   از یک تا صفر می‌آید — بی‌آنکه طولِ واقعیِ کمان مهم باشد. همین
+   باعث می‌شود عرضِ صفحه هیچ اثری روی درصدِ پرشدن نگذارد. */
+.buypath__wire-lit {
+  stroke-width: 3;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--done, 0) / 3);
+  transition: stroke-dashoffset 560ms cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 0 5px color-mix(in srgb, #ff4d9f 40%, transparent));
 }
 
-.track__step {
+.buypath__step {
+  position: relative;
+  z-index: 1;
   display: grid;
   justify-items: center;
   text-align: center;
   gap: var(--sp-4);
-  position: relative;
-  z-index: 1;
+  margin-block-start: var(--lift, 0px);
   opacity: 0.45;
   transition: opacity 380ms var(--ease);
 }
-.track__step.is-now,
-.track__step.is-done { opacity: 1; }
+.buypath__step.is-now,
+.buypath__step.is-done { opacity: 1; }
 
 /* ---------- گره ---------- */
 
-.track__node {
+.buypath__node {
   position: relative;
   width: 56px; height: 56px;
   display: grid; place-items: center;
@@ -1432,11 +1537,11 @@
     box-shadow 380ms var(--ease),
     scale 380ms cubic-bezier(0.34, 1.5, 0.64, 1);
 }
-[data-theme='dark'] .track__node {
+[data-theme='dark'] .buypath__node {
   background: var(--tint);
   border-color: rgba(255, 255, 255, 0.12);
 }
-.track__node svg { width: 22px; height: 22px; }
+.buypath__node svg { width: 22px; height: 22px; }
 
 /* هر گام تیوب رنگیِ خودش را دارد.
 
@@ -1446,12 +1551,12 @@
    تیک، آیکونِ هر گام را با یک علامتِ عمومی عوض می‌کرد و شخصیتش را
    می‌گرفت؛ نورِ رنگی همان «انجام شد» را می‌گوید بدون اینکه چیزی
    را پاک کند. */
-.track__step:nth-child(1) { --tube: #f59440; }
-.track__step:nth-child(2) { --tube: #ff4d9f; }
-.track__step:nth-child(3) { --tube: #3ddcff; }
+.buypath__step:nth-child(1) { --tube: #f59440; }
+.buypath__step:nth-child(2) { --tube: #ff4d9f; }
+.buypath__step:nth-child(3) { --tube: #3ddcff; }
 
 /* گامِ فعلی — حلقه‌ی رنگی، هنوز خاموش */
-.is-now .track__node {
+.is-now .buypath__node {
   border-color: var(--tube);
   color: var(--tube);
   scale: 1.06;
@@ -1465,7 +1570,7 @@
    نورِ آیکون با drop-shadow ساخته می‌شود نه box-shadow: دومی هاله
    را دور جعبه می‌کشد، اولی خطوط واقعی SVG را دنبال می‌کند و نور
    از خودِ آیکون بیرون می‌زند. */
-.is-done .track__node {
+.is-done .buypath__node {
   border-color: var(--tube);
   color: var(--tube);
   background: color-mix(in srgb, var(--tube) 10%, var(--paper));
@@ -1473,19 +1578,19 @@
     0 0 0 5px color-mix(in srgb, var(--tube) 16%, transparent),
     0 14px 32px -14px color-mix(in srgb, var(--tube) 70%, transparent);
 }
-[data-theme='dark'] .is-done .track__node {
+[data-theme='dark'] .is-done .buypath__node {
   background: color-mix(in srgb, var(--tube) 14%, var(--tint));
 }
 
-.is-done .track__icon svg {
+.is-done .buypath__icon svg {
   filter:
     drop-shadow(0 0 3px color-mix(in srgb, var(--tube) 70%, transparent))
     drop-shadow(0 0 10px color-mix(in srgb, var(--tube) 45%, transparent))
     drop-shadow(0 0 22px color-mix(in srgb, var(--tube) 30%, transparent));
 }
-.track__icon svg { transition: filter 420ms var(--ease); }
+.buypath__icon svg { transition: filter 420ms var(--ease); }
 
-.track__n {
+.buypath__n {
   position: absolute;
   inset-block-start: -6px;
   inset-inline-start: -6px;
@@ -1498,18 +1603,18 @@
   font-weight: 800;
   transition: background 380ms var(--ease), color 380ms var(--ease);
 }
-[data-theme='dark'] .track__n { background: rgba(255, 255, 255, 0.12); }
-.is-now .track__n, .is-done .track__n { background: var(--tube); color: #fff; }
+[data-theme='dark'] .buypath__n { background: rgba(255, 255, 255, 0.12); }
+.is-now .buypath__n, .is-done .buypath__n { background: var(--tube); color: #fff; }
 
-.track__icon { display: inline-flex; }
+.buypath__icon { display: inline-flex; }
 
-.track__body b {
+.buypath__body b {
   display: block;
   font-size: var(--text-sm);
   color: var(--ink);
   margin-bottom: 4px;
 }
-.track__body p {
+.buypath__body p {
   margin: 0;
   font-size: var(--text-xs);
   line-height: var(--leading);
@@ -1518,29 +1623,55 @@
   margin-inline: auto;
 }
 
-.track__hint {
+.buypath__hint {
   margin: var(--sp-10) 0 0;
   text-align: center;
   font-size: var(--text-xs);
   color: var(--ink-faint);
 }
 
+/* ---------- روی موبایل ----------
+
+   مرحله در یک ستون معنا ندارد: سکوها زیر هم می‌آیند و «ارتفاع»
+   دیگر چیزی نمی‌گوید. پس سکو و پایه و زمین می‌روند، گام‌ها صاف
+   می‌شوند، و هر گام آیکونش را کنارِ متن می‌گذارد نه بالایش —
+   یعنی سه ردیفِ فشرده به‌جای سه کارتِ بلند.
+
+   ارتفاعِ چسبندگی هم کمتر می‌شود؛ روی صفحه‌ی کوچک، ۲۴۰vh یعنی
+   کاربر باید دو برابرِ دسکتاپ اسکرول کند تا از یک سکشن رد شود. */
 @media (max-width: 760px) {
-  .tracked { height: 240vh; }
-  .track { grid-template-columns: 1fr; gap: var(--sp-6); }
-  .track::before, .track::after { display: none; }
-  .track__step { grid-template-columns: auto 1fr; justify-items: start; text-align: start; }
-  .track__body p { max-width: none; margin-inline: 0; }
+  .tracked { height: 200vh; }
+  .buypath {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+    padding-block-start: 0;
+    align-items: stretch;
+  }
+  .buypath__wire { display: none; }
+  .buypath__step {
+    grid-template-columns: auto 1fr;
+    justify-items: start;
+    text-align: start;
+    gap: var(--sp-4);
+    margin-block-start: 0;
+  }
+  .buypath__body p { max-width: none; margin-inline: 0; }
+}
+
+/* روی صفحه‌های خیلی باریک، گره کوچک‌تر می‌شود تا متن جا بگیرد */
+@media (max-width: 400px) {
+  .buypath__node { width: 46px; height: 46px; border-width: 2px; }
+  .buypath__node svg { width: 19px; height: 19px; }
 }
 
 /* بدون حرکت: مسیر کوتاه می‌شود و هر سه گام تمام‌شده می‌مانند */
 @media (prefers-reduced-motion: reduce) {
   .tracked { height: auto; }
   .tracked__stick { position: static; min-height: 0; padding-block: 0; }
-  .track::after { transition: none; }
-  .track__step { opacity: 1; }
-  .is-now .track__node { scale: 1; }
-  .track__hint { display: none; }
+  .buypath__step { opacity: 1; }
+  .buypath__wire-lit { transition: none; }
+  .is-now .buypath__node { scale: 1; }
+  .buypath__hint { display: none; }
 }
 
 /* ============================================================
@@ -1779,3 +1910,15 @@
 /* تبِ بی‌تخفیف کم‌رنگ‌تر است ولی غیرفعال نیست — کاربر باید بتواند
    بازش کند و پیامِ «امروز این‌جا تخفیفی نیست» را ببیند. */
 .shop__chip.is-empty:not(.is-on) { opacity: 0.55; }
+
+
+/* تیترِ وسط‌چین — برای سکشن‌هایی که محتوایشان متقارن است.
+   مسیر خرید کمانِ قرینه است؛ تیترِ چپ‌چین بالای یک کمانِ متقارن،
+   تعادلِ کل بلوک را به هم می‌زند. */
+.sec-head--mid {
+  text-align: center;
+  margin-inline: auto;
+  max-width: 44rem;
+}
+.sec-head--mid .sec-head__lead { margin-inline: auto; }
+

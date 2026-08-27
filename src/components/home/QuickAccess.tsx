@@ -27,13 +27,23 @@ const CARD_ICONS: Record<string, GlyphName> = {
   gaming: 'gaming',
 };
 
-const OTHER: { g: GlyphName; t: string; h: string }[] = [
-  { g: 'number',  t: 'شماره مجازی',      h: '/numbers' },
-  { g: 'gift',    t: 'گیفت کارت',        h: '/shop' },
-  { g: 'card',    t: 'پرداخت ریالی',     h: '/faq' },
-  { g: 'shield',  t: 'گارانتی و مرجوعی', h: '/rules' },
-  { g: 'spark',   t: 'پیشنهادهای ویژه',  h: '/shop' },
-  { g: 'support', t: 'پشتیبانی',         h: '/track' },
+/* شش خدمت، هر کدام با یک جمله.
+
+   قبلاً فقط یک آیکون بود و زیرش دو کلمه، در شش ستونِ باریک. نتیجه
+   این بود که سکشن «فقط چند آیکون» دیده می‌شد و هیچ‌کدام معلوم
+   نبود دقیقاً چه کاری می‌کند — «پرداخت ریالی» یعنی چه؟ «گارانتی و
+   مرجوعی» شامل چه می‌شود؟
+
+   حالا هر مورد یک جمله دارد که همان سوال را جواب می‌دهد، و رنگِ
+   خودش را از کمان ققنوس می‌گیرد تا شش آیکونِ هم‌رنگ یک دیوارِ
+   یکنواخت نسازند. */
+const OTHER: { g: GlyphName; t: string; d: string; h: string; tube: string }[] = [
+  { g: 'number',  t: 'شماره مجازی',      d: 'برای ثبت‌نام سرویس‌هایی که شماره‌ی ایران را قبول نمی‌کنند.', h: '/numbers', tube: '#3ddcff' },
+  { g: 'gift',    t: 'گیفت کارت',        d: 'شارژ اکانت پلی‌استیشن، ایکس‌باکس و استیم.',                  h: '/shop',    tube: '#ff4d9f' },
+  { g: 'card',    t: 'پرداخت ریالی',     d: 'با کارت بانکی خودت. نه ارز لازم داری نه حساب خارجی.',       h: '/faq',     tube: '#f59440' },
+  { g: 'shield',  t: 'گارانتی و مرجوعی', d: 'تا آخرین روز اشتراک پشتش هستیم.',                            h: '/rules',   tube: '#4ade80' },
+  { g: 'spark',   t: 'پیشنهادهای ویژه',  d: 'تخفیف‌هایی که هر روز عوض می‌شوند.',                          h: '/shop',    tube: '#c94ff5' },
+  { g: 'support', t: 'پشتیبانی',         d: 'تلگرام و تیکت، همه‌ی روزهای هفته.',                          h: '/track',   tube: '#7a6bff' },
 ];
 
 export function QuickAccess() {
@@ -101,22 +111,25 @@ export function QuickAccess() {
         </div>
 
         {/* ---------- بقیه‌ی خدمات ---------- */}
-        <h3 className="qa__title mt-28 mb-10 text-center text-lg font-extrabold">
-          دیگر خدمات محبوب کاربران
-        </h3>
+        <h3 className="qa__title">دیگر خدمات محبوب کاربران</h3>
+        <p className="qa__lead">هر کدام یک کار مشخص می‌کند؛ اینجا نوشته چه کاری.</p>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-          {OTHER.map(({ g, t, h }, idx) => (
+        <div className="qa__others">
+          {OTHER.map(({ g, t, d, h, tube }, idx) => (
             <Link
               key={t}
               href={h}
-              className="qa__other group grid justify-items-center gap-3 rounded-2xl px-3 py-5 text-center text-xs font-semibold"
-              style={{ ['--i' as string]: idx }}
+              className="qa__other"
+              style={{ ['--i' as string]: idx, ['--tube' as string]: tube }}
             >
-              <span className="qa__other-icon grid size-14 place-items-center rounded-2xl">
-                <Glyph name={g} className="size-6" />
+              {/* بدون کادر — فقط آیکون. هاله‌ی رنگی روی هاور جای
+                  قابی را می‌گیرد که قرار نیست باشد. */}
+              <span className="qa__other-icon"><Glyph name={g} /></span>
+              <span className="qa__other-txt">
+                <b>{t}</b>
+                <span>{d}</span>
               </span>
-              {t}
+              <ArrowLeft className="qa__other-go" aria-hidden="true" />
             </Link>
           ))}
         </div>
