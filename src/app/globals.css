@@ -32,6 +32,7 @@
 @import '../components/numbers/pages.css' layer(components);
 @import '../components/three/su57.css' layer(components);
 @import '../components/account/account.css' layer(components);
+@import '../components/club/club.css' layer(components);
 
 /* آخر از همه — دلیلش داخل خود فایل نوشته شده */
 @import '../styles/glass.css' layer(components);

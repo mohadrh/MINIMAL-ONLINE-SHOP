@@ -1,0 +1,422 @@
+/* ============================================================
+   باشگاه مشتریان — صفحه‌ی عمومی
+   ============================================================ */
+
+.club-head {
+  text-align: center;
+  padding-block: var(--sp-20) var(--sp-12);
+}
+.club-head h1 { font-size: var(--text-3xl); margin-block: var(--sp-3) var(--sp-4); }
+.club-head__lead {
+  max-width: 44rem;
+  margin-inline: auto;
+  font-size: var(--text-base);
+  line-height: 2;
+  color: var(--ink-soft);
+}
+
+/* ---------- نردبان پله‌ها ----------
+
+   چهار ستونِ هم‌ارتفاع. پله‌ی کاربر با رنگِ خودش برجسته می‌شود، نه
+   با اندازه‌ی متفاوت — چهار کارت با ارتفاع‌های مختلف، همان
+   بی‌نظمی است که در مسیر خرید هم درست نبود. */
+.tiers {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-5);
+}
+@media (max-width: 1000px) { .tiers { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px)  { .tiers { grid-template-columns: 1fr; } }
+
+.tier {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-3);
+  padding: var(--sp-6);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--paper);
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+[data-theme='dark'] .tier {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* پله‌ای که ماشین‌حساب رویش ایستاده */
+.tier.is-you {
+  border-color: color-mix(in srgb, var(--tube) 60%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tube) 30%, transparent),
+    0 18px 40px -28px color-mix(in srgb, var(--tube) 70%, transparent);
+}
+
+.tier > header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.tier > header b { font-size: var(--text-lg); }
+
+/* آیکون بدون کادر — فقط رنگِ پله و نورش */
+.tier__ico { display: inline-grid; place-items: center; color: var(--tube); }
+.tier__ico svg { width: 20px; height: 20px; }
+.tier.is-you .tier__ico svg {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tube) 70%, transparent));
+}
+
+.tier__you {
+  margin-inline-start: auto;
+  padding: 3px 9px;
+  border-radius: var(--r-full);
+  background: color-mix(in srgb, var(--tube) 16%, transparent);
+  color: var(--tube);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tier__from { font-size: var(--text-xs); color: var(--ink-faint); }
+
+.tier__cash {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--tube);
+}
+.tier__cash span {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--ink-faint);
+}
+
+.tier ul {
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-3) 0 0;
+  display: grid;
+  gap: var(--sp-2);
+  border-top: 1px solid var(--line);
+}
+[data-theme='dark'] .tier ul { border-top-color: rgba(255, 255, 255, 0.1); }
+.tier li {
+  position: relative;
+  padding-inline-start: var(--sp-5);
+  font-size: var(--text-xs);
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+/* نقطه‌ی رنگیِ پله، به‌جای بولتِ پیش‌فرض */
+.tier li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0.72em;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--tube);
+}
+
+/* ---------- ماشین‌حساب ---------- */
+
+.clubcalc {
+  max-width: 46rem;
+  margin-inline: auto;
+  display: grid;
+  gap: var(--sp-6);
+}
+
+.clubcalc__field { display: grid; gap: var(--sp-3); text-align: center; }
+.clubcalc__field > span { font-size: var(--text-sm); color: var(--ink-faint); }
+.clubcalc__field > b { font-size: var(--text-xl); font-weight: 800; }
+
+.clubcalc__field input[type='range'] {
+  width: 100%;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+
+.clubcalc__out {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+}
+@media (max-width: 560px) { .clubcalc__out { grid-template-columns: 1fr; } }
+
+.clubcalc__cell {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: var(--sp-6) var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--paper);
+  text-align: center;
+}
+[data-theme='dark'] .clubcalc__cell {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.clubcalc__cell b { font-size: var(--text-xl); font-weight: 800; }
+.clubcalc__cell > span:last-child { font-size: var(--text-xs); color: var(--ink-faint); }
+
+.clubcalc__ico { display: grid; place-items: center; color: var(--blue); }
+.clubcalc__ico svg { width: 22px; height: 22px; }
+.clubcalc__ico--tier { color: var(--tube, var(--blue)); }
+.clubcalc__ico--tier svg {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--tube) 60%, transparent));
+}
+
+.clubcalc__note {
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+/* ---------- راه‌های امتیاز ---------- */
+
+.earn {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-6) var(--sp-10);
+  max-width: 56rem;
+  margin-inline: auto;
+}
+@media (max-width: 700px) { .earn { grid-template-columns: 1fr; gap: var(--sp-5); } }
+
+.earn__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--sp-4);
+}
+.earn__pts {
+  padding: 5px 11px;
+  border-radius: var(--r-full);
+  background: var(--blue-wash, color-mix(in srgb, var(--blue) 10%, transparent));
+  color: var(--blue);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  white-space: nowrap;
+}
+.earn__item b { display: block; font-size: var(--text-sm); margin-bottom: 3px; }
+.earn__item p { font-size: var(--text-xs); line-height: 1.9; color: var(--ink-faint); }
+
+/* ---------- پایان ---------- */
+
+.club-cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-10);
+}
+
+/* ============================================================
+   درباره‌ی ما و تماس
+   ============================================================ */
+
+.abt {
+  max-width: 46rem;
+  margin-inline: auto;
+  display: grid;
+  gap: var(--sp-10);
+}
+.abt__block h2 { font-size: var(--text-lg); margin-bottom: var(--sp-3); }
+.abt__block p { font-size: var(--text-sm); line-height: 2.1; color: var(--ink-soft); }
+.abt__block a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
+
+.abt__ways {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-5);
+}
+@media (max-width: 900px) { .abt__ways { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .abt__ways { grid-template-columns: 1fr; } }
+
+/* آیکون بدون کادر، مثل بقیه‌ی سایت — هاله‌ی آبی جای قاب را
+   می‌گیرد و فقط روی هاور باز می‌شود. */
+.abt__way {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: var(--sp-2);
+  padding: var(--sp-6) var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--paper);
+  transition: border-color var(--dur) var(--ease), translate var(--dur) var(--ease);
+}
+[data-theme='dark'] .abt__way {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.abt__way:hover {
+  translate: 0 -3px;
+  border-color: color-mix(in srgb, var(--blue) 45%, transparent);
+}
+.abt__way b { font-size: var(--text-sm); }
+.abt__way > span:last-child { font-size: var(--text-xs); line-height: 1.85; color: var(--ink-faint); }
+
+.abt__way-ico {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  color: var(--blue);
+}
+.abt__way-ico svg { width: 26px; height: 26px; transition: filter 320ms var(--ease); }
+.abt__way:hover .abt__way-ico svg {
+  filter:
+    drop-shadow(0 0 4px color-mix(in srgb, var(--blue) 70%, transparent))
+    drop-shadow(0 0 12px color-mix(in srgb, var(--blue) 40%, transparent));
+}
+
+@media (prefers-reduced-motion: reduce) { .abt__way:hover { translate: none; } }
+
+/* ============================================================
+   شبکه‌ی لوله‌ها — پس‌زمینه‌ی باشگاه
+   ============================================================
+
+   کارخانه‌ای که پشت شیشه می‌بینی: لوله‌های محو و گلوله‌هایی که در
+   آن‌ها راه می‌روند. باید حس «یک سیستمی این پشت هست» بدهد، نه حس
+   تزئین. پس دو قید:
+
+   ۱ خیلی کم‌رنگ. اگر پس‌زمینه با متن رقابت کند، صفحه خوانده
+     نمی‌شود. لوله‌ها زیر ده درصدند و گلوله‌ها فقط چون نور دارند
+     دیده می‌شوند.
+
+   ۲ آرام. کندترین گلوله بیست‌وشش ثانیه طول می‌کشد تا عرض صفحه را
+     رد کند. حرکتِ تند، پس‌زمینه را به مزاحم تبدیل می‌کند.
+   ============================================================ */
+
+.clubpage { position: relative; isolation: isolate; }
+
+.ctracks {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  /* بالا و پایین محو می‌شود تا لبه‌ی شبکه دیده نشود */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+}
+.ctracks svg { width: 100%; height: 100%; display: block; }
+
+.ctracks__pipe path {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  opacity: 0.07;
+}
+[data-theme='dark'] .ctracks__pipe path { stroke: #ffffff; opacity: 0.08; }
+
+.ctracks__node circle {
+  fill: var(--ink);
+  opacity: 0.1;
+  animation: ct-breathe 4.5s ease-in-out infinite;
+}
+[data-theme='dark'] .ctracks__node circle { fill: #ffffff; opacity: 0.14; }
+
+@keyframes ct-breathe {
+  0%, 100% { r: 3;   opacity: 0.08; }
+  50%      { r: 4.5; opacity: 0.2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctracks { display: none; }
+}
+
+/* ---------- پله‌ها به‌عنوان ایستگاه ----------
+
+   کارت‌های پله روی همان شبکه‌ی لوله می‌نشینند، پس باید شبیه
+   ایستگاه‌های آن سیستم دیده شوند نه کارت‌های شناور. سه چیز این
+   کار را می‌کند و هر سه کوچک‌اند — «بامزه» یعنی همین، نه فانتزی:
+
+   ۱ یک نقطه‌ی نورانی بالای هر کارت، مثل چراغِ ایستگاه.
+   ۲ پس‌زمینه‌ی نیمه‌شفاف، تا لوله‌ها از پشتش پیدا باشند.
+   ۳ کارتِ پله‌ی کاربر آرام نفس می‌کشد. فقط همان یکی. */
+
+.tier {
+  position: relative;
+  overflow: hidden;
+  /* شفاف، تا شبکه از پشت دیده شود */
+  background: color-mix(in srgb, var(--paper) 82%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+}
+[data-theme='dark'] .tier {
+  background: color-mix(in srgb, #161922 78%, transparent);
+}
+
+/* چراغِ ایستگاه */
+.tier::before {
+  content: '';
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline-start: 50%;
+  translate: 50% 0;
+  width: 46%;
+  height: 2px;
+  border-radius: 0 0 99px 99px;
+  background: var(--tube);
+  opacity: 0.35;
+  transition: opacity var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.tier.is-you::before {
+  opacity: 1;
+  box-shadow: 0 0 12px 1px color-mix(in srgb, var(--tube) 75%, transparent);
+}
+
+/* پله‌ی کاربر آرام نفس می‌کشد — یک المان، نه همه‌شان */
+.tier.is-you { animation: tier-breathe 4.2s ease-in-out infinite; }
+@keyframes tier-breathe {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--tube) 26%, transparent),
+                         0 18px 40px -30px color-mix(in srgb, var(--tube) 60%, transparent); }
+  50%      { box-shadow: 0 0 0 1px color-mix(in srgb, var(--tube) 42%, transparent),
+                         0 20px 46px -26px color-mix(in srgb, var(--tube) 80%, transparent); }
+}
+
+/* سلول‌های ماشین‌حساب هم شیشه‌ای، تا از شبکه جدا نیفتند */
+.clubcalc__cell {
+  background: color-mix(in srgb, var(--paper) 80%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+}
+[data-theme='dark'] .clubcalc__cell {
+  background: color-mix(in srgb, #161922 76%, transparent);
+}
+
+/* نشانِ امتیاز، مثل ژتون */
+.earn__pts {
+  position: relative;
+  border: 1px dashed color-mix(in srgb, var(--blue) 40%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tier.is-you { animation: none; }
+}
+
+/* گلوله‌ها روی مسیر.
+
+   offset-path در سبک درون‌خطیِ خودِ عنصر است چون رشته‌ی مسیر از
+   همان جایی می‌آید که لوله با آن کشیده شده — یک منبع، پس گلوله و
+   لوله هیچ‌وقت از هم نمی‌افتند. اینجا فقط حرکت تعریف می‌شود. */
+.ctracks__pellet {
+  offset-distance: 0%;
+  offset-rotate: 0deg;
+  opacity: 0.9;
+  animation-name: ct-run;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes ct-run {
+  from { offset-distance: 0%; }
+  to   { offset-distance: 100%; }
+}

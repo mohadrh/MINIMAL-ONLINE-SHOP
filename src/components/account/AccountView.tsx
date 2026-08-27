@@ -14,6 +14,12 @@ import {
 import { listOrders } from '../../lib/orders';
 import { listTickets, type Ticket } from '../../lib/tickets';
 import { NewTicketFlow } from './NewTicketFlow';
+/* پله‌ها از data/club می‌آیند، نه از نسخه‌ی محلی.
+
+   قبلاً همین‌جا کپی‌شان بود. با ساخته‌شدن صفحه‌ی عمومی /club دو
+   فهرست می‌شد، و بدترین حالت این است که سایت به کاربر یک عدد نشان
+   بدهد و پنل عددِ دیگری. */
+import { TIERS } from '../../data/club';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -66,13 +72,6 @@ const GROUPS: { title: string; items: { id: Tab; label: string; icon: React.Reac
 
 const ALL_TABS = GROUPS.flatMap((g) => g.items);
 
-/* پله‌های باشگاه — از کم به زیاد، تا نردبان خوانده شود */
-const TIERS: { id: string; label: string; from: number; perk: string }[] = [
-  { id: 'bronze',  label: 'برنزی',  from: 0,    perk: 'پشتیبانی استاندارد' },
-  { id: 'silver',  label: 'نقره‌ای', from: 500,  perk: '۳٪ کش‌بک روی هر خرید' },
-  { id: 'gold',    label: 'طلایی',  from: 2000, perk: '۵٪ کش‌بک و تحویل اولویت‌دار' },
-  { id: 'phoenix', label: 'ققنوس',  from: 5000, perk: '۸٪ کش‌بک و پشتیبانی اختصاصی' },
-];
 
 const REFER_CODE = 'PHX-MOHA-2405';
 

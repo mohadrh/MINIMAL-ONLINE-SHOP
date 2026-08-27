@@ -4,18 +4,24 @@ import { Instagram, Mail, MessageCircle, Send } from 'lucide-react';
 import { CATEGORIES } from '../../data/catalog';
 import { asset } from '../../lib/asset';
 
+/* ⚠ هر مسیری که اینجا اضافه می‌شود باید صفحه‌ی واقعی داشته باشد.
+
+   چهار لینک این فوتر مدت‌ها به ۴۰۴ می‌رفتند — /about، /contact،
+   /careers و /complaint هیچ‌کدام ساخته نشده بودند. چون فوتر روی
+   *هر* صفحه‌ی سایت است، یعنی هر بازدیدکننده چهار لینک شکسته جلوی
+   چشمش داشت. /about ساخته شد و بقیه به مقصدهای واقعی رفتند. */
 const HELP = [
   { t: 'سوالات متداول', h: '/faq' },
   { t: 'پیگیری سفارش', h: '/track' },
   { t: 'قوانین و گارانتی', h: '/rules' },
-  { t: 'تماس با ما', h: '/contact' },
+  { t: 'تماس با ما', h: '/about' },
 ];
 
 const ABOUT = [
   { t: 'درباره‌ی ما', h: '/about' },
-  { t: 'مقالات', h: '/blog' },
-  { t: 'همکاری با ما', h: '/careers' },
-  { t: 'ثبت شکایت', h: '/complaint' },
+  { t: 'باشگاه مشتریان', h: '/club' },
+  { t: 'مقالات و آموزش', h: '/blog' },
+  { t: 'ثبت شکایت', h: '/account' },
 ];
 
 export function Footer() {
