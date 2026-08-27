@@ -422,6 +422,9 @@
 }
 .pdp-hero__art img { width: 62%; object-fit: contain; }
 
+/* ستون تصویر: عکس، و زیرش کنش‌هایش */
+.pdp-hero__media { display: grid; gap: var(--sp-3); }
+
 .pdp-hero__buy h1 { font-size: var(--text-2xl); margin-bottom: var(--sp-1); }
 .pdp-hero__en { font-size: var(--text-xs); color: var(--ink-faint); margin-bottom: var(--sp-4); }
 .pdp-hero__lead { font-size: var(--text-sm); color: var(--ink-soft); margin-bottom: var(--sp-5); }
@@ -1115,14 +1118,20 @@
 
    همیشه دیده می‌شوند، نه فقط روی هاور. */
 
+/* ردیفِ زیر تصویر.
+
+   نه شناور روی عکس. حبابِ شیشه‌ای روی بنرِ روشن گم می‌شد و روی
+   کارتِ بازی جلوی کاراکتر را می‌گرفت — همان کاراکتری که عمداً از
+   قاب بیرون می‌زند.
+
+   بالای بدنه‌ی متنی است و با یک خطِ نازک از آن جدا می‌شود: تصویر و
+   کنش‌ها یک بلوک، اطلاعاتِ تصمیم بلوک بعد. */
 .pcard__acts {
-  position: absolute;
-  inset-block-start: var(--sp-3);
-  inset-inline-end: var(--sp-3);
-  z-index: 4;
   display: flex;
   gap: 6px;
-  pointer-events: auto;
+  justify-content: flex-end;
+  padding: var(--sp-2) var(--sp-4) 0;
+  margin-block-start: calc(var(--sp-1) * -1);
 }
 
 .bub {
@@ -1131,13 +1140,13 @@
   display: grid; place-items: center;
   flex-shrink: 0;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--line);
   border-radius: var(--r-full);
   background:
     linear-gradient(160deg,
-      rgba(255, 255, 255, 0.85) 0%,
-      rgba(255, 255, 255, 0.42) 44%,
-      rgba(255, 255, 255, 0.14) 100%);
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(255, 255, 255, 0.72) 44%,
+      color-mix(in srgb, var(--wash) 70%, transparent) 100%);
   color: var(--ink-soft);
   cursor: pointer;
   box-shadow:
@@ -1519,11 +1528,12 @@
 }
 
 /* ردیف مقایسه و اشتراک‌گذاری در هیروِ محصول */
-/* از هر دو طرف نفس می‌کشد — چسبیده به جدولِ پلن‌ها، ردیفی که
-   ثانویه است شبیه بخشی از تصمیمِ اصلی دیده می‌شد. */
+/* زیر عکس و هم‌عرضش. دو دکمه نصف‌نصف پهنا می‌گیرند تا ردیف
+   تمام شود و لبه‌ی راستِ ناتمام کنار تصویر باقی نماند. */
 .pdp-hero__acts {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--sp-2);
-  margin-block: var(--sp-4) var(--sp-5);
 }
+.pdp-hero__acts > .shb { display: grid; }
+.pdp-hero__acts .bub--wide { width: 100%; justify-content: center; }

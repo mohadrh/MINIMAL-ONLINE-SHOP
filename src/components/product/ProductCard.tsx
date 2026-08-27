@@ -173,27 +173,29 @@ export function ProductCard(
 
         {sold && <span className="pcard__sold">فعلاً ناموجود</span>}
 
-        {/* مقایسه و اشتراک‌گذاری — گوشه‌ی مقابل نشان‌ها.
+      </span>
 
-            همیشه دیده می‌شوند. قبلاً تا هاور نکنی نبودند و روی
-            موبایل که هاوری در کار نیست، عملاً وجود نداشتند؛ کاربر
-            نمی‌تواند قابلیتی را کشف کند که پیدا نیست. حباب‌های
-            شیشه‌ای‌اند و کم‌رنگ، پس شلوغ هم نمی‌کنند. */}
-        <span className="pcard__acts">
-          <button
-            type="button"
-            className={`bub ${compare.has(p.slug) ? 'is-on' : ''}`}
-            data-tip={compare.has(p.slug) ? 'حذف از مقایسه' : 'مقایسه'}
-            aria-pressed={compare.has(p.slug)}
-            aria-label={compare.has(p.slug) ? `حذف ${p.title} از مقایسه` : `افزودن ${p.title} به مقایسه`}
-            disabled={!compare.has(p.slug) && compare.full}
-            onClick={(e) => { e.stopPropagation(); e.preventDefault(); compare.toggle(p); }}
-          >
-            <Columns2 aria-hidden="true" />
-          </button>
+      {/* مقایسه و اشتراک‌گذاری — زیر عکس، نه رویش.
 
-          <ShareBubble title={p.title} path={`/product/${p.slug}`} />
-        </span>
+          روی خودِ تصویر بودند و دو مشکل داشتند: جلوی کاراکترِ بازی
+          را می‌گرفتند، و روی بنرهای روشن حباب سفید روی سفید گم
+          می‌شد. این‌جا زمینه‌ی ثابت دارند، همیشه خوانا هستند، و
+          مرزِ بین «تصویر محصول» و «کاری که می‌توانی بکنی» روشن
+          می‌ماند. */}
+      <span className="pcard__acts">
+        <button
+          type="button"
+          className={`bub ${compare.has(p.slug) ? 'is-on' : ''}`}
+          data-tip={compare.has(p.slug) ? 'حذف از مقایسه' : 'مقایسه'}
+          aria-pressed={compare.has(p.slug)}
+          aria-label={compare.has(p.slug) ? `حذف ${p.title} از مقایسه` : `افزودن ${p.title} به مقایسه`}
+          disabled={!compare.has(p.slug) && compare.full}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); compare.toggle(p); }}
+        >
+          <Columns2 aria-hidden="true" />
+        </button>
+
+        <ShareBubble title={p.title} path={`/product/${p.slug}`} />
       </span>
 
       <span className="pcard__body">

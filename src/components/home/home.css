@@ -105,9 +105,13 @@
   gap: 0;
   z-index: 2;
 }
-/* فاصله از پایین. بولت‌ها به لبه‌ی هیرو چسبیده بودند و روی
-   نوارِ زیرش می‌افتادند. */
-.hero__dots { bottom: var(--sp-20); }
+/* بولت‌ها روی خودِ بنر افتاده بودند.
+
+   با bottom: 80px دقیقاً روی سی‌وشش پیکسل آخرِ تصویر می‌نشستند —
+   لبه‌ی پایینِ بنر و لبه‌ی پایینِ بولت‌ها یکی بود. اسلایدر هشتاد
+   پیکسل جای خالی زیر تصویر دارد؛ بولت‌ها باید همان‌جا بنشینند نه
+   رویش. بیست‌وچهار پیکسل از کف، یعنی بیست پیکسل فاصله از بنر. */
+.hero__dots { bottom: var(--sp-6); }
 /* دایره می‌ماند، بیضی نمی‌شود.
 
    نسخه‌ی قبل عرضِ دات فعال را به ۲۲ پیکسل می‌برد و کشیده می‌شد.
@@ -1669,7 +1673,39 @@
 
 /* ---------- ریل کارت‌ها ---------- */
 
-.deals__rail { scroll-behavior: smooth; }
+/* ---------- ریلِ تک‌ردیفه ----------
+
+   قبلاً grid--4 بود و همین کل سکشن را از کار انداخته بود: در چهار
+   ستون می‌پیچید، پس هشت تخفیف دو سطر می‌شد، ریل هیچ‌وقت سرریز
+   نمی‌کرد، و چون سرریزی نبود نه چرخش خودکار کاری می‌کرد نه
+   دکمه‌های ناوبری نه بولت‌ها. سه‌تا کنترل روی چیزی که اصلاً
+   اسکرول نمی‌شد.
+
+   حالا یک ردیفِ واقعی است: کارت‌ها عرض ثابت دارند، نمی‌پیچند، و
+   اضافه‌شان از لبه می‌رود بیرون. عرضِ کارت با clamp حساب می‌شود تا
+   روی هر پهنایی خودش تعداد درست را نشان بدهد.
+
+   scroll-snap هست چون کشیدن با انگشت باید روی کارت بایستد نه وسط
+   آن؛ بدون آن، کارتِ نصفه در لبه می‌ماند و ردیف شکسته دیده می‌شود. */
+.deals__rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: clamp(240px, 24%, 300px);
+  gap: var(--sp-4);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  /* جا برای هاله و بیرون‌زدگیِ کاراکترِ بازی‌ها */
+  padding-block: var(--sp-2) var(--sp-3);
+  scrollbar-width: none;
+}
+.deals__rail::-webkit-scrollbar { display: none; }
+.deals__rail > * { scroll-snap-align: start; }
+
+@media (max-width: 560px) {
+  .deals__rail { grid-auto-columns: min(78%, 280px); }
+}
 
 /* نوارِ باریکِ رنگی بالای هر کارتِ تخفیف‌دار — نشانِ اینکه این
    ردیف با بقیه فرق دارد. */
@@ -1684,3 +1720,62 @@
   background: linear-gradient(to left, #ff8a3c, #ff5c8c);
   z-index: 4;
 }
+
+/* ---------- بولت‌های تخفیف‌های امروز ----------
+
+   دایره با ::before ساخته می‌شود نه با خودِ دکمه.
+
+   نسخه‌ی اول اسلایدر هیرو همین را با background-clip: content-box
+   و border-radius روی خودِ دکمه ساخته بود و مربع درمی‌آمد: شعاع
+   گوشه روی جعبه‌ی حاشیه اعمال می‌شود، نه روی ناحیه‌ی محتوا که
+   پس‌زمینه در آن بریده شده. دو بار گزارش شد تا علتش پیدا شود؛
+   همان‌جا هم راه‌حل همین بود.
+
+   دکمه خودش ۳۰×۳۰ می‌ماند تا هدفِ لمس به حداقلِ لازم برسد، ولی
+   چیزی که دیده می‌شود ۹ پیکسل است. */
+.deals__dots {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  margin-top: var(--sp-5);
+}
+
+.deals__dot {
+  position: relative;
+  width: 30px; height: 30px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.deals__dot::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  translate: 50% -50%;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--line-strong, var(--line));
+  transition: width var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.deals__dot:hover::before { background: var(--ink-faint); }
+
+/* صفحه‌ی فعال کشیده می‌شود، نه فقط پررنگ‌تر: اختلافِ شکل از
+   اختلافِ رنگ خواناتر است و به کوررنگی هم وابسته نیست. */
+.deals__dot.is-on::before {
+  width: 22px;
+  border-radius: var(--r-full);
+  background: var(--blue);
+}
+.deals__dot:focus-visible { outline: 2px solid var(--blue); outline-offset: -4px; border-radius: var(--r-full); }
+
+[data-theme='dark'] .deals__dot::before { background: rgba(255, 255, 255, 0.24); }
+[data-theme='dark'] .deals__dot:hover::before { background: rgba(255, 255, 255, 0.45); }
+[data-theme='dark'] .deals__dot.is-on::before { background: var(--blue); }
+
+@media (prefers-reduced-motion: reduce) { .deals__dot::before { transition: none; } }
+
+/* تبِ بی‌تخفیف کم‌رنگ‌تر است ولی غیرفعال نیست — کاربر باید بتواند
+   بازش کند و پیامِ «امروز این‌جا تخفیفی نیست» را ببیند. */
+.shop__chip.is-empty:not(.is-on) { opacity: 0.55; }

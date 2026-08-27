@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Flame } from 'lucide-react';
 import { PRODUCTS, type CategorySlug } from '../../data/catalog';
@@ -34,9 +34,9 @@ import { ProductCard } from '../product/ProductCard';
    هوش مصنوعی کنار هم و هیچ‌کدام برای کسی که دنبال یکی‌شان است
    مفید نبود. هر تب یک دنیاست و کاربر خودش انتخاب می‌کند کدام. */
 const LANES: { id: string; title: string; cats: CategorySlug[] }[] = [
-  { id: 'ai',     title: 'هوش مصنوعی',     cats: ['ai'] },
-  { id: 'apps',   title: 'اکانت و اشتراک', cats: ['creative', 'social', 'education'] },
-  { id: 'gaming', title: 'گیم',            cats: ['gaming'] },
+  { id: 'gaming', title: 'گیم',              cats: ['gaming'] },
+  { id: 'ai',     title: 'هوش مصنوعی',       cats: ['ai'] },
+  { id: 'apps',   title: 'اکانت‌های دیگر',   cats: ['creative', 'social', 'education'] },
 ];
 
 const AUTO_MS = 4200;
@@ -45,6 +45,8 @@ export function HotDeals() {
   const [lane, setLane] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
   const railRef = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(0);
+  const [pages, setPages] = useState(1);
 
   /* همه‌ی تخفیف‌ها، یک بار حساب می‌شوند.
 
@@ -69,13 +71,20 @@ export function HotDeals() {
   /* پرتخفیف‌ترین دسته پیش‌فرض باز می‌شود — نه اولین تبِ فهرست.
      اگر امروز فقط گیم تخفیف داشته باشد، تبِ خالیِ هوش مصنوعی
      نباید اولین چیزی باشد که کاربر می‌بیند. */
+  /* هر سه تب همیشه هستند، حتی خالی.
+
+     قبلاً تبِ خالی حذف می‌شد و نتیجه‌اش این بود که بعضی روزها فقط
+     دو تب دیده می‌شد و کاربر نمی‌فهمید دسته‌ی سومی هم وجود دارد.
+     تبِ «هوش مصنوعی ۰» خودش یک خبر است: امروز روی اشتراک‌ها تخفیفی
+     نیست. تبِ نبوده، هیچ خبری نمی‌دهد. */
   const lanes = useMemo(
-    () => LANES.map((l) => ({ ...l, n: all.filter((d) => l.cats.includes(d.p.category)).length }))
-               .filter((l) => l.n > 0),
+    () => LANES.map((l) => ({ ...l, n: all.filter((d) => l.cats.includes(d.p.category)).length })),
     [all],
   );
   const active = lane && lanes.some((l) => l.id === lane)
     ? lane
+    /* پرتخفیف‌ترین دسته باز می‌شود، پس تبِ خالی هیچ‌وقت اولین
+       چیزی نیست که کاربر می‌بیند */
     : lanes.slice().sort((a, b) => b.n - a.n)[0]?.id;
 
   const deals = useMemo(() => {
@@ -111,6 +120,41 @@ export function HotDeals() {
   /* هر تعاملی چرخش را برای همیشه می‌خواباند */
   const stop = () => setPaused(true);
 
+  /* ---------- شمردن صفحه‌ها ----------
+
+     بولت‌ها باید «صفحه» را نشان بدهند نه «کارت». روی دسکتاپ چهار
+     کارت با هم دیده می‌شوند و چهار بولتِ جدا برایشان یعنی سه‌تای
+     اولش هیچ کاری نمی‌کند.
+
+     تعداد کارتِ هر صفحه از عرضِ واقعیِ ریل حساب می‌شود، پس روی
+     موبایل خودبه‌خود می‌شود یکی و بولت‌ها هم همان‌قدر می‌شوند.
+
+     در RTL کروم scrollLeft منفی است — قدر مطلق می‌گیریم، وگرنه
+     همیشه صفحه‌ی صفر فعال می‌ماند. */
+  const measure = useCallback(() => {
+    const el = railRef.current;
+    if (!el) return;
+    const card = el.querySelector('.pcard') as HTMLElement | null;
+    if (!card) return;
+    const step = card.offsetWidth + 16;
+    const per = Math.max(1, Math.round(el.clientWidth / step));
+    const total = Math.max(1, Math.ceil(deals.length / per));
+    setPages(total);
+    setPage(Math.min(total - 1, Math.round(Math.abs(el.scrollLeft) / (per * step))));
+  }, [deals.length]);
+
+  useEffect(() => {
+    measure();
+    const el = railRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', measure, { passive: true });
+    window.addEventListener('resize', measure);
+    return () => {
+      el.removeEventListener('scroll', measure);
+      window.removeEventListener('resize', measure);
+    };
+  }, [measure]);
+
   const nudge = (dir: 1 | -1) => {
     stop();
     const el = railRef.current;
@@ -118,6 +162,20 @@ export function HotDeals() {
     const card = el.querySelector('.pcard') as HTMLElement | null;
     const step = card ? card.offsetWidth + 16 : el.clientWidth * 0.8;
     el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
+
+  /* پریدن به یک صفحه با کلیک روی بولت */
+  const goto = (i: number) => {
+    stop();
+    const el = railRef.current;
+    if (!el) return;
+    const card = el.querySelector('.pcard') as HTMLElement | null;
+    if (!card) return;
+    const step = card.offsetWidth + 16;
+    const per = Math.max(1, Math.round(el.clientWidth / step));
+    /* در RTL جهتِ اسکرول منفی است */
+    const dir = getComputedStyle(el).direction === 'rtl' ? -1 : 1;
+    el.scrollTo({ left: dir * i * per * step, behavior: 'smooth' });
   };
 
   if (all.length === 0) return null;
@@ -150,7 +208,7 @@ export function HotDeals() {
           {lanes.map((l) => (
             <button
               key={l.id}
-              className={`shop__chip ${active === l.id ? 'is-on' : ''}`}
+              className={`shop__chip ${active === l.id ? 'is-on' : ''} ${l.n === 0 ? 'is-empty' : ''}`}
               aria-pressed={active === l.id}
               onClick={() => { setLane(l.id); stop(); }}
             >
@@ -166,13 +224,31 @@ export function HotDeals() {
         ) : (
           <div
             ref={railRef}
-            className="rail grid--4 deals__rail"
+            className="deals__rail"
             onPointerDown={stop}
             onMouseEnter={stop}
             onWheel={stop}
           >
-            {deals.map((d) => (
-              <ProductCard key={d.p.slug} product={d.p} />
+            {deals.map((d, i) => (
+              <ProductCard key={d.p.slug} product={d.p} style={{ ['--i' as string]: i }} />
+            ))}
+          </div>
+        )}
+
+        {/* بولت‌ها — فقط وقتی بیش از یک صفحه هست.
+            یک بولتِ تنها هیچ اطلاعاتی نمی‌دهد. */}
+        {pages > 1 && (
+          <div className="deals__dots" role="tablist" aria-label="صفحه‌های تخفیف">
+            {Array.from({ length: pages }, (_, i) => (
+              <button
+                key={i}
+                type="button"
+                role="tab"
+                className={`deals__dot ${i === page ? 'is-on' : ''}`}
+                aria-selected={i === page}
+                aria-label={`صفحه‌ی ${(i + 1).toLocaleString('fa-IR')}`}
+                onClick={() => goto(i)}
+              />
             ))}
           </div>
         )}

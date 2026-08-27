@@ -131,28 +131,21 @@ export function ProductView({ product: p }: { product: Product }) {
       {/* ---------- ۲ هیرو + جعبه‌ی سفارش ---------- */}
       <section className="pdp-hero" style={{ ['--accent' as string]: p.media.accent }}>
         <div className="wrap pdp-hero__grid">
-          <ProductArt
-            className="pdp-hero__art"
-            src={p.media.cover ?? p.media.thumbnail}
-            title={p.englishTitle}
-            brand={p.brand}
-          />
+          {/* تصویر و کنش‌هایش یک ستون‌اند */}
+          <div className="pdp-hero__media">
+            <ProductArt
+              className="pdp-hero__art"
+              src={p.media.cover ?? p.media.thumbnail}
+              title={p.englishTitle}
+              brand={p.brand}
+            />
 
-          <div className="pdp-hero__buy" id="buy">
-            <h1>{p.title}</h1>
-            <p className="pdp-hero__en">{p.englishTitle}</p>
-            <p className="pdp-hero__lead">{p.shortDescription}</p>
+            {/* زیر عکس، نه لای مسیر خرید.
 
-            <div className="pdp-hero__badges">
-              <span className="pill pill--ok"><Clock aria-hidden="true" />{p.deliveryEstimate}</span>
-              <span className="pill"><ShieldCheck aria-hidden="true" />{p.warrantyLabel}</span>
-            </div>
-
-            {/* مقایسه و اشتراک‌گذاری، بالای انتخاب پلن.
-
-                این‌جا در دیدِ کاربر است ولی قبل از تصمیم — کسی که
-                هنوز شک دارد همین‌جا محصول را به مقایسه اضافه
-                می‌کند یا لینکش را برای کسی می‌فرستد که نظر بدهد. */}
+                قبلاً بین نشان‌ها و انتخاب پلن بود و وسط تصمیمِ
+                اصلی می‌نشست. این‌جا کنارِ تصویر است — جایی که
+                کاربر هنوز دارد نگاه می‌کند، نه جایی که دارد
+                انتخاب می‌کند. */}
             <div className="pdp-hero__acts">
               <button
                 type="button"
@@ -165,6 +158,17 @@ export function ProductView({ product: p }: { product: Product }) {
                 <span>{compare.has(p.slug) ? 'در مقایسه' : 'مقایسه'}</span>
               </button>
               <ShareBubble title={p.title} path={`/product/${p.slug}`} variant="wide" />
+            </div>
+          </div>
+
+          <div className="pdp-hero__buy" id="buy">
+            <h1>{p.title}</h1>
+            <p className="pdp-hero__en">{p.englishTitle}</p>
+            <p className="pdp-hero__lead">{p.shortDescription}</p>
+
+            <div className="pdp-hero__badges">
+              <span className="pill pill--ok"><Clock aria-hidden="true" />{p.deliveryEstimate}</span>
+              <span className="pill"><ShieldCheck aria-hidden="true" />{p.warrantyLabel}</span>
             </div>
 
             {/* انتخاب پلن */}
