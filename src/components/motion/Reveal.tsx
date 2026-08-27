@@ -6,12 +6,12 @@ import { usePathname } from 'next/navigation';
 /**
  * ظهور آرام سکشن‌ها هنگام اسکرول.
  *
- * تنها حرکت سراسری سایت است و عمداً خیلی کم: هشت پیکسل بالا آمدن
+ * تنها حرکت سراسری سایت است و عمداً خیلی کم: هجده پیکسل بالا آمدن
  * و محو شدن، یک بار، بدون برگشت. همین اندازه کافی است تا صفحه
  * زنده به نظر برسد و از نمونه — که صفر انیمیشن دارد — متمایز شود،
  * بدون اینکه چیزی به شلوغی اضافه کند.
  *
- * دو تصمیم:
+ * چهار تصمیم:
  *
  * ۱. کلاس js-reveal را همین کامپوننت روی <html> می‌گذارد، نه CSS.
  *    اگر جاوااسکریپت اجرا نشود کلاس نمی‌آید و حالت مخفی هم اعمال
@@ -19,14 +19,23 @@ import { usePathname } from 'next/navigation';
  *    عمل می‌کردیم و پیش‌فرض را مخفی می‌گذاشتیم، هر خطای اسکریپت
  *    کل صفحه را سفید می‌کرد.
  *
- * ۲. بعد از دیده شدن، عنصر از رصد بیرون می‌رود. سکشن‌ها زیادند و
- *    نگه‌داشتنشان در observer فقط کار بی‌فایده است.
- *
- * ۳. با هر تغییر مسیر دوباره اسکن می‌شود. این کامپوننت در layout
+ * ۲. با هر تغییر مسیر دوباره اسکن می‌شود. این کامپوننت در layout
  *    است و یک بار mount می‌شود؛ اگر فقط همان یک بار پرس‌وجو
  *    می‌کرد، هر صفحه‌ای که با ناوبری داخلی باز شود عنصرهای
- *    .reveal‌اش هیچ‌وقت رصد نمی‌شدند و — چون حالت پیش‌فرضشان
- *    opacity صفر است — برای همیشه نامرئی می‌ماندند.
+ *    reveal‌اش هیچ‌وقت باز نمی‌شدند و برای همیشه نامرئی می‌ماندند.
+ *
+ * ۳. تصمیم با محاسبه‌ی مستقیمِ rect گرفته می‌شود، نه با
+ *    IntersectionObserver. ناظر دو رفتار داشت که این‌جا گران تمام
+ *    می‌شد: در تبِ پس‌زمینه اصلاً خبر نمی‌داد، و آستانه‌اش نسبتِ
+ *    مساحتِ دیده‌شده به مساحتِ *خودِ عنصر* است — پس سکشنی که از
+ *    قاب بلندتر باشد روی پنجره‌ی کوتاه ممکن بود هیچ‌وقت آن نسبت را
+ *    برآورده نکند. چون کلِ بدنه‌ی صفحه پشت این کلاس پنهان است،
+ *    هزینه‌ی اشتباهش صفحه‌ی سفید بود، نه فقط نبودِ انیمیشن.
+ *    همان روشی که «مسیر خرید» دارد، این‌جا هم درست است و زبانِ
+ *    حرکتِ کد را یکی نگه می‌دارد.
+ *
+ * ۴. عنصری که باز شد از فهرست بیرون می‌رود و وقتی فهرست خالی شد،
+ *    شنونده خودش برداشته می‌شود.
  */
 export function Reveal() {
   const pathname = usePathname();
@@ -38,24 +47,46 @@ export function Reveal() {
 
     root.classList.add('js-reveal');
 
-    const targets = document.querySelectorAll<HTMLElement>('.reveal');
-    if (!targets.length) return;
+    let pending = Array.from(document.querySelectorAll<HTMLElement>('.reveal'));
+    if (!pending.length) return;
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (!e.isIntersecting) return;
-          e.target.classList.add('is-in');
-          io.unobserve(e.target);
-        });
-      },
-      /* کمی قبل از رسیدن به کف قاب فعال می‌شود تا حرکت در حاشیه‌ی
-         دید تمام شود، نه وسط صفحه. */
-      { rootMargin: '0px 0px -12% 0px', threshold: 0.05 },
-    );
+    let frame = 0;
 
-    targets.forEach((t) => io.observe(t));
-    return () => io.disconnect();
+    const sweep = () => {
+      frame = 0;
+      /* دوازده درصدِ پایینِ قاب حساب نمی‌شود تا حرکت در حاشیه‌ی دید
+         تمام شود، نه وسط صفحه. */
+      const edge = window.innerHeight * 0.88;
+      const rest: HTMLElement[] = [];
+      for (const el of pending) {
+        if (el.getBoundingClientRect().top < edge) el.classList.add('is-in');
+        else rest.push(el);
+      }
+      pending = rest;
+      if (!pending.length) detach();
+    };
+
+    const onScroll = () => {
+      /* فریمِ در انتظار را لغو کن و تازه‌اش را بگذار، وگرنه آخرین
+         موقعیتِ اسکرول دور ریخته می‌شود و آخرین سکشن باز نمی‌ماند. */
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(sweep);
+    };
+
+    const detach = () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0;
+    };
+
+    /* یک بار همین حالا: هرچه در قاب هست یا بالایش مانده — ورودی از
+       لینکِ لنگردار، بازگشتِ مرورگر با اسکرولِ ذخیره‌شده، یا رفرش در
+       میانه‌ی صفحه — بی‌درنگ باز می‌شود. */
+    sweep();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return detach;
   }, [pathname]);
 
   return null;
