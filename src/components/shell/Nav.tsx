@@ -118,19 +118,24 @@ export function Nav() {
           onMouseEnter={() => setMega(true)}
           onMouseLeave={() => setMega(false)}
         >
-          <button
-            type="button"
+          {/* لینک است، نه دکمه.
+
+              «همه‌ی محصولات» جدا بود و همین را می‌گفت؛ حالا خودِ
+              «دسته‌بندی محصولات» به فروشگاه می‌رود و مگامنو با
+              هاور باز می‌شود. یک نام، یک مقصد — دو ورودیِ هم‌معنی
+              کنار هم، فقط انتخاب را سخت می‌کرد. */}
+          <Link
+            href="/shop"
             className={`nav__mega-btn ${mega ? 'is-on' : ''}`}
             aria-expanded={mega}
             aria-haspopup="true"
-            onClick={() => setMega((v) => !v)}
           >
             دسته‌بندی محصولات
             <ChevronDown aria-hidden="true" />
-          </button>
+          </Link>
 
-          <Link href="/shop">همه‌ی محصولات</Link>
           <Link href="/numbers">شماره مجازی</Link>
+          <Link href="/about">تماس با ما</Link>
 
           {mega && (
             <div className="nav__mega">

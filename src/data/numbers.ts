@@ -222,3 +222,65 @@ export const getCountry = (code: string) => NUMBER_COUNTRIES.find((c) => c.code 
 /** مجموع موجودی — روی سربرگ نشان داده می‌شود */
 export const totalInStock = () =>
   NUMBER_OFFERS.reduce((n, o) => n + (o.stock > 0 ? 1 : 0), 0);
+
+
+/* ---------------------------------------------------------------
+   پل به سبد خرید
+
+   سبد خرید با Product و Variant کار می‌کند و شماره‌ی مجازی هیچ‌کدام
+   نیست — یک ترکیبِ سرویس×کشور×نوع است که صفحه‌ی محصولِ خودش را
+   ندارد و نباید هم داشته باشد.
+
+   به‌جای عوض کردن مدلِ سبد، هر پیشنهاد در لحظه‌ی افزودن به یک
+   Product تبدیل می‌شود. اینطور سبد، پرداخت، سفارش و پنل کاربری
+   همگی بدون هیچ تغییری کار می‌کنند و شماره هم مثل بقیه‌ی چیزها
+   خرید می‌شود.
+
+   شناسه از سه‌تایی ساخته می‌شود، پس دو شماره‌ی متفاوت دو خطِ جدا
+   در سبد می‌شوند و یکی روی دیگری نمی‌افتد.
+--------------------------------------------------------------- */
+
+import type { Product, Variant } from './catalog';
+
+export function offerToProduct(o: NumberOffer): { product: Product; variant: Variant } {
+  const s = getService(o.serviceId)!;
+  const c = getCountry(o.countryCode)!;
+  const k = NUMBER_KINDS.find((x) => x.id === o.kind)!;
+  const id = `number-${o.serviceId}-${o.countryCode}-${o.kind}`;
+
+  const product: Product = {
+    id,
+    slug: 'numbers',
+    title: `شماره‌ی مجازی ${s.name} — ${c.name}`,
+    englishTitle: `${s.name} number · ${c.code.toUpperCase()}`,
+    brand: 'Phoenix',
+    category: 'social',
+    fulfillment: 'api_topup',
+    requiredInputs: [],
+    deliveryEstimate: 'در اسرع وقت، توسط سیستم',
+    warrantyLabel: o.kind === 'once'
+      ? 'اگر پیامک نرسید، مبلغ برمی‌گردد'
+      : 'گارانتی تا پایان دوره',
+    variants: [],
+    media: { thumbnail: '', accent: s.accent },
+    shortDescription: k.tagline,
+    description: k.limit,
+    features: [],
+    rating: 5,
+    reviewsCount: 0,
+    salesCount: 0,
+    badges: [],
+    tags: ['virtual-number', o.serviceId, o.countryCode],
+  };
+
+  const variant: Variant = {
+    id: `${o.kind}-${o.countryCode}`,
+    label: `${k.title} · ${c.name}${o.days ? ` · ${o.days} روزه` : ''}`,
+    price: o.price,
+    stock: o.stock,
+    isDefault: true,
+  };
+
+  product.variants = [variant];
+  return { product, variant };
+}

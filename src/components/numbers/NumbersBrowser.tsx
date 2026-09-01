@@ -1,11 +1,14 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { Search, ShoppingBag } from 'lucide-react';
 import {
   NUMBER_KINDS, NUMBER_SERVICES, SERVICE_GROUPS,
-  cheapestFor, offersFor, getCountry,
+  cheapestFor, offersFor, getCountry, offerToProduct,
   type NumberKind, type ServiceGroup,
 } from '../../data/numbers';
+import { useCart } from '../../app/providers';
+import { ServiceMark } from './ServiceMark';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -23,11 +26,18 @@ export function NumbersBrowser() {
   const [kind, setKind] = useState<NumberKind>(NUMBER_KINDS[0].id);
   const [group, setGroup] = useState<ServiceGroup | 'all'>('all');
   const [serviceId, setServiceId] = useState(NUMBER_SERVICES[0].id);
+  const [q, setQ] = useState('');
+  const { add } = useCart();
 
-  const services = useMemo(
-    () => NUMBER_SERVICES.filter((s) => group === 'all' || s.group === group),
-    [group],
-  );
+  /* جست‌وجو روی نام انگلیسی کار می‌کند چون کاربر «telegram» تایپ
+     می‌کند نه «تلگرام» — نام سرویس‌ها در این بازار انگلیسی است. */
+  const services = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    return NUMBER_SERVICES.filter(
+      (s) => (group === 'all' || s.group === group)
+        && (!t || s.name.toLowerCase().includes(t) || s.id.includes(t)),
+    );
+  }, [group, q]);
 
   const offers = useMemo(
     () => offersFor(kind, serviceId).slice(0, 12),
@@ -92,6 +102,21 @@ export function NumbersBrowser() {
             ))}
           </div>
 
+          <label className="nums__search">
+            <Search aria-hidden="true" />
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="نام سرویس را بنویس — telegram، chatgpt، paypal…"
+              aria-label="جست‌وجوی سرویس"
+            />
+          </label>
+
+          {services.length === 0 && (
+            <p className="shop__empty">سرویسی با این نام نداریم.</p>
+          )}
+
           <div className="nums__services">
             {services.map((s) => (
               <button
@@ -101,7 +126,9 @@ export function NumbersBrowser() {
                 onClick={() => setServiceId(s.id)}
                 aria-pressed={serviceId === s.id}
               >
-                <span className="nums__mark" aria-hidden="true">{s.mark}</span>
+                <span className="nums__mark" aria-hidden="true">
+                  <ServiceMark id={s.id} mark={s.mark} />
+                </span>
                 <b>{s.name}</b>
                 {(() => {
                   const c = cheapestFor(kind, s.id);
@@ -139,7 +166,22 @@ export function NumbersBrowser() {
                       <span className="num">{fmt(o.stock)} شماره موجود</span>
                     </div>
                     <span className="nums__price num">{fmt(o.price)}</span>
-                    <button className="btn btn--primary btn--sm">خرید</button>
+                    {/* تا حالا این دکمه هیچ onClick نداشت — یعنی کل
+                        صفحه‌ی شماره‌ی مجازی چیزی نمی‌فروخت. هر
+                        پیشنهاد در لحظه‌ی افزودن به یک محصول تبدیل
+                        می‌شود تا سبد و پرداخت بدون تغییر کار کنند. */}
+                    <button
+                      type="button"
+                      className="btn btn--primary btn--sm"
+                      disabled={o.stock === 0}
+                      onClick={() => {
+                        const { product, variant } = offerToProduct(o);
+                        add(product, variant);
+                      }}
+                    >
+                      <ShoppingBag aria-hidden="true" />
+                      {o.stock === 0 ? 'ناموجود' : 'خرید'}
+                    </button>
                   </div>
                 );
               })}

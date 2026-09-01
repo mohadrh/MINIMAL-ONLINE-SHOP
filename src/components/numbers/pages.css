@@ -305,3 +305,76 @@
 .chan > svg { width: 14px; height: 14px; color: var(--ink-faint); flex-shrink: 0; }
 
 @media (prefers-reduced-motion: reduce) { .chan:hover { translate: none; } }
+
+
+/* ============================================================
+   شماره‌ی مجازی — نشان‌ها و جست‌وجو
+   ============================================================
+
+   نشانِ سرویس تا حالا یک حرف بود و شبکه به یک جدولِ حروف تبدیل
+   می‌شد: کاربر باید هر خانه را می‌خواند تا پیدایش کند. آدم
+   سرویس‌ها را از روی شکلشان می‌شناسد.
+   ============================================================ */
+
+.nums__mark {
+  display: grid;
+  place-items: center;
+  width: 40px; height: 40px;
+  color: var(--accent, var(--blue));
+  font-size: var(--text-base);
+  font-weight: 800;
+}
+.nums__mark svg { width: 26px; height: 26px; }
+/* نشانِ جایگزین، وقتی سرویس شکل ندارد: حرف اول در دایره */
+.nums__mark [data-fallback] {
+  display: grid;
+  place-items: center;
+  width: 30px; height: 30px;
+  border-radius: var(--r-full);
+  background: color-mix(in srgb, var(--accent, var(--blue)) 14%, transparent);
+  font-size: var(--text-sm);
+}
+
+.nums__svc.is-on .nums__mark svg {
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 65%, transparent));
+}
+
+/* ---------- جست‌وجوی سرویس ---------- */
+
+.nums__search {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: var(--paper);
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+[data-theme="dark"] .nums__search {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.nums__search:focus-within {
+  border-color: color-mix(in srgb, var(--blue) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 12%, transparent);
+}
+.nums__search svg { width: 16px; height: 16px; color: var(--ink-faint); flex-shrink: 0; }
+.nums__search input {
+  flex: 1;
+  height: 46px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-sm);
+  outline: none;
+}
+.nums__search input::placeholder { color: var(--ink-faint); }
+/* ضربدرِ پیش‌فرض مرورگر در فیلد جست‌وجو، در تم شب سفیدِ زمخت است */
+.nums__search input::-webkit-search-cancel-button { filter: grayscale(1) opacity(0.5); }
+
+/* دکمه‌ی خرید در ردیف کشور */
+.nums__offer .btn { gap: 5px; }
+.nums__offer .btn svg { width: 13px; height: 13px; }
