@@ -69,6 +69,12 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
     return out;
   }, [active]);
 
+  /* دو محصولِ بعدی، برای نوارِ نصفه‌ی پایین */
+  const more = useMemo(
+    () => all.filter((p) => !shown.some((x) => x.slug === p.slug)).slice(0, 2),
+    [all, shown],
+  );
+
   /* محصولی که ستون سوم نشان می‌دهد: آن‌که زیر نشانگر است، وگرنه
      اولی — تا ستون سوم هیچ‌وقت خالی نماند. */
   const detail = shown.find((p) => p.slug === peek) ?? shown[0];
@@ -135,22 +141,66 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
           <p>{cat.tagline}</p>
         </header>
 
-        <ul className="mega__list">
+        {/* شش باکس در دو ستون.
+
+            ردیفِ متنی جای کمی می‌گرفت ولی چیزی برای دیدن نداشت؛
+            باکس تصویرِ محصول را هم می‌آورد و همان است که در یک
+            منوی فروشگاه، انتخاب را ممکن می‌کند. */}
+        <div className="mega__grid">
           {shown.map((p) => (
-            <li key={p.slug}>
-              <Link
-                href={`/product/${p.slug}`}
-                className={`mega__item ${detail?.slug === p.slug ? 'is-on' : ''}`}
-                onMouseEnter={() => setPeek(p.slug)}
-                onFocus={() => setPeek(p.slug)}
-                onClick={onNavigate}
-              >
-                <span className="mega__item-name">{p.title}</span>
-                <span className="mega__item-price num">از {fmt(getLowestPrice(p))}</span>
-              </Link>
-            </li>
+            <Link
+              key={p.slug}
+              href={`/product/${p.slug}`}
+              className={`mega__box ${detail?.slug === p.slug ? 'is-on' : ''}`}
+              style={{ ['--accent' as string]: p.media.accent }}
+              onMouseEnter={() => setPeek(p.slug)}
+              onFocus={() => setPeek(p.slug)}
+              onClick={onNavigate}
+            >
+              <ProductArt
+                className="mega__box-art"
+                src={p.media.thumbnail}
+                title={p.englishTitle}
+                brand={p.brand}
+              />
+              <span className="mega__box-txt">
+                <b>{p.title}</b>
+                <span className="mega__box-price num">از {fmt(getLowestPrice(p))}</span>
+              </span>
+            </Link>
           ))}
-        </ul>
+        </div>
+
+        {/* نوار پایینی، عمداً نصفه.
+
+            محصولات بعدیِ همین دسته‌اند و از پایین بریده می‌شوند.
+            بریدگی خودش پیام است: «این‌جا تمام نشده». فهرستی که
+            صاف تمام شود، هیچ نشانه‌ای نمی‌دهد که ادامه‌ای هست و
+            کاربر فرض می‌کند همین شش‌تاست.
+
+            aria-hidden است چون تکرارِ دیداریِ چیزی است که لینکِ
+            زیرش («دیدن همه») به آن می‌رسد؛ صفحه‌خوان نباید نصفه‌ی
+            یک کارت را بخواند. */}
+        {more.length > 0 && (
+          <div className="mega__tease" aria-hidden="true">
+            <div className="mega__grid mega__grid--tease">
+              {more.map((p) => (
+                <span key={p.slug} className="mega__box">
+                  <ProductArt
+                    className="mega__box-art"
+                    src={p.media.thumbnail}
+                    title={p.englishTitle}
+                    brand={p.brand}
+                  />
+                  <span className="mega__box-txt">
+                    <b>{p.title}</b>
+                    <span className="mega__box-price num">از {fmt(getLowestPrice(p))}</span>
+                  </span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         <Link href={`/${cat.slug}`} className="mega__all" onClick={onNavigate}>
           دیدن همه‌ی محصولات {cat.title}
