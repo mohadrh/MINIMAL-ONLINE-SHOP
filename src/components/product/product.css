@@ -1537,3 +1537,92 @@
 }
 .pdp-hero__acts > .shb { display: grid; }
 .pdp-hero__acts .bub--wide { width: 100%; justify-content: center; }
+
+
+/* ---------- کارت کم‌ارتفاع ----------
+
+   توضیح و ردیف نشانه‌ها از کارت برداشته شدند، پس فاصله‌ها هم باید
+   جمع شوند وگرنه جای خالیِ آن‌ها می‌ماند و کارت همان‌قدر بلند
+   می‌شود که بود. */
+.pcard__plans {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-faint);
+}
+.pcard__plans svg { width: 12px; height: 12px; }
+
+.pcard__body { gap: var(--sp-2); }
+.pcard__foot { padding-top: var(--sp-3); }
+
+
+/* ============================================================
+   زیرگروه‌های صفحه‌ی دسته
+   ============================================================
+
+   سرتیتر هر زیرگروه چسبان است. روی دسته‌ی گیم که شش زیرگروه دارد،
+   کاربر وسط اسکرول باید بداند کجاست؛ بدون سرتیترِ چسبان، پس از
+   چند کارت دیگر معلوم نیست این‌ها زیر کدام عنوان‌اند.
+   ============================================================ */
+
+.catgroup { margin-bottom: var(--sp-12); scroll-margin-top: 6rem; }
+.catgroup:last-child { margin-bottom: 0; }
+
+.catgroup__head {
+  position: sticky;
+  inset-block-start: 4.2rem;
+  z-index: 5;
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-5);
+  padding-block: var(--sp-3);
+  background: var(--paper);
+}
+[data-theme="dark"] .catgroup__head { background: var(--paper); }
+
+.catgroup__head h2 { font-size: var(--text-lg); }
+.catgroup__n {
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  padding: 3px 9px;
+  border-radius: var(--r-full);
+  background: var(--wash);
+}
+[data-theme="dark"] .catgroup__n { background: rgba(255, 255, 255, 0.06); }
+
+/* ردیف پرش، بالای صفحه */
+.catjump { margin-top: var(--sp-6); }
+.catjump .shop__chip { text-decoration: none; }
+
+@media (max-width: 700px) {
+  .catgroup__head { position: static; padding-block: 0; }
+}
+
+
+/* ارتفاع کارت، جمع‌وجورتر.
+
+   بعد از برداشتن توضیح و ردیف نشانه‌ها، فاصله‌های باقی‌مانده هنوز
+   برای محتوایی حساب شده بودند که دیگر نیست. اینجا فقط همان‌ها
+   جمع می‌شوند — نه تصویر کوچک می‌شود و نه فاصله‌ی دورش، چون هر دو
+   عمدی‌اند.
+
+   جای خالیِ بالای کارت بازی هم از ۳۲ به ۲۴ آمد: کاراکتر هنوز از
+   قاب می‌زند بیرون، ولی هشت پیکسل کمتر از هر کارت بالای صفحه
+   می‌گیرد. */
+.pcard__body { padding-block-end: var(--sp-4); }
+.pcard__art--game { margin-top: var(--sp-6); }
+
+
+/* صفحه‌ی دسته سه‌ستونه است، نه چهارستونه.
+
+   با چهار ستون کارت‌ها آن‌قدر باریک می‌شدند که تصویر محصول تقریباً
+   چیزی نشان نمی‌داد و نام‌های بلند دو خط می‌شکستند. صفحه‌ی دسته
+   جای مرور است نه فهرستِ فشرده؛ فروشگاه که فیلتر دارد، همان
+   چهارستونی می‌ماند. */
+.shop__grid--3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 1080px) { .shop__grid--3 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px)  { .shop__grid--3 { grid-template-columns: 1fr; } }

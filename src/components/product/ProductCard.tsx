@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, Columns2, Layers, Plus, ShieldCheck, Star } from 'lucide-react';
+import { Columns2, Layers, Plus, Star } from 'lucide-react';
 import { ShareBubble } from './ShareBubble';
 import {
   getDefaultVariant, getLowestPrice, needsCustomerInput, type Product,
@@ -207,25 +207,24 @@ export function ProductCard(
           </span>
         </span>
 
-        <span className="pcard__note">{p.shortDescription}</span>
+        {/* کارت عمداً کم‌حرف است.
 
-        {/* ردیف نشانه‌ها — هرکدام یک سوال خریدار را جواب می‌دهد */}
-        <span className="pcard__signals">
-          <span className="pcard__sig pcard__sig--time">
-            <Clock aria-hidden="true" />
-            {p.deliveryEstimate}
+            قبلاً یک جمله‌ی کامل توضیح داشت و زیرش سه نشانه: زمان
+            تحویل، تعداد پلن، و گارانتی. دو تای اول و سوم روی هر
+            بیست‌وهفت محصول *دقیقاً یکسان* بودند — «در اسرع وقت،
+            توسط سیستم» و «گارانتی تمام دوره‌ی اشتراک». چیزی که
+            روی همه یکسان است، بین آن‌ها تمایزی نمی‌سازد؛ فقط
+            ارتفاع می‌گیرد و چشم را از قیمت و نام دور می‌کند.
+
+            حالا فقط نام، امتیاز، تعداد پلن، و قیمت. توضیح و
+            گارانتی و زمان تحویل، همه در صفحه‌ی محصول‌اند — جایی
+            که کاربر آمده تا بخواندشان. */}
+        {plans > 1 && (
+          <span className="pcard__plans">
+            <Layers aria-hidden="true" />
+            <span className="num">{fmt(plans)}</span> پلن
           </span>
-          {plans > 1 && (
-            <span className="pcard__sig">
-              <Layers aria-hidden="true" />
-              <span className="num">{fmt(plans)}</span> پلن
-            </span>
-          )}
-          <span className="pcard__sig">
-            <ShieldCheck aria-hidden="true" />
-            {p.warrantyLabel}
-          </span>
-        </span>
+        )}
 
         {/* کمبود موجودی فقط وقتی گفته می‌شود که واقعاً کم است.
             اگر همیشه بنویسیم «موجودی محدود»، دیگر کسی باور نمی‌کند. */}

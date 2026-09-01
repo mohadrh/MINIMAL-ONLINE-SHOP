@@ -13,6 +13,7 @@ import { ProductArt } from '../ui/ProductArt';
 import { useCart, useFlight } from '../../app/providers';
 import { ProductCard } from './ProductCard';
 import { ShareBubble } from './ShareBubble';
+import { ProductTerms } from './ProductTerms';
 import { useCompare } from '../shop/Compare';
 import { Faq } from '../ui/Faq';
 
@@ -274,6 +275,17 @@ export function ProductView({ product: p }: { product: Product }) {
             title={p.englishTitle}
             brand={p.brand}
           />
+        </div>
+      </section>
+
+      {/* شرایط سفارش، پیش از جدول مشخصات.
+
+          مشخصات برای کسی است که مقایسه می‌کند؛ شرایط برای کسی که
+          می‌خواهد بخرد و نمی‌داند بعدش چه می‌شود. دومی زودتر لازم
+          می‌شود. */}
+      <section className="section reveal">
+        <div className="wrap">
+          <ProductTerms p={p} />
         </div>
       </section>
 

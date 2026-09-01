@@ -77,8 +77,8 @@
    می‌ماند و عوض شدن دسته، ارتفاع را نمی‌پراند. */
 .mega {
   display: grid;
-  grid-template-columns: 15rem 1fr 14rem;
-  max-height: min(30rem, calc(100vh - 10rem));
+  grid-template-columns: 14rem 1fr 16rem;
+  max-height: min(32rem, calc(100vh - 9rem));
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--r-xl);
@@ -161,169 +161,164 @@
 .mega__cat-txt b { display: block; font-size: var(--text-sm); font-weight: 600; line-height: 1.6; }
 .mega__cat-txt small { font-size: 11px; color: var(--ink-faint); }
 
-/* ---------- ستون دو: زیرگروه‌ها ---------- */
+/* ---------- ستون دو: شش محصول ---------- */
 
 .mega__body {
-  padding: var(--sp-5) var(--sp-7);
-  overflow-y: auto;
-  /* نوار لغزش باریک — نوار پیش‌فرض ویندوز، هفده پیکسل از عرضِ
-     ستون می‌خورد و ردیف‌ها را می‌شکند. */
-  scrollbar-width: thin;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: var(--sp-5) var(--sp-6);
+  overflow: hidden;
 }
 
 .mega__head {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: var(--sp-4);
   padding-bottom: var(--sp-4);
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--sp-3);
   border-bottom: 1px solid var(--line);
-  /* سرِ ستون هنگام لغزش می‌ماند تا معلوم باشد کدام دسته باز است */
-  position: sticky;
-  inset-block-start: calc(var(--sp-5) * -1);
-  z-index: 1;
-  background: var(--paper);
 }
-[data-theme="dark"] .mega__head { background: #14161d; }
 [data-theme="dark"] .mega__head { border-bottom-color: rgba(255, 255, 255, 0.08); }
 .mega__head b { font-size: var(--text-lg); }
 .mega__head p { font-size: var(--text-xs); color: var(--ink-faint); margin-top: 5px; line-height: 1.7; }
 
+.mega__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.mega__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 11px 13px;
+  border-radius: var(--r-md);
+  transition: background var(--dur) var(--ease);
+}
+.mega__item:hover,
+.mega__item.is-on { background: color-mix(in srgb, var(--blue) 9%, transparent); }
+[data-theme="dark"] .mega__item:hover,
+[data-theme="dark"] .mega__item.is-on { background: rgba(255, 255, 255, 0.07); }
+
+.mega__item-name { font-size: var(--text-sm); color: var(--ink); }
+[data-theme="dark"] .mega__item-name { color: #e9ecf3; }
+.mega__item-price {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue);
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
 .mega__all {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  padding: 6px 12px;
-  border-radius: var(--r-full);
-  background: color-mix(in srgb, var(--blue) 10%, transparent);
+  justify-content: center;
+  gap: 5px;
+  margin-top: var(--sp-3);
+  padding: 10px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--blue) 9%, transparent);
   font-size: var(--text-xs);
   font-weight: 700;
   color: var(--blue);
   transition: background var(--dur) var(--ease);
 }
-.mega__all:hover { background: color-mix(in srgb, var(--blue) 18%, transparent); }
+.mega__all:hover { background: color-mix(in srgb, var(--blue) 17%, transparent); }
 .mega__all svg { width: 13px; height: 13px; }
+.mega__all .num { opacity: 0.7; }
 
-/* ستون‌بندی خودکار: هر زیرگروه یک بلوک است و مرورگر خودش تعداد
-   ستون‌ها را از عرضِ موجود درمی‌آورد. با grid ثابت، دسته‌ای که دو
-   زیرگروه دارد نصف پنل را خالی می‌گذاشت. */
-.mega__groups {
-  columns: 2;
-  column-gap: var(--sp-7);
-}
-.mega__group {
-  break-inside: avoid;
-  margin-bottom: var(--sp-5);
-}
-.mega__group h3 {
-  margin-bottom: var(--sp-2);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--ink-faint);
-}
-.mega__group ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+/* ---------- ستون سه: جزئیاتِ محصولِ زیر نشانگر ---------- */
 
-.mega__group a {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding: 7px 10px;
-  border-radius: var(--r-md);
-  transition: background var(--dur) var(--ease);
-}
-.mega__group a:hover { background: color-mix(in srgb, var(--blue) 8%, transparent); }
-[data-theme="dark"] .mega__group a:hover { background: rgba(255, 255, 255, 0.06); }
-
-.mega__name { font-size: var(--text-sm); color: var(--ink); }
-[data-theme="dark"] .mega__name { color: #e9ecf3; }
-
-/* قیمت «از» — کاربر پیش از باز کردن صفحه می‌داند از چه عددی شروع
-   می‌شود. همان الگویی که در سایت مرجع کار می‌کند. */
-.mega__price {
-  font-size: 11px;
-  color: var(--blue);
-  font-weight: 700;
-  white-space: nowrap;
-  opacity: 0.85;
-}
-.mega__rest { font-size: 11px; color: var(--ink-faint); }
-.mega__rest:hover { color: var(--blue); }
-
-/* ---------- ستون سه: محصول شاخص ---------- */
-
-.mega__star {
+.mega__peek {
   display: grid;
   align-content: start;
   gap: var(--sp-2);
   padding: var(--sp-5);
   overflow-y: auto;
+  scrollbar-width: thin;
   border-inline-start: 1px solid var(--line);
   background:
-    radial-gradient(120% 90% at 50% 0%,
-      color-mix(in srgb, var(--accent, var(--blue)) 16%, transparent) 0%,
-      transparent 68%),
+    radial-gradient(120% 80% at 50% 0%,
+      color-mix(in srgb, var(--accent, var(--blue)) 15%, transparent) 0%,
+      transparent 66%),
     var(--wash);
-  transition: background var(--dur) var(--ease);
 }
-[data-theme="dark"] .mega__star {
+[data-theme="dark"] .mega__peek {
   border-inline-start-color: rgba(255, 255, 255, 0.08);
   background:
-    radial-gradient(120% 90% at 50% 0%,
-      color-mix(in srgb, var(--accent, var(--blue)) 24%, transparent) 0%,
-      transparent 68%),
+    radial-gradient(120% 80% at 50% 0%,
+      color-mix(in srgb, var(--accent, var(--blue)) 22%, transparent) 0%,
+      transparent 66%),
     rgba(255, 255, 255, 0.025);
 }
 
-.mega__star-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  color: var(--accent, var(--blue));
-}
-.mega__star-tag svg { width: 12px; height: 12px; }
-
-.mega__star-art {
+.mega__peek-art {
   display: grid;
   place-items: center;
-  aspect-ratio: 4 / 3;
-  margin-block: var(--sp-2);
+  aspect-ratio: 16 / 10;
   border-radius: var(--r-lg);
   overflow: hidden;
   background: color-mix(in srgb, var(--accent, var(--blue)) 10%, var(--paper));
 }
-.mega__star-art img {
-  width: 74%; height: 74%;
-  object-fit: contain;
-  transition: scale 420ms var(--ease);
-}
-.mega__star:hover .mega__star-art img { scale: 1.05; }
+.mega__peek-art img { width: 76%; height: 76%; object-fit: contain; }
 
-.mega__star b { font-size: var(--text-sm); }
-.mega__star p {
+.mega__peek-name { font-size: var(--text-sm); margin-top: var(--sp-1); }
+.mega__peek-note {
   font-size: 11px;
   line-height: 1.85;
   color: var(--ink-faint);
-  /* سه خط، بعدش نقطه‌چین — توضیح بلند، ستون را می‌کشد و ارتفاع
-     کل منو را با عوض شدن دسته می‌پراند. */
+  /* دو خط، بعدش نقطه‌چین — توضیحِ بلند ارتفاعِ ستون را با هر بار
+     عوض شدنِ محصول می‌پراند و پنل زیر دست کاربر می‌لرزد. */
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.mega__star-price {
+
+.mega__peek-plans {
   margin-top: var(--sp-2);
-  font-size: var(--text-sm);
-  font-weight: 800;
-  color: var(--accent, var(--blue));
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
 }
-.mega__star-price small { font-size: 10px; font-weight: 500; color: var(--ink-faint); }
+[data-theme="dark"] .mega__peek-plans { border-top-color: rgba(255, 255, 255, 0.08); }
+
+.mega__peek-plans-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: var(--sp-2);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+}
+.mega__peek-plans-head svg { width: 12px; height: 12px; }
+
+.mega__peek-plans ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+.mega__peek-plans li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.mega__peek-plans li b { font-weight: 700; color: var(--ink); }
+[data-theme="dark"] .mega__peek-plans li b { color: #e9ecf3; }
+.mega__peek-rest { color: var(--ink-faint) !important; font-size: 10px !important; }
+
+.mega__peek-cta {
+  display: grid;
+  gap: 6px;
+  margin-top: var(--sp-4);
+}
+.mega__peek-cta .btn { justify-content: center; gap: 5px; }
+.mega__peek-cta svg { width: 13px; height: 13px; }
 
 /* روی صفحه‌های کوچک‌تر مگامنو نیست — منوی کشویی جایش را می‌گیرد.
    سه ستون زیر ۱۱۰۰ پیکسل، سه ستونِ باریک می‌شود که هیچ‌کدام

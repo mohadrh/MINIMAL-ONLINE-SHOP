@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Sparkles } from 'lucide-react';
+import { ChevronLeft, Info, Layers, ShoppingBag } from 'lucide-react';
 import {
   CATEGORIES, PRODUCTS, getLowestPrice, type CategorySlug, type Product,
 } from '../../data/catalog';
@@ -13,17 +13,19 @@ import { ProductArt } from '../ui/ProductArt';
 /**
  * مگامنوی محصولات.
  *
- * سه ستون، از راست به چپ:
+ * سه ستون از راست به چپ، و هر کدام ورودیِ ستون بعدی را می‌سازد:
  *
- *   دسته‌ها   →   زیرگروه‌ها و محصولات   →   یک محصول شاخص
+ *   دسته‌ها  →  شش محصولِ آن دسته  →  جزئیاتِ محصولی که زیر نشانگر است
  *
- * ستون سوم عمدی است. مگامنوی دوستونی فقط یک فهرست است؛ کارتِ
- * محصولِ شاخص باعث می‌شود منو چیزی برای *دیدن* هم داشته باشد، نه
- * فقط چیزی برای خواندن. همان کاری که ویترین مغازه می‌کند.
+ * نسخه‌ی قبل ستون سوم را روی یک محصولِ ثابت («شاخصِ دسته») نگه
+ * می‌داشت. نتیجه این بود که ستون سوم به هیچ‌چیزی جواب نمی‌داد:
+ * کاربر روی محصولات بالا و پایین می‌رفت و پنل کنارش تکان
+ * نمی‌خورد. حالا هر محصولی که زیر نشانگر بیاید همان‌جا باز
+ * می‌شود — با تصویر، پلن‌ها و قیمتشان، و دو دکمه.
  *
- * زیرگروه‌ها از data/groups می‌آیند و ساختارشان همان چیزی است که
- * در سایت مرجع کار می‌کند: هر دسته چند زیرگروهِ نام‌دار دارد و
- * محصولات زیر آن‌ها می‌نشینند، نه در یک فهرستِ تخت.
+ * سقف شش محصول عمدی است. مگامنویی که هفده ردیف داشته باشد دیگر
+ * منو نیست؛ صفحه‌ی دسته است. زیرش لینکِ «دیدن همه» می‌گوید بقیه
+ * کجاست.
  */
 
 const ICONS: Record<CategorySlug, GlyphName> = {
@@ -34,17 +36,12 @@ const ICONS: Record<CategorySlug, GlyphName> = {
   gaming: 'gaming',
 };
 
+const SHOWN = 6;
 const fmt = (n: number) => n.toLocaleString('fa-IR');
-
-/** محصولِ شاخصِ هر دسته: پرفروش‌ترین، وگرنه اولین */
-function star(items: Product[]): Product | undefined {
-  return items.find((p) => p.badges.includes('bestseller'))
-    ?? items.find((p) => p.badges.includes('hot'))
-    ?? items[0];
-}
 
 export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
   const [active, setActive] = useState<CategorySlug>(CATEGORIES[0].slug as CategorySlug);
+  const [peek, setPeek] = useState<string | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onNavigate?.(); };
@@ -53,12 +50,30 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
   }, [onNavigate]);
 
   const cat = CATEGORIES.find((c) => c.slug === active)!;
-  const items = PRODUCTS.filter((p) => p.category === active);
-  const hero = star(items);
+  const all = useMemo(() => PRODUCTS.filter((p) => p.category === active), [active]);
 
-  /* محصولات زیر زیرگروهِ خودشان. زیرگروهی که محصولی نداشته باشد
-     اصلاً رندر نمی‌شود — سرتیترِ خالی، فقط فضا می‌گیرد. */
-  const groups = groupsWithItems(active, PRODUCTS);
+  /* شش‌تای اول، ولی از میان زیرگروه‌ها چیده می‌شوند نه از سرِ
+     فهرست: یکی از هر زیرگروه، بعد دور دوم. اینطور کاربر در همان
+     شش‌تا تنوعِ دسته را می‌بیند، نه شش بازیِ هم‌ژانر. */
+  const shown = useMemo(() => {
+    const groups = groupsWithItems(active, PRODUCTS);
+    const out: Product[] = [];
+    for (let round = 0; out.length < SHOWN; round++) {
+      let added = false;
+      for (const g of groups) {
+        if (g.items[round]) { out.push(g.items[round]); added = true; }
+        if (out.length >= SHOWN) break;
+      }
+      if (!added) break;
+    }
+    return out;
+  }, [active]);
+
+  /* محصولی که ستون سوم نشان می‌دهد: آن‌که زیر نشانگر است، وگرنه
+     اولی — تا ستون سوم هیچ‌وقت خالی نماند. */
+  const detail = shown.find((p) => p.slug === peek) ?? shown[0];
+
+  const pickCat = (slug: CategorySlug) => { setActive(slug); setPeek(null); };
 
   return (
     <div className="mega" role="menu" aria-label="محصولات">
@@ -76,9 +91,9 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
               role="tab"
               aria-selected={on}
               className={`mega__cat ${on ? 'is-on' : ''}`}
-              onMouseEnter={() => setActive(c.slug as CategorySlug)}
-              onFocus={() => setActive(c.slug as CategorySlug)}
-              onClick={() => setActive(c.slug as CategorySlug)}
+              onMouseEnter={() => pickCat(c.slug as CategorySlug)}
+              onFocus={() => pickCat(c.slug as CategorySlug)}
+              onClick={() => pickCat(c.slug as CategorySlug)}
             >
               <span className="mega__cat-ico" aria-hidden="true">
                 <Glyph name={ICONS[c.slug as CategorySlug]} />
@@ -113,74 +128,91 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
         </Link>
       </div>
 
-      {/* ---------- ستون دو: زیرگروه‌ها ---------- */}
+      {/* ---------- ستون دو: شش محصول ---------- */}
       <div className="mega__body">
         <header className="mega__head">
-          <div>
-            <b>{cat.title}</b>
-            <p>{cat.tagline}</p>
-          </div>
-          <Link href={`/${cat.slug}`} className="mega__all" onClick={onNavigate}>
-            دیدن همه
-            <ChevronLeft aria-hidden="true" />
-          </Link>
+          <b>{cat.title}</b>
+          <p>{cat.tagline}</p>
         </header>
 
-        <div className="mega__groups">
-          {groups.map((g) => (
-            <section key={g.id} className="mega__group">
-              {g.title && <h3>{g.title}</h3>}
-              {/* همه‌ی محصولات، بدون سقف.
-
-                  قبلاً پنج‌تا بیشتر نشان نمی‌داد و بقیه پشت «مورد
-                  دیگر» می‌ماندند — یعنی منویی که ادعا می‌کرد
-                  فهرست محصولات است، نصفشان را نداشت. حالا ستون
-                  خودش اسکرول می‌شود و چیزی پنهان نمی‌ماند. */}
-              <ul>
-                {g.items.map((p) => (
-                  <li key={p.slug}>
-                    <Link href={`/product/${p.slug}`} onClick={onNavigate}>
-                      <span className="mega__name">{p.title}</span>
-                      <span className="mega__price num">
-                        از {fmt(getLowestPrice(p))}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
+        <ul className="mega__list">
+          {shown.map((p) => (
+            <li key={p.slug}>
+              <Link
+                href={`/product/${p.slug}`}
+                className={`mega__item ${detail?.slug === p.slug ? 'is-on' : ''}`}
+                onMouseEnter={() => setPeek(p.slug)}
+                onFocus={() => setPeek(p.slug)}
+                onClick={onNavigate}
+              >
+                <span className="mega__item-name">{p.title}</span>
+                <span className="mega__item-price num">از {fmt(getLowestPrice(p))}</span>
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
+
+        <Link href={`/${cat.slug}`} className="mega__all" onClick={onNavigate}>
+          دیدن همه‌ی محصولات {cat.title}
+          {all.length > SHOWN && <span className="num">({fmt(all.length)})</span>}
+          <ChevronLeft aria-hidden="true" />
+        </Link>
       </div>
 
-      {/* ---------- ستون سه: محصول شاخص ---------- */}
-      {hero && (
-        <Link
-          href={`/product/${hero.slug}`}
-          className="mega__star"
-          onClick={onNavigate}
-          style={{ ['--accent' as string]: hero.media.accent }}
-        >
-          <span className="mega__star-tag">
-            <Sparkles aria-hidden="true" />
-            پیشنهاد این دسته
-          </span>
-
+      {/* ---------- ستون سه: جزئیات ---------- */}
+      {detail && (
+        <div className="mega__peek" style={{ ['--accent' as string]: detail.media.accent }}>
           <ProductArt
-            className="mega__star-art"
-            src={hero.media.thumbnail}
-            title={hero.englishTitle}
-            brand={hero.brand}
+            className="mega__peek-art"
+            src={detail.media.thumbnail}
+            title={detail.englishTitle}
+            brand={detail.brand}
           />
 
-          <b>{hero.title}</b>
-          <p>{hero.shortDescription}</p>
+          <b className="mega__peek-name">{detail.title}</b>
+          <p className="mega__peek-note">{detail.shortDescription}</p>
 
-          <span className="mega__star-price num">
-            از {fmt(getLowestPrice(hero))}
-            <small> تومان</small>
-          </span>
-        </Link>
+          {/* پلن‌ها با قیمتشان — همان چیزی که کاربر برای مقایسه لازم
+              دارد و تا حالا باید صفحه را باز می‌کرد تا ببیند. */}
+          <div className="mega__peek-plans">
+            <span className="mega__peek-plans-head">
+              <Layers aria-hidden="true" />
+              {fmt(detail.variants.length)} پلن
+            </span>
+            <ul>
+              {detail.variants.slice(0, 3).map((v) => (
+                <li key={v.id}>
+                  <span>{v.label}</span>
+                  <b className="num">{fmt(v.price)}</b>
+                </li>
+              ))}
+              {detail.variants.length > 3 && (
+                <li className="mega__peek-rest">
+                  و {fmt(detail.variants.length - 3)} پلن دیگر
+                </li>
+              )}
+            </ul>
+          </div>
+
+          <div className="mega__peek-cta">
+            <Link
+              href={`/product/${detail.slug}`}
+              className="btn btn--primary btn--sm"
+              onClick={onNavigate}
+            >
+              <ShoppingBag aria-hidden="true" />
+              خرید
+            </Link>
+            <Link
+              href={`/product/${detail.slug}#about`}
+              className="btn btn--ghost btn--sm"
+              onClick={onNavigate}
+            >
+              <Info aria-hidden="true" />
+              اطلاعات بیشتر
+            </Link>
+          </div>
+        </div>
       )}
     </div>
   );
