@@ -1,0 +1,109 @@
+/* ============================================================
+   منوی موبایل
+   ============================================================
+
+   نسخه‌ی جداست، نه مگامنوی فشرده‌شده. مگامنو با هاور کار می‌کند و
+   ستون سومش جزئیاتِ محصول را نشان می‌دهد؛ هیچ‌کدام روی صفحه‌ی
+   لمسی معنا ندارد.
+
+   دو بلوک: دسته‌ها به‌صورت کاشیِ آیکون‌دار که با انگشت راحت زده
+   می‌شوند، و زیرش فهرستِ ساده‌ی صفحه‌ها. هیچ محصولی این‌جا نیست —
+   کاربر با یک ضربه به دسته می‌رسد و آن‌جا محصولات را با تصویرِ
+   درست می‌بیند، به‌جای اینکه فهرستی بی‌تصویر را در منو اسکرول کند.
+   ============================================================ */
+
+.navm {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 100%;
+  z-index: 60;
+  max-height: calc(100vh - 4.5rem);
+  overflow-y: auto;
+  padding-block: var(--sp-5) var(--sp-8);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: 0 24px 44px -28px rgba(15, 17, 32, 0.4);
+  animation: navm-in 200ms var(--ease) both;
+}
+[data-theme="dark"] .navm {
+  background: #12141b;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+@keyframes navm-in {
+  from { opacity: 0; translate: 0 -8px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+.navm__label {
+  display: block;
+  margin-bottom: var(--sp-3);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+}
+.navm__label + * + .navm__label { margin-top: var(--sp-6); }
+
+/* ---------- کاشی دسته‌ها ----------
+
+   دو ستون، و هر کاشی دست‌کم چهل‌وچهار پیکسل ارتفاع دارد — همان
+   حداقلی که برای هدفِ لمسی لازم است. ردیفِ متنیِ تنها، روی موبایل
+   هم کوچک است هم بی‌نشانه. */
+.navm__cats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-2);
+}
+@media (max-width: 380px) { .navm__cats { grid-template-columns: 1fr; } }
+
+.navm__cat {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 52px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--wash);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+[data-theme="dark"] .navm__cat {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #e9ecf3;
+}
+.navm__cat:active {
+  border-color: color-mix(in srgb, var(--blue) 55%, transparent);
+  background: color-mix(in srgb, var(--blue) 9%, transparent);
+}
+
+/* آیکون بدون کادر — همان قاعده‌ی همیشگی سایت */
+.navm__cat-ico { display: grid; place-items: center; color: var(--blue); flex-shrink: 0; }
+.navm__cat-ico svg { width: 22px; height: 22px; }
+
+/* ---------- فهرست صفحه‌ها ---------- */
+
+.navm__links {
+  display: grid;
+  gap: 0;
+}
+.navm__links a {
+  display: flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+.navm__links a:last-child { border-bottom: 0; }
+[data-theme="dark"] .navm__links a {
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.78);
+}
+.navm__links a:active { color: var(--blue); }
+
+@media (prefers-reduced-motion: reduce) { .navm { animation: none; } }

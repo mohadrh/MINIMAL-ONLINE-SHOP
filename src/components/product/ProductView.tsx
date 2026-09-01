@@ -14,6 +14,7 @@ import { useCart, useFlight } from '../../app/providers';
 import { ProductCard } from './ProductCard';
 import { ShareBubble } from './ShareBubble';
 import { ProductTerms } from './ProductTerms';
+import { PlanGuide } from './PlanGuide';
 import { useCompare } from '../shop/Compare';
 import { Faq } from '../ui/Faq';
 
@@ -274,6 +275,23 @@ export function ProductView({ product: p }: { product: Product }) {
             src={p.media.cover ?? p.media.thumbnail}
             title={p.englishTitle}
             brand={p.brand}
+          />
+        </div>
+      </section>
+
+      {/* راهنمای انتخاب پلن.
+
+          پیش از شرایط سفارش می‌آید چون ترتیبِ سوال‌های خریدار همین
+          است: اول «کدام را بگیرم»، بعد «بعدش چه می‌شود». */}
+      <section className="section section--tint reveal">
+        <div className="wrap">
+          <PlanGuide
+            p={p}
+            selected={variantId}
+            onPick={(id) => {
+              setVariantId(id);
+              document.getElementById('buy')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
           />
         </div>
       </section>

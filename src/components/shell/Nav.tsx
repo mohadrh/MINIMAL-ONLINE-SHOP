@@ -7,6 +7,7 @@ import { AccountMenu } from './AccountMenu';
 import { ShoppingAssistant } from './ShoppingAssistant';
 import { MegaMenu } from './MegaMenu';
 import { CATEGORIES } from '../../data/catalog';
+import { Glyph, type GlyphName } from '../ui/Glyph';
 import { asset } from '../../lib/asset';
 import { useCart, useFlight } from '../../app/providers';
 
@@ -28,6 +29,12 @@ import { useCart, useFlight } from '../../app/providers';
  * و مهم‌تر اینکه از منو نمی‌شد به محصول رسید — فقط به دسته. حالا
  * خودِ محصول‌ها داخل مگامنو هستند.
  */
+/* آیکون هر دسته در منوی موبایل — همان‌هایی که مگامنو دارد */
+const MOBILE_ICONS: Record<string, GlyphName> = {
+  ai: 'ai', creative: 'creative', social: 'social',
+  education: 'education', gaming: 'gaming',
+};
+
 export function Nav() {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
@@ -217,22 +224,50 @@ export function Nav() {
 
       {assistOpen && <ShoppingAssistant onClose={() => setAssistOpen(false)} />}
 
+      {/* ---------- منوی موبایل ----------
+
+          نسخه‌ی جداست، نه مگامنوی فشرده‌شده. مگامنو با هاور کار
+          می‌کند و ستون سومش جزئیاتِ محصول را نشان می‌دهد؛ هیچ‌کدام
+          روی صفحه‌ی لمسی معنا ندارد.
+
+          این‌جا فقط دو بلوک است: دسته‌ها به‌صورت کاشیِ آیکون‌دار —
+          که با انگشت راحت زده می‌شوند — و زیرش فهرستِ ساده‌ی
+          صفحه‌ها. هیچ محصولی در منوی موبایل نیست؛ کاربر با یک ضربه
+          به دسته می‌رسد و آن‌جا محصولات را با تصویرِ درست می‌بیند،
+          به‌جای اینکه فهرستی بی‌تصویر را در منو اسکرول کند. */}
       {open && (
-        <div className="nav__mobile">
+        <div className="navm">
           <div className="wrap">
-            {CATEGORIES.map((c) => (
-              <Link key={c.slug} href={`/${c.slug}`} onClick={() => setOpen(false)}>
-                {c.title}
+            <span className="navm__label">دسته‌بندی محصولات</span>
+            <div className="navm__cats">
+              {CATEGORIES.map((c) => (
+                <Link
+                  key={c.slug}
+                  href={`/${c.slug}`}
+                  className="navm__cat"
+                  onClick={() => setOpen(false)}
+                >
+                  <span className="navm__cat-ico" aria-hidden="true">
+                    <Glyph name={MOBILE_ICONS[c.slug] ?? 'spark'} />
+                  </span>
+                  {c.title}
+                </Link>
+              ))}
+              <Link href="/numbers" className="navm__cat" onClick={() => setOpen(false)}>
+                <span className="navm__cat-ico" aria-hidden="true"><Glyph name="number" /></span>
+                شماره مجازی
               </Link>
-            ))}
-            <Link href="/numbers" onClick={() => setOpen(false)}>شماره مجازی</Link>
-            <Link href="/shop" onClick={() => setOpen(false)}>همه‌ی محصولات</Link>
-            <span className="nav__mobile-sep" aria-hidden="true" />
-            <Link href="/blog" onClick={() => setOpen(false)}>مقالات و آموزش</Link>
-            <Link href="/club" onClick={() => setOpen(false)}>باشگاه مشتریان</Link>
-            <Link href="/track" onClick={() => setOpen(false)}>پیگیری سفارش</Link>
-            <Link href="/faq" onClick={() => setOpen(false)}>سوالات متداول</Link>
-            <Link href="/about" onClick={() => setOpen(false)}>تماس با ما</Link>
+            </div>
+
+            <span className="navm__label">فونیکس شاپ</span>
+            <nav className="navm__links">
+              <Link href="/shop" onClick={() => setOpen(false)}>همه‌ی محصولات</Link>
+              <Link href="/blog" onClick={() => setOpen(false)}>مقالات و آموزش</Link>
+              <Link href="/club" onClick={() => setOpen(false)}>باشگاه مشتریان</Link>
+              <Link href="/track" onClick={() => setOpen(false)}>پیگیری سفارش</Link>
+              <Link href="/faq" onClick={() => setOpen(false)}>سوالات متداول</Link>
+              <Link href="/about" onClick={() => setOpen(false)}>تماس با ما</Link>
+            </nav>
           </div>
         </div>
       )}

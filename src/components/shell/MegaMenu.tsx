@@ -113,9 +113,10 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
 
-        <span className="mega__label mega__label--gap">جای دیگر</span>
-
-        <Link href="/numbers" className="mega__cat" onClick={onNavigate}>
+        {/* برچسبِ «جای دیگر» برداشته شد: پایینِ ستون بود و اغلب
+            نصفه می‌ماند، و برای دو ردیفِ آخر هم چیزی روشن نمی‌کرد
+            که از خودشان معلوم نباشد. */}
+        <Link href="/numbers" className="mega__cat mega__cat--sep" onClick={onNavigate}>
           <span className="mega__cat-ico" aria-hidden="true"><Glyph name="number" /></span>
           <span className="mega__cat-txt">
             <b>شماره مجازی</b>

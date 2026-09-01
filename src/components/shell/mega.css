@@ -104,8 +104,16 @@
   color: var(--ink-faint);
   text-transform: uppercase;
 }
-.mega__label--gap { margin-top: var(--sp-5); padding-top: var(--sp-4); border-top: 1px solid var(--line); }
-[data-theme="dark"] .mega__label--gap { border-top-color: rgba(255, 255, 255, 0.08); }
+/* دو ردیفِ آخر با یک خط از دسته‌ها جدا می‌شوند — بی‌آنکه سرتیترِ
+   جداگانه‌ای بگیرند که پایینِ ستون نصفه بماند. */
+.mega__cat--sep {
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 var(--r-md) var(--r-md);
+}
+[data-theme="dark"] .mega__cat--sep { border-top-color: rgba(255, 255, 255, 0.08); }
+.mega__cat--sep + .mega__cat { margin-top: 0; padding-top: 11px; border-top: 0; }
 
 /* ---------- ستون یک: دسته‌ها ---------- */
 
@@ -192,9 +200,12 @@
   gap: var(--sp-3);
 }
 
+/* عرضِ ستونِ تصویر با clamp می‌آید نه با عدد ثابت: در پنلِ باریک‌تر
+   خودش کوچک می‌شود و متن جا می‌ماند، به‌جای اینکه نام محصول به سه
+   خط بشکند. */
 .mega__box {
   display: grid;
-  grid-template-columns: 52px 1fr;
+  grid-template-columns: clamp(40px, 4.2vw, 54px) 1fr;
   align-items: center;
   gap: var(--sp-3);
   padding: 10px;
@@ -221,7 +232,8 @@
 .mega__box-art {
   display: grid;
   place-items: center;
-  width: 52px; height: 52px;
+  width: 100%;
+  aspect-ratio: 1;
   border-radius: var(--r-md);
   overflow: hidden;
   background: color-mix(in srgb, var(--accent, var(--blue)) 12%, var(--wash));
@@ -349,10 +361,23 @@
 .mega__peek-cta .btn { justify-content: center; gap: 5px; }
 .mega__peek-cta svg { width: 13px; height: 13px; }
 
-/* روی صفحه‌های کوچک‌تر مگامنو نیست — منوی کشویی جایش را می‌گیرد.
-   سه ستون زیر ۱۱۰۰ پیکسل، سه ستونِ باریک می‌شود که هیچ‌کدام
-   خواندنی نیست. */
-@media (max-width: 1100px) {
+/* ---------- ریسپانسیو ----------
+
+   دو پله، نه یکی:
+
+   زیر ۱۲۶۰ پیکسل ستون سوم می‌رود. جزئیاتِ محصول خوب است ولی
+   ضروری نیست؛ دو ستونِ خوانا بهتر از سه ستونِ فشرده است.
+
+   زیر ۱۰۲۰ کلِ مگامنو می‌رود و منوی کشویی جایش را می‌گیرد. مگامنو
+   با هاور کار می‌کند و روی لمسی هاوری در کار نیست، پس در آن
+   اندازه‌ها اصلاً ابزار درستی نیست. */
+@media (max-width: 1260px) {
+  .nav__mega { width: min(44rem, calc(100vw - var(--sp-8))); }
+  .mega { grid-template-columns: 13rem 1fr; }
+  .mega__peek { display: none; }
+}
+
+@media (max-width: 1020px) {
   .nav__mega, .nav__mega-btn { display: none; }
 }
 

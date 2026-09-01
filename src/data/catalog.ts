@@ -30,6 +30,21 @@ export interface Variant {
   compareAt?: number;
   stock: number | null;   // null = بدون محدودیت انبار
   isDefault?: boolean;
+  /**
+   * راهنمای انتخاب پلن.
+   *
+   * برچسبِ پلن («Plus — یک ماهه») می‌گوید چه چیزی است، نه اینکه به
+   * دردِ چه کسی می‌خورد. خریدارِ این بازار معمولاً هر دو را
+   * نمی‌داند: تفاوت Go و Plus، یا معنیِ «ظرفیت دو»، چیزی نیست که
+   * از اسمش دربیاید.
+   *
+   * fit یک جمله است: این پلن مالِ کیست.
+   * detail چند جمله: دقیقاً چه می‌گیری و چه نمی‌گیری.
+   *
+   * اختیاری است چون بعضی محصولات یک پلن بیشتر ندارند و آن‌جا
+   * انتخابی در کار نیست.
+   */
+  guide?: { fit: string; detail: string };
 }
 
 export interface Product {
@@ -250,8 +265,8 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'chatgpt-go-1m', label: 'Go — یک ماهه', price: 1766000, stock: null, isDefault: true },
-      { id: 'chatgpt-plus-1m', label: 'Plus — یک ماهه', price: 4274000, stock: null },
+      { id: 'chatgpt-go-1m', label: 'Go — یک ماهه', price: 1766000, stock: null, isDefault: true, guide: { fit: 'برای شروع، و برای کسی که روزی چند بار می‌پرسد.', detail: 'ده برابرِ نسخه‌ی رایگان می‌توانی با GPT-5 حرف بزنی، تصویر بسازی و فایل آپلود کنی. حالت تفکر خودکار روشن است. اگر روزی چند مکالمه‌ی معمولی داری، همین کافی است و لازم نیست پول بیشتری بدهی.' } },
+      { id: 'chatgpt-plus-1m', label: 'Plus — یک ماهه', price: 4274000, stock: null, guide: { fit: 'برای استفاده‌ی روزمره‌ی جدی — کار، درس، کد.', detail: 'محدودیت خیلی کمتر: هر سه ساعت تا صد و شصت پیام با GPT-5، و دسترسی دستی به نسخه‌ی Thinking. در ساعت‌های شلوغ اولویت داری و به Agent Mode هم می‌رسی. بیشترِ کسانی که چت‌جی‌پی‌تی را ابزارِ کارشان کرده‌اند، همین را می‌گیرند.' } },
     ],
     media: { thumbnail: '/products/chatgpt-card.webp', cover: '/products/chatgpt-card.webp', accent: '#10a37f' },
     shortDescription: 'ارتقای مستقیم روی اکانت شخصی شما',
@@ -288,7 +303,7 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'claude-pro-1m', label: 'Pro — یک ماهه', price: 4460000, stock: null, isDefault: true },
+      { id: 'claude-pro-1m', label: 'Pro — یک ماهه', price: 4460000, stock: null, isDefault: true, guide: { fit: 'برای متن‌های بلند، تحلیل فایل و کدنویسی.', detail: 'محدودیت استفاده چند برابرِ نسخه‌ی رایگان، به‌علاوه‌ی پروژه‌ها و حافظه‌ی گفتگو. اگر کارت با متن‌های طولانی یا کدِ واقعی است، تفاوتش با رایگان را از همان روز اول می‌بینی.' } },
     ],
     media: { thumbnail: '/products/claude-pro-card.webp', cover: '/products/claude-pro.webp', accent: '#e8862e' },
     shortDescription: 'اکانت شخصی، ارتقای مستقیم',
@@ -325,8 +340,8 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'gemini-private-18m', label: 'اختصاصی — ۱۸ ماهه', price: 1_200_000, stock: null, isDefault: true },
-      { id: 'gemini-family-1m', label: 'فمیلی — یک ماهه', price: 200_000, stock: null },
+      { id: 'gemini-private-18m', label: 'اختصاصی — ۱۸ ماهه', price: 1_200_000, stock: null, isDefault: true, guide: { fit: 'ارزان‌ترین راه برای دوره‌ی طولانی.', detail: 'هجده ماه با قیمتِ چند ماه. حساب اختصاصی است و با کسی شریک نیستی. اگر می‌دانی بیش از یک سال لازمش داری، هزینه‌ی ماهانه‌اش از هر گزینه‌ی دیگری کمتر درمی‌آید.' } },
+      { id: 'gemini-family-1m', label: 'فمیلی — یک ماهه', price: 200_000, stock: null, guide: { fit: 'برای امتحان کردن، یا وقتی فقط چند ماه لازمش داری.', detail: 'ماهانه و بدون تعهد بلندمدت. روی حساب خودت فعال می‌شود و داخل Gmail و Docs هم کار می‌کند. اگر مطمئن نیستی چقدر استفاده می‌کنی، از این شروع کن.' } },
     ],
     media: { thumbnail: '/products/gemini-pro-card.webp', cover: '/products/gemini-pro.webp', accent: '#4a7cf7' },
     shortDescription: 'دوره‌ی بلند تا هجده ماه',
@@ -363,9 +378,9 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'cursor-pro-1m', label: 'Pro — یک ماهه', price: 2_450_000, stock: 12, isDefault: true },
-      { id: 'cursor-proplus-1m', label: 'Pro+ — یک ماهه', price: 4_900_000, stock: 6 },
-      { id: 'cursor-ultra-1m', label: 'Ultra — یک ماهه', price: 9_800_000, stock: 3 },
+      { id: 'cursor-pro-1m', label: 'Pro — یک ماهه', price: 2_450_000, stock: 12, isDefault: true, guide: { fit: 'برای برنامه‌نویسی روزمره.', detail: 'سقف درخواستِ ماهانه‌ی استاندارد که برای کار روی یکی دو پروژه کافی است. اگر تازه از رایگان می‌آیی، همین را بگیر.' } },
+      { id: 'cursor-proplus-1m', label: 'Pro+ — یک ماهه', price: 4_900_000, stock: 6, guide: { fit: 'وقتی Pro وسط ماه تمام می‌شود.', detail: 'همان امکانات با سقف چند برابری. مالِ کسی است که تمام‌وقت با ادیتور کار می‌کند و ماه گذشته به محدودیت خورده.' } },
+      { id: 'cursor-ultra-1m', label: 'Ultra — یک ماهه', price: 9_800_000, stock: 3, guide: { fit: 'برای کار سنگین و تیمی.', detail: 'بالاترین سقف، بدون نگرانی از تمام شدنِ درخواست‌ها. اگر روزانه ساعت‌ها با مدل‌های بزرگ کار می‌کنی یا کدبیسِ بزرگی داری، این پلن برای همان ساخته شده.' } },
     ],
     media: { thumbnail: '/products/cursor-pro-card.webp', cover: '/products/cursor-pro.webp', accent: '#a855f7' },
     shortDescription: 'اکانت آماده، تحویل فوری',
@@ -403,7 +418,7 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'canva-pro-12m', label: 'یک ساله', price: 205000, stock: null, isDefault: true },
+      { id: 'canva-pro-12m', label: 'یک ساله', price: 205000, stock: null, isDefault: true, guide: { fit: 'یک سال، روی ایمیل خودت.', detail: 'همه‌ی قالب‌ها و عکس‌های پریمیوم، حذف پس‌زمینه، و کیت برند. خروجی بدون واترمارک. دوره‌ی سالانه است چون ماهانه‌اش عملاً صرف نمی‌کند.' } },
     ],
     media: { thumbnail: '/products/canva-pro-card.webp', cover: '/products/canva-pro.webp', accent: '#00c4cc' },
     shortDescription: 'یک سال کامل، روی ایمیل شخصی شما',
@@ -439,7 +454,7 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'capcut-pro-1m', label: 'یک ماهه', price: 1208000, stock: null, isDefault: true },
+      { id: 'capcut-pro-1m', label: 'یک ماهه', price: 1208000, stock: null, isDefault: true, guide: { fit: 'ماهانه، برای تدوین بدون واترمارک.', detail: 'افکت‌ها و قالب‌های پریمیوم و خروجی تمیز. روی حساب خودت فعال می‌شود، پس پروژه‌های قبلی‌ات سر جایشان می‌مانند.' } },
     ],
     media: { thumbnail: '/products/capcut-pro-card.webp', cover: '/products/capcut-pro.webp', accent: '#000000' },
     shortDescription: 'ادیت ویدیو حرفه‌ای بدون واترمارک',
@@ -475,7 +490,7 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'figma-12m', label: 'یک ساله', price: 2787000, stock: null, isDefault: true },
+      { id: 'figma-12m', label: 'یک ساله', price: 2787000, stock: null, isDefault: true, guide: { fit: 'یک سال دسترسی حرفه‌ای.', detail: 'فایل‌های نامحدود، تاریخچه‌ی کامل نسخه‌ها، و کامپوننت‌های اشتراکی. برای کسی که فیگما ابزار کارش است نه جای تماشای طرح دیگران.' } },
     ],
     media: { thumbnail: '/products/figma-card.webp', cover: '/products/figma-card.webp', accent: '#a259ff' },
     shortDescription: 'پلن حرفه‌ای، یک سال کامل',
@@ -513,9 +528,9 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'tg-3m', label: 'سه ماهه', price: 2695000, stock: null, isDefault: true },
-      { id: 'tg-6m', label: 'شش ماهه', price: 3625000, stock: null },
-      { id: 'tg-12m', label: 'یک ساله', price: 6506000, stock: null },
+      { id: 'tg-3m', label: 'سه ماهه', price: 2695000, stock: null, isDefault: true, guide: { fit: 'کوتاه‌ترین دوره — برای امتحان کردن.', detail: 'همه‌ی امکانات پرمیوم برای سه ماه: آپلود چهار گیگابایتی، دانلود سریع‌تر، و بدون تبلیغ. اگر مطمئن نیستی به کارت می‌آید، از این شروع کن.' } },
+      { id: 'tg-6m', label: 'شش ماهه', price: 3625000, stock: null, guide: { fit: 'تعادلِ قیمت و مدت.', detail: 'همان امکانات، شش ماه، با هزینه‌ی ماهانه‌ی کمتر از سه‌ماهه.' } },
+      { id: 'tg-12m', label: 'یک ساله', price: 6506000, stock: null, guide: { fit: 'ارزان‌ترین حالت به ازای هر ماه.', detail: 'یک سال کامل. اگر تلگرام را روزانه استفاده می‌کنی، این پلن کمترین هزینه‌ی ماهانه را دارد.' } },
     ],
     media: { thumbnail: '/products/telegram-premium-card.webp', cover: '/products/telegram-premium-card.webp', accent: '#2aabee' },
     shortDescription: 'فعال‌سازی خودکار روی یوزرنیم شما',
@@ -554,7 +569,7 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'duolingo-5m', label: 'پنج ماهه', price: 837000, stock: null, isDefault: true },
+      { id: 'duolingo-5m', label: 'پنج ماهه', price: 837000, stock: null, isDefault: true, guide: { fit: 'پنج ماه، بدون تبلیغ و با اشتباه نامحدود.', detail: 'درس‌ها بدون وقفه‌ی تبلیغاتی پیش می‌روند و اگر اشتباه کنی روزت از دست نمی‌رود. برای کسی که می‌خواهد زنجیره‌اش را نگه دارد، همین دو مورد بیشترین فرق را می‌سازد.' } },
     ],
     media: { thumbnail: '/products/duolingo-super-card.webp', cover: '/products/duolingo-super.webp', accent: '#58cc02' },
     shortDescription: 'یادگیری زبان بدون تبلیغات',
@@ -591,10 +606,10 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'spotify-individual-1m', label: 'اینفرادی — یک ماهه', price: 320_000, stock: null, isDefault: true },
-      { id: 'spotify-individual-3m', label: 'اینفرادی — سه ماهه', price: 850_000, compareAt: 960_000, stock: null },
-      { id: 'spotify-individual-12m', label: 'اینفرادی — یک ساله', price: 2_950_000, compareAt: 3_840_000, stock: null },
-      { id: 'spotify-family-1m', label: 'فمیلی — یک ماهه', price: 520_000, stock: 14 },
+      { id: 'spotify-individual-1m', label: 'اینفرادی — یک ماهه', price: 320_000, stock: null, isDefault: true, guide: { fit: 'تک‌نفره، ماهانه.', detail: 'روی حساب خودت فعال می‌شود، بدون تبلیغ و با دانلود آفلاین. کوتاه‌ترین تعهد.' } },
+      { id: 'spotify-individual-3m', label: 'اینفرادی — سه ماهه', price: 850_000, compareAt: 960_000, stock: null, guide: { fit: 'تک‌نفره، سه ماهه.', detail: 'همان امکانات با هزینه‌ی ماهانه‌ی کمتر. برای کسی که می‌داند حداقل یک فصل استفاده می‌کند.' } },
+      { id: 'spotify-individual-12m', label: 'اینفرادی — یک ساله', price: 2_950_000, compareAt: 3_840_000, stock: null, guide: { fit: 'تک‌نفره، یک ساله — کمترین هزینه‌ی ماهانه.', detail: 'یک سال کامل. اگر اسپاتیفای بخشی از روزت است، این پلن از همه به‌صرفه‌تر درمی‌آید.' } },
+      { id: 'spotify-family-1m', label: 'فمیلی — یک ماهه', price: 520_000, stock: 14, guide: { fit: 'برای چند نفر، روی یک اشتراک.', detail: 'چند حساب جدا زیر یک اشتراک، هرکدام با کتابخانه و پیشنهادهای خودش. اگر بیش از یک نفر استفاده می‌کنید، از گرفتن چند اشتراک تک‌نفره ارزان‌تر است.' } },
     ],
     media: { thumbnail: '/products/spotify-premium-card.webp', cover: '/products/spotify-premium.webp', accent: '#1db954' },
     shortDescription: 'موسیقی بدون تبلیغ، روی حساب خودت',
