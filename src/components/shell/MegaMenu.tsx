@@ -203,9 +203,17 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
           </div>
         )}
 
+        {/* متن در یک <span> است تا فلش هیچ‌وقت از آن جدا نشود.
+
+            قبلاً متن و عدد و فلش سه فرزندِ مستقلِ فلکس بودند و
+            وقتی نام دسته بلند می‌شد — «شبکه‌های اجتماعی» — فلش
+            تنها به خط بعد می‌افتاد. حالا شکستنِ خط فقط داخل خودِ
+            متن اتفاق می‌افتد و فلش به آخرین کلمه چسبیده می‌ماند. */}
         <Link href={`/${cat.slug}`} className="mega__all" onClick={onNavigate}>
-          دیدن همه‌ی محصولات {cat.title}
-          {all.length > SHOWN && <span className="num">({fmt(all.length)})</span>}
+          <span>
+            دیدن همه‌ی {cat.title}
+            {all.length > SHOWN && <span className="num"> ({fmt(all.length)})</span>}
+          </span>
           <ChevronLeft aria-hidden="true" />
         </Link>
       </div>

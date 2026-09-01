@@ -78,7 +78,7 @@
 .mega {
   display: grid;
   grid-template-columns: 14rem 1fr 16rem;
-  max-height: min(32rem, calc(100vh - 9rem));
+  max-height: min(34rem, calc(100vh - 8rem));
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--r-xl);
@@ -87,6 +87,18 @@
     0 2px 6px -2px rgba(15, 17, 32, 0.08),
     0 32px 70px -34px rgba(15, 17, 32, 0.4);
 }
+
+/* ⚠ بدون این، ستون‌ها اصلاً نمی‌لغزند.
+
+   فرزندِ گرید به‌طور پیش‌فرض min-height: auto دارد، یعنی کوچک‌تر
+   از محتوایش نمی‌شود. پس ستونِ دسته‌ها تا ۵۵۷ پیکسل بلند می‌شد،
+   از سقفِ ۵۱۲ پیکسلیِ پنل می‌زد بیرون، و overflow: hidden پنل
+   دو ردیفِ آخرش را می‌برید — در حالی که خودش overflow-y: auto
+   داشت و هیچ‌وقت فعال نمی‌شد.
+
+   با min-height: 0 ستون اجازه می‌گیرد کوتاه‌تر از محتوایش شود و
+   آن‌وقت لغزشِ خودش کار می‌کند. */
+.mega > * { min-height: 0; }
 [data-theme="dark"] .mega {
   background: #14161d;
   border-color: rgba(255, 255, 255, 0.1);
@@ -97,7 +109,7 @@
 
 .mega__label {
   display: block;
-  padding: 0 10px var(--sp-2);
+  padding: 0 10px 6px;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -106,22 +118,24 @@
 }
 /* دو ردیفِ آخر با یک خط از دسته‌ها جدا می‌شوند — بی‌آنکه سرتیترِ
    جداگانه‌ای بگیرند که پایینِ ستون نصفه بماند. */
+/* فاصله‌ی جداکننده عمداً کم است: با ۱۶+۱۶ پیکسل، دو ردیفِ آخر از
+   سقفِ پنل می‌زدند بیرون. */
 .mega__cat--sep {
-  margin-top: var(--sp-4);
-  padding-top: var(--sp-4);
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid var(--line);
   border-radius: 0 0 var(--r-md) var(--r-md);
 }
 [data-theme="dark"] .mega__cat--sep { border-top-color: rgba(255, 255, 255, 0.08); }
-.mega__cat--sep + .mega__cat { margin-top: 0; padding-top: 11px; border-top: 0; }
+.mega__cat--sep + .mega__cat { margin-top: 0; padding-top: 9px; border-top: 0; }
 
 /* ---------- ستون یک: دسته‌ها ---------- */
 
 .mega__cats {
   display: grid;
   align-content: start;
-  gap: 3px;
-  padding: var(--sp-5) var(--sp-4);
+  gap: 2px;
+  padding: var(--sp-4) var(--sp-3);
   overflow-y: auto;
   border-inline-end: 1px solid var(--line);
   background: var(--wash);
@@ -137,7 +151,7 @@
   align-items: center;
   gap: var(--sp-3);
   width: 100%;
-  padding: 11px 12px;
+  padding: 9px 11px;
   border: 0;
   border-radius: var(--r-md);
   background: none;
@@ -164,7 +178,7 @@
 
 /* آیکون بدون کادر — همان قاعده‌ی همیشگی سایت */
 .mega__cat-ico { display: grid; place-items: center; color: var(--blue); }
-.mega__cat-ico svg { width: 21px; height: 21px; }
+.mega__cat-ico svg { width: 20px; height: 20px; }
 
 .mega__cat-txt b { display: block; font-size: var(--text-sm); font-weight: 600; line-height: 1.6; }
 .mega__cat-txt small { font-size: 11px; color: var(--ink-faint); }
@@ -252,6 +266,32 @@
   overflow: hidden;
 }
 .mega__box-price { font-size: 10px; font-weight: 700; color: var(--blue); opacity: 0.85; }
+
+/* ---------- دکمه‌ی «دیدن همه» ----------
+
+   متن در یک <span> است و فلش بیرونش، هر دو فرزندِ مستقیمِ فلکس.
+   nowrap روی هر دو لازم است: بدون آن، نام دسته‌ی بلند («شبکه‌های
+   اجتماعی») متن را می‌شکند و فلش تنها به خط بعد می‌افتد. */
+.mega__all {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  margin-top: var(--sp-3);
+  padding: 10px var(--sp-4);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--blue) 9%, transparent);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--blue);
+  transition: background var(--dur) var(--ease);
+}
+.mega__all:hover { background: color-mix(in srgb, var(--blue) 17%, transparent); }
+.mega__all svg { width: 13px; height: 13px; flex-shrink: 0; }
+.mega__all > span { overflow: hidden; text-overflow: ellipsis; }
+.mega__all .num { opacity: 0.7; }
 
 /* ---------- نوار نصفه ----------
 

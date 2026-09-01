@@ -529,3 +529,62 @@
   .tier:hover::before { animation: none; }
   .earn__item:hover .earn__pts { rotate: none; }
 }
+
+
+/* ============================================================
+   قدم‌های راهنما — صفحه‌های راهنما، شکایت، فرصت شغلی
+   ============================================================
+
+   شماره‌ی قدم اختیاری است: راهنمای خرید و شکایت ترتیب دارند و
+   شماره لازمشان است، ولی فهرست موقعیت‌های شغلی ترتیبی ندارد و
+   شماره‌گذاری‌اش یعنی گفتنِ چیزی که درست نیست.
+   ============================================================ */
+
+.gsteps {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 48rem;
+  display: grid;
+  gap: var(--sp-5);
+}
+
+.gstep {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: start;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--paper);
+  transition: border-color var(--dur) var(--ease);
+}
+[data-theme="dark"] .gstep {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.gstep:hover { border-color: color-mix(in srgb, var(--blue) 40%, transparent); }
+
+.gstep__n {
+  display: grid;
+  place-items: center;
+  width: 26px; height: 26px;
+  border-radius: var(--r-full);
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
+  color: var(--blue);
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+/* آیکون بدون کادر — قاعده‌ی همیشگی سایت */
+.gstep__ico { display: grid; place-items: center; color: var(--blue); }
+.gstep__ico svg { width: 22px; height: 22px; }
+
+.gstep b { display: block; font-size: var(--text-base); margin-bottom: 5px; }
+.gstep p { font-size: var(--text-sm); line-height: 2; color: var(--ink-faint); }
+
+@media (max-width: 560px) {
+  .gstep { grid-template-columns: auto 1fr; padding: var(--sp-4); }
+  .gstep__n { grid-row: 1; }
+}

@@ -6,6 +6,7 @@ import { ChevronDown, Menu, Moon, Search, ShoppingBag, Sun, X } from 'lucide-rea
 import { AccountMenu } from './AccountMenu';
 import { ShoppingAssistant } from './ShoppingAssistant';
 import { MegaMenu } from './MegaMenu';
+import { NavSearch } from './NavSearch';
 import { CATEGORIES } from '../../data/catalog';
 import { Glyph, type GlyphName } from '../ui/Glyph';
 import { asset } from '../../lib/asset';
@@ -40,6 +41,7 @@ export function Nav() {
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
   const [assistOpen, setAssistOpen] = useState(false);
   const [mega, setMega] = useState(false);
+  const [search, setSearch] = useState(false);
 
   /* مقصد پروازِ جت.
 
@@ -92,6 +94,7 @@ export function Nav() {
       {/* ---------- ردیف بالا ---------- */}
       <div className="navtop">
         <div className="wrap navtop__row">
+          <Link href="/guide">راهنمای خرید</Link>
           <Link href="/blog">مقالات و آموزش</Link>
           <Link href="/club">باشگاه مشتریان</Link>
           <Link href="/track">پیگیری سفارش</Link>
@@ -152,8 +155,17 @@ export function Nav() {
         </nav>
 
         <div className="nav__actions">
-          <button type="button" aria-label="جست‌وجو" className="nav__icon">
-            <Search />
+          {/* تا امروز این دکمه هیچ onClick نداشت — کاربری که دنبال
+              چیزی می‌گشت، تنها ابزارِ پیدا کردن را می‌زد و هیچ
+              اتفاقی نمی‌افتاد. */}
+          <button
+            type="button"
+            aria-label="جست‌وجو"
+            aria-expanded={search}
+            className={`nav__icon ${search ? 'is-on' : ''}`}
+            onClick={() => { setSearch((v) => !v); setMega(false); }}
+          >
+            {search ? <X /> : <Search />}
           </button>
 
           {/* همیشه دکمه است، حتی وقتی تم هنوز معلوم نیست.
@@ -222,6 +234,8 @@ export function Nav() {
         </div>
       </div>
 
+      <NavSearch open={search} onClose={() => setSearch(false)} />
+
       {assistOpen && <ShoppingAssistant onClose={() => setAssistOpen(false)} />}
 
       {/* ---------- منوی موبایل ----------
@@ -262,8 +276,10 @@ export function Nav() {
             <span className="navm__label">فونیکس شاپ</span>
             <nav className="navm__links">
               <Link href="/shop" onClick={() => setOpen(false)}>همه‌ی محصولات</Link>
+              <Link href="/guide" onClick={() => setOpen(false)}>راهنمای خرید</Link>
               <Link href="/blog" onClick={() => setOpen(false)}>مقالات و آموزش</Link>
               <Link href="/club" onClick={() => setOpen(false)}>باشگاه مشتریان</Link>
+              <Link href="/reseller" onClick={() => setOpen(false)}>نمایندگی فروش</Link>
               <Link href="/track" onClick={() => setOpen(false)}>پیگیری سفارش</Link>
               <Link href="/faq" onClick={() => setOpen(false)}>سوالات متداول</Link>
               <Link href="/about" onClick={() => setOpen(false)}>تماس با ما</Link>
