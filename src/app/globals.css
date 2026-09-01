@@ -25,10 +25,12 @@
 /* کامپوننت‌ها */
 @import '../styles/effects.css' layer(components);
 @import '../components/shell/nav.css' layer(components);
+@import '../components/shell/mega.css' layer(components);
 @import '../components/shell/footer.css' layer(components);
 @import '../components/home/home.css' layer(components);
 @import '../components/product/product.css' layer(components);
 @import '../components/cart/cart.css' layer(components);
+@import '../components/cart/drawer.css' layer(components);
 @import '../components/numbers/pages.css' layer(components);
 @import '../components/three/su57.css' layer(components);
 @import '../components/account/account.css' layer(components);

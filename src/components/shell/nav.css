@@ -756,3 +756,46 @@
 @media (prefers-reduced-motion: reduce) {
   .amenu { animation: none; }
 }
+
+/* ============================================================
+   ردیف بالای نوبار
+   ============================================================
+
+   چیزهایی که «درباره‌ی فروشگاه»‌اند، نه خودِ فروش: مقالات، باشگاه،
+   پیگیری، تماس. باریک و کم‌رنگ، چون کسی روزی ده بار نمی‌زندشان و
+   نباید هم‌وزنِ محصول دیده شوند.
+
+   روی موبایل کلاً نیست — همه‌شان در منوی کشویی هستند و یک ردیفِ
+   افقیِ اسکرول‌شونده‌ی دیگر، فقط ارتفاعِ بالای صفحه را می‌خورد.
+   ============================================================ */
+
+.navtop {
+  border-bottom: 1px solid var(--line);
+  background: var(--wash);
+}
+[data-theme='dark'] .navtop {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+
+.navtop__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  height: 36px;
+  font-size: var(--text-xs);
+}
+.navtop__row a {
+  color: var(--ink-faint);
+  transition: color var(--dur) var(--ease);
+}
+.navtop__row a:hover { color: var(--blue); }
+
+/* فاصله‌انداز، تماس را به لبه‌ی دیگر می‌برد */
+.navtop__sep { margin-inline-start: auto; }
+.navtop__contact { font-weight: 700; color: var(--ink-soft) !important; }
+.navtop__contact:hover { color: var(--blue) !important; }
+
+@media (max-width: 900px) { .navtop { display: none; } }
+
+

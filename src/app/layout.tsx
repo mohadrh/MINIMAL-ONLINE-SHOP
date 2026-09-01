@@ -9,6 +9,7 @@ import { CursorLight } from '../components/motion/CursorLight';
 import { ScrollTop } from '../components/shell/ScrollTop';
 import { LiveChat } from '../components/shell/LiveChat';
 import { CompareProvider, CompareBar } from '../components/shop/Compare';
+import { CartDrawer } from '../components/cart/CartDrawer';
 
 export const metadata: Metadata = {
   title: 'فونیکس شاپ — اشتراک هوش مصنوعی، گیم و شماره مجازی',
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <JetFlightOverlay />
           <ScrollTop />
           <CompareBar />
+          <CartDrawer />
           </CompareProvider>
           <LiveChat />
           <Reveal />

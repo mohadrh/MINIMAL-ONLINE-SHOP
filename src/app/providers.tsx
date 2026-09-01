@@ -25,6 +25,12 @@ interface CartContextValue {
   count: number;
   subtotal: number;
   isOpen: boolean;
+  /** نام آخرین محصولی که اضافه شد — برای پیام تأیید در کشویی.
+
+      وقتی کاربر سبد را از روی آیکون باز می‌کند چیزی اضافه نکرده و
+      پیام «اضافه شد» دروغ می‌شود؛ پس با هر باز شدنِ دستی پاک
+      می‌شود. */
+  justAdded: string | null;
   openCart: () => void;
   closeCart: () => void;
   add: (product: Product, variant: Variant, inputs?: Record<string, string>) => void;
@@ -75,6 +81,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   const [lines, setLines] = useState<CartLine[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [justAdded, setJustAdded] = useState<string | null>(null);
   /* تا اولین خواندن از حافظه انجام نشده، ننویس — وگرنه آرایه‌ی خالیِ
      اولیه سبد ذخیره‌شده را پاک می‌کند.
 
@@ -135,8 +142,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
      بعد خاموش برمی‌گشت. عملاً موتور همیشه ساکت بود. */
   useEffect(() => { sound.init(); }, []);
 
+  /* افزودن، سبد را باز می‌کند.
+
+     قبلاً افزودن هیچ بازخوردی نداشت جز عوض شدن یک عدد در گوشه‌ی
+     صفحه؛ کاربر نمی‌فهمید کارش گرفت یا نه و دوباره می‌زد. حالا
+     کشویی باز می‌شود و اسمِ همان چیزی که اضافه شد را می‌گوید. */
   const add: CartContextValue['add'] = useCallback((product, variant, inputs = {}) => {
     sound.addToCart();
+    setJustAdded(product.title);
+    setIsOpen(true);
     const key = `${product.id}::${variant.id}`;
     setLines((prev) => {
       const existing = prev.find((l) => l.key === key);
@@ -165,14 +179,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
       count: lines.reduce((n, l) => n + l.quantity, 0),
       subtotal: lines.reduce((n, l) => n + l.variant.price * l.quantity, 0),
       isOpen,
-      openCart: () => setIsOpen(true),
-      closeCart: () => setIsOpen(false),
+      justAdded,
+      openCart: () => { setJustAdded(null); setIsOpen(true); },
+      closeCart: () => { setIsOpen(false); setJustAdded(null); },
       add,
       setQuantity,
       remove,
       clear: () => setLines([]),
     }),
-    [lines, isOpen, add, setQuantity, remove]
+    [lines, isOpen, justAdded, add, setQuantity, remove]
   );
 
   const flightValue = useMemo<FlightContextValue>(

@@ -1,0 +1,243 @@
+/* ============================================================
+   سبد خرید کشویی و شمارنده‌ی نوبار
+   ============================================================
+
+   کشویی از سمت چپ می‌آید. سایت راست‌به‌چپ است و آیکون سبد در سمت
+   چپِ نوبار می‌نشیند؛ کشویی باید از همان‌جایی بیاید که کاربر زده،
+   وگرنه ارتباط علت و معلول گم می‌شود.
+   ============================================================ */
+
+.cdrawer { position: fixed; inset: 0; z-index: 90; }
+
+.cdrawer__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  background: rgba(10, 12, 20, 0.5);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+  animation: cd-fade 220ms var(--ease) both;
+}
+@keyframes cd-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.cdrawer__box {
+  position: absolute;
+  inset-block: 0;
+  /* چپِ فیزیکی، نه inline-start: سایت راست‌به‌چپ است و
+     inline-start سمت راست می‌افتد — درست همان طرفی که آیکون سبد
+     آن‌جا نیست. */
+  left: 0;
+  width: min(25rem, 92vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  box-shadow: 0 0 60px -10px rgba(10, 12, 20, 0.45);
+  animation: cd-slide 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+[data-theme="dark"] .cdrawer__box { background: #12141b; }
+@keyframes cd-slide { from { translate: -100% 0; } to { translate: 0 0; } }
+
+/* ---------- سر ---------- */
+
+.cdrawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+  border-bottom: 1px solid var(--line);
+}
+[data-theme="dark"] .cdrawer__head { border-bottom-color: rgba(255, 255, 255, 0.09); }
+.cdrawer__head > b { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--text-base); }
+.cdrawer__head svg { width: 18px; height: 18px; color: var(--blue); }
+.cdrawer__head > button {
+  display: grid; place-items: center;
+  width: 30px; height: 30px;
+  border: 0; border-radius: var(--r-md);
+  background: none; color: var(--ink-faint); cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.cdrawer__head > button:hover { background: var(--wash); color: var(--ink); }
+.cdrawer__head > button svg { width: 16px; height: 16px; color: inherit; }
+
+.cdrawer__n {
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  background: var(--blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ---------- تأیید افزودن ---------- */
+
+.cdrawer__ok {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: var(--sp-4) var(--sp-5) 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, #22c55e 12%, transparent);
+  color: #15803d;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.7;
+  animation: cd-ok 260ms var(--ease) both;
+}
+.cdrawer__ok svg { width: 15px; height: 15px; flex-shrink: 0; }
+[data-theme="dark"] .cdrawer__ok { background: rgba(34, 197, 94, 0.16); color: #6ee7a2; }
+@keyframes cd-ok { from { opacity: 0; translate: 0 -6px; } to { opacity: 1; translate: 0 0; } }
+
+/* ---------- فهرست ---------- */
+
+.cdrawer__list {
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-4) var(--sp-5);
+  display: grid;
+  gap: var(--sp-3);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cline {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: var(--sp-3);
+  align-items: start;
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--line);
+}
+.cline:last-child { border-bottom: 0; padding-bottom: 0; }
+[data-theme="dark"] .cline { border-bottom-color: rgba(255, 255, 255, 0.07); }
+
+.cline__art {
+  width: 56px; height: 56px;
+  display: grid; place-items: center;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--wash);
+}
+.cline__art img { width: 78%; height: 78%; object-fit: contain; }
+
+.cline__body > a { display: block; font-size: var(--text-sm); font-weight: 600; }
+.cline__body > a:hover { color: var(--blue); }
+.cline__plan { display: block; font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+
+.cline__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.cline__qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  padding: 2px;
+}
+[data-theme="dark"] .cline__qty { border-color: rgba(255, 255, 255, 0.14); }
+.cline__qty button {
+  display: grid; place-items: center;
+  width: 22px; height: 22px;
+  border: 0; border-radius: var(--r-full);
+  background: none; color: var(--ink-soft); cursor: pointer;
+}
+.cline__qty button:hover:not(:disabled) { background: var(--wash); color: var(--blue); }
+.cline__qty button:disabled { opacity: 0.35; cursor: not-allowed; }
+.cline__qty svg { width: 12px; height: 12px; }
+.cline__qty > span { min-width: 20px; text-align: center; font-size: var(--text-xs); font-weight: 700; }
+
+.cline__price { font-size: var(--text-sm); font-weight: 700; }
+.cline__price small { font-size: 10px; font-weight: 500; color: var(--ink-faint); }
+
+.cline__del {
+  display: grid; place-items: center;
+  width: 26px; height: 26px;
+  border: 0; border-radius: var(--r-md);
+  background: none; color: var(--ink-faint); cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.cline__del:hover { background: color-mix(in srgb, #ef4444 12%, transparent); color: #ef4444; }
+.cline__del svg { width: 14px; height: 14px; }
+
+/* ---------- پا ---------- */
+
+.cdrawer__foot {
+  padding: var(--sp-5);
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: var(--sp-3);
+  background: var(--wash);
+}
+[data-theme="dark"] .cdrawer__foot {
+  border-top-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.cdrawer__sum { display: flex; align-items: baseline; justify-content: space-between; }
+.cdrawer__sum span { font-size: var(--text-sm); color: var(--ink-faint); }
+.cdrawer__sum b { font-size: var(--text-lg); font-weight: 800; }
+.cdrawer__sum small { font-size: var(--text-xs); font-weight: 500; color: var(--ink-faint); }
+
+.cdrawer__pay { justify-content: center; gap: var(--sp-2); }
+.cdrawer__pay svg { width: 15px; height: 15px; }
+.cdrawer__more { justify-content: center; }
+.cdrawer__full { text-align: center; font-size: var(--text-xs); color: var(--ink-faint); }
+.cdrawer__full:hover { color: var(--blue); }
+
+/* ---------- خالی ---------- */
+
+.cdrawer__empty {
+  flex: 1;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-8);
+  text-align: center;
+}
+.cdrawer__empty svg { width: 34px; height: 34px; color: var(--ink-faint); opacity: 0.5; }
+.cdrawer__empty b { font-size: var(--text-base); margin-top: var(--sp-2); }
+.cdrawer__empty p { font-size: var(--text-sm); color: var(--ink-faint); margin-bottom: var(--sp-3); }
+
+/* ============================================================
+   شمارنده‌ی سبد در نوبار
+   ============================================================
+
+   روی خودِ آیکون می‌نشیند نه کنارش، وگرنه با آمدنِ عدد کلِ ردیفِ
+   دکمه‌ها جابه‌جا می‌شود. */
+
+.nav__cart { position: relative; }
+.nav__cart-n {
+  position: absolute;
+  inset-block-start: -2px;
+  inset-inline-start: -2px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-full);
+  background: var(--blue);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--paper);
+  animation: cartn-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+[data-theme="dark"] .nav__cart-n { box-shadow: 0 0 0 2px #0f1116; }
+@keyframes cartn-pop { from { scale: 0.4; } to { scale: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cdrawer__box, .cdrawer__scrim, .cdrawer__ok { animation: none; }
+  .nav__cart-n { animation: none; }
+}

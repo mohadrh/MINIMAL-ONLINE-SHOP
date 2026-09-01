@@ -2,26 +2,37 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Menu, Moon, Search, ShoppingBag, Sun, X } from 'lucide-react';
+import { ChevronDown, Menu, Moon, Search, ShoppingBag, Sun, X } from 'lucide-react';
 import { AccountMenu } from './AccountMenu';
 import { ShoppingAssistant } from './ShoppingAssistant';
+import { MegaMenu } from './MegaMenu';
 import { CATEGORIES } from '../../data/catalog';
 import { asset } from '../../lib/asset';
-import { useFlight } from '../../app/providers';
+import { useCart, useFlight } from '../../app/providers';
 
 /**
  * نوبار.
  *
  * سفید، چسبان، با یک سایه‌ی چهاردرصدی — تنها سایه‌ی کل سایت.
  *
- * منوی دسته‌ها عمداً کشویی است نه مگامنوی همیشه‌باز: نمونه چهار سطح
- * دسته دارد و مگامنو لازمش می‌شود، ولی ما پنج دسته بیشتر نداریم و
- * مگامنو برای پنج آیتم فقط شلوغی است.
+ * دو ردیف دارد، مثل هر دو سایت مرجع:
+ *
+ * ردیف بالا باریک است و چیزهایی که «درباره‌ی فروشگاه»‌اند —
+ * مقالات، باشگاه، پیگیری سفارش، تماس. اینها را کسی روزی ده بار
+ * نمی‌زند، پس نباید هم‌وزنِ محصول دیده شوند.
+ *
+ * ردیف پایین کار اصلی را می‌کند: مگامنوی محصولات، جست‌وجو، حساب،
+ * سبد و دستیار.
+ *
+ * قبلاً هر پنج دسته کنار هم در یک ردیف بودند و «شلوغ» دیده می‌شد،
+ * و مهم‌تر اینکه از منو نمی‌شد به محصول رسید — فقط به دسته. حالا
+ * خودِ محصول‌ها داخل مگامنو هستند.
  */
 export function Nav() {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
   const [assistOpen, setAssistOpen] = useState(false);
+  const [mega, setMega] = useState(false);
 
   /* مقصد پروازِ جت.
 
@@ -33,6 +44,7 @@ export function Nav() {
      گرفته می‌شود؛ نوبار چسبان است ولی موقعیت افقی‌اش با عرض پنجره
      تغییر می‌کند. */
   const { registerCartAnchor } = useFlight();
+  const { count, openCart } = useCart();
   const cartRef = useRef<HTMLAnchorElement>(null);
 
   const measureCart = useCallback(() => {
@@ -70,6 +82,18 @@ export function Nav() {
 
   return (
     <header className="nav">
+      {/* ---------- ردیف بالا ---------- */}
+      <div className="navtop">
+        <div className="wrap navtop__row">
+          <Link href="/blog">مقالات و آموزش</Link>
+          <Link href="/club">باشگاه مشتریان</Link>
+          <Link href="/track">پیگیری سفارش</Link>
+          <Link href="/faq">سوالات متداول</Link>
+          <span className="navtop__sep" aria-hidden="true" />
+          <Link href="/about" className="navtop__contact">تماس با ما</Link>
+        </div>
+      </div>
+
       <div className="wrap nav__inner">
         <Link href="/" className="nav__brand">
           <img src={asset('/brand/phoenix-logo.png')} alt="" width={34} height={34} />
@@ -79,14 +103,40 @@ export function Nav() {
           </span>
         </Link>
 
-        <nav className="nav__links" aria-label="دسته‌بندی‌ها">
-          {CATEGORIES.map((c) => (
-            <Link key={c.slug} href={`/${c.slug}`}>
-              {c.title}
-            </Link>
-          ))}
+        {/* ---------- مگامنو ----------
+
+            با هاور باز می‌شود و با کلیک هم — روی لمسی هاوری در کار
+            نیست و منویی که فقط با هاور باز شود، روی موبایل اصلاً
+            وجود ندارد.
+
+            بسته‌شدن روی خودِ ظرف است نه روی دکمه: اگر روی دکمه
+            بود، لحظه‌ای که نشانگر وارد پنل می‌شد از دکمه خارج
+            می‌شد و منو زیر دست کاربر می‌بست. */}
+        <nav
+          className="nav__links"
+          aria-label="محصولات"
+          onMouseEnter={() => setMega(true)}
+          onMouseLeave={() => setMega(false)}
+        >
+          <button
+            type="button"
+            className={`nav__mega-btn ${mega ? 'is-on' : ''}`}
+            aria-expanded={mega}
+            aria-haspopup="true"
+            onClick={() => setMega((v) => !v)}
+          >
+            دسته‌بندی محصولات
+            <ChevronDown aria-hidden="true" />
+          </button>
+
+          <Link href="/shop">همه‌ی محصولات</Link>
           <Link href="/numbers">شماره مجازی</Link>
-          <Link href="/blog">مقالات</Link>
+
+          {mega && (
+            <div className="nav__mega">
+              <MegaMenu onNavigate={() => setMega(false)} />
+            </div>
+          )}
         </nav>
 
         <div className="nav__actions">
@@ -112,9 +162,21 @@ export function Nav() {
 
           <AccountMenu theme={theme} onToggleTheme={toggleTheme} />
 
-          <Link ref={cartRef} href="/cart" className="nav__icon" aria-label="سبد خرید">
+          {/* سبد، کشویی را باز می‌کند نه صفحه‌ی سبد را.
+
+              هنوز <a href="/cart"> است تا با کلیک وسط یا Ctrl در تب
+              تازه باز شود و آدرسش هم قابل کپی بماند؛ کلیک ساده را
+              می‌گیریم و به‌جایش کشویی می‌آید. */}
+          <a
+            ref={cartRef}
+            href="/cart"
+            className="nav__icon nav__cart"
+            aria-label={count > 0 ? `سبد خرید، ${count.toLocaleString('fa-IR')} کالا` : 'سبد خرید'}
+            onClick={(e) => { e.preventDefault(); openCart(); }}
+          >
             <ShoppingBag />
-          </Link>
+            {count > 0 && <span className="nav__cart-n num">{count.toLocaleString('fa-IR')}</span>}
+          </a>
 
           {/* دکمه‌ی اصلی نوبار — دستیار خرید.
 
@@ -159,8 +221,13 @@ export function Nav() {
               </Link>
             ))}
             <Link href="/numbers" onClick={() => setOpen(false)}>شماره مجازی</Link>
-            <Link href="/blog" onClick={() => setOpen(false)}>مقالات</Link>
+            <Link href="/shop" onClick={() => setOpen(false)}>همه‌ی محصولات</Link>
+            <span className="nav__mobile-sep" aria-hidden="true" />
+            <Link href="/blog" onClick={() => setOpen(false)}>مقالات و آموزش</Link>
+            <Link href="/club" onClick={() => setOpen(false)}>باشگاه مشتریان</Link>
             <Link href="/track" onClick={() => setOpen(false)}>پیگیری سفارش</Link>
+            <Link href="/faq" onClick={() => setOpen(false)}>سوالات متداول</Link>
+            <Link href="/about" onClick={() => setOpen(false)}>تماس با ما</Link>
           </div>
         </div>
       )}
