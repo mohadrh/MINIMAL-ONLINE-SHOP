@@ -301,10 +301,14 @@ export function ProductCard(
             )}
           </div>
 
+          {/* «تومان» به عدد چسبیده در یک خط، تا هیچ‌وقت تنها به
+              خط بعد نیفتد. */}
           <span className="pcard__prices">
-            {v.compareAt && <s className="pcard__was num">{fmt(v.compareAt)}</s>}
-            <b className="pcard__now num">{fmt(getLowestPrice(p))}</b>
-            <span className="pcard__unit">تومان</span>
+            {v.compareAt && <s className="pcard__was num">{fmt(v.compareAt)} تومان</s>}
+            <span className="pcard__nowrow">
+              <b className="pcard__now num">{fmt(getLowestPrice(p))}</b>
+              <span className="pcard__unit">تومان</span>
+            </span>
           </span>
         </span>
       </span>

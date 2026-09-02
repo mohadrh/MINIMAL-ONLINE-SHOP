@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { AlertCircle, Check, Eye, EyeOff, Lock, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../app/providers';
 import {
-  nameOk, passwordOk, phoneOk, saveAccount,
+  nameOk, phoneOk, saveAccount,
 } from '../../lib/account';
 import { newOrderCode, saveOrder, scheduleFulfilment, type Order } from '../../lib/orders';
 import { Loader } from '../ui/Loader';
@@ -49,7 +49,6 @@ export function CheckoutFlow() {
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  const [makeAccount, setMakeAccount] = useState(true);
   const [showPass, setShowPass] = useState(false);
   const [gateway, setGateway] = useState(GATEWAYS[0].id);
   const [error, setError] = useState<string | null>(null);
@@ -114,7 +113,7 @@ export function CheckoutFlow() {
      نشوند و از هم نیفتند. */
   const okPhone = phoneOk(phone);
   const okName = nameOk(name);
-  const okPass = passwordOk(password);
+  const okPass = password.length >= 6;
   const canPay = okPhone && okName && okPass;
 
   if (count === 0 && step !== 'done') {
@@ -296,56 +295,45 @@ export function CheckoutFlow() {
                 </label>
               </div>
 
-              {/* ---------- حساب، اختیاری ----------
+              {/* رمز اجباری است.
 
-                  تیکش از اول خورده چون تقریباً همه بعداً سفارششان را
-                  پیگیری می‌کنند و بدون حساب باید هر بار کد پیگیری را
-                  پیدا کنند. ولی اجباری نیست: کسی که فقط می‌خواهد
-                  بخرد و برود، تیک را برمی‌دارد و یک فیلد کمتر
-                  می‌بیند.
+                  اختیاری بودنش یعنی نصف کاربران حسابی می‌سازند که
+                  فقط با کد پیامکی باز می‌شود، و بعداً که رمز
+                  خواستند باید مسیر «تعیین رمز» هم ساخته شود. یک
+                  فیلد در اولین خرید، از دو مسیر در آینده ارزان‌تر
+                  است.
 
-                  رمز ذخیره نمی‌شود — lib/account فقط نشانه‌اش را
-                  نگه می‌دارد. */}
-              <label className="co__opt">
+                  کسی که رمزش را فراموش کند، از صفحه‌ی ورود با کد
+                  پیامکی وارد می‌شود — همان چیزی که در این بازار
+                  «بازیابی رمز» است. */}
+              <label className="pdp-input co__pass">
+                <span>یک رمز برای حسابت بگذار</span>
                 <input
-                  type="checkbox"
-                  checked={makeAccount}
-                  onChange={(e) => setMakeAccount(e.target.checked)}
+                  type={showPass ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  dir="ltr"
+                  placeholder="حداقل شش نویسه"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  aria-invalid={password.length > 0 && !okPass}
                 />
-                <span>
-                  <b>یک حساب برایم بساز</b>
-                  <em>
-                    تا سفارش‌ها و تحویل‌هایت یک‌جا باشد. با همین شماره‌ی موبایل
-                    وارد می‌شوی — یوزرنیم جدا لازم نیست.
-                  </em>
-                </span>
+                <button
+                  type="button"
+                  className="co__eye"
+                  onClick={() => setShowPass((v) => !v)}
+                  aria-label={showPass ? 'پنهان کردن رمز' : 'نمایش رمز'}
+                >
+                  {showPass ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
+                </button>
+                {password.length > 0 && !okPass && (
+                  <em className="co__err">حداقل شش نویسه.</em>
+                )}
               </label>
 
-              {makeAccount && (
-                <label className="pdp-input co__pass">
-                  <span>رمز عبور</span>
-                  <input
-                    type={showPass ? 'text' : 'password'}
-                    autoComplete="new-password"
-                    dir="ltr"
-                    placeholder="حداقل شش نویسه"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    aria-invalid={password.length > 0 && !passwordOk(password)}
-                  />
-                  <button
-                    type="button"
-                    className="co__eye"
-                    onClick={() => setShowPass((v) => !v)}
-                    aria-label={showPass ? 'پنهان کردن رمز' : 'نمایش رمز'}
-                  >
-                    {showPass ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
-                  </button>
-                  {password && !passwordOk(password) && (
-                    <em className="co__err">حداقل شش نویسه.</em>
-                  )}
-                </label>
-              )}
+              <p className="co__note">
+                با همین شماره و رمز بعداً وارد می‌شوی. اگر رمزت را فراموش کردی،
+                از <Link href="/login">صفحه‌ی ورود</Link> با کد پیامکی وارد شو.
+              </p>
 
               {/* ---------- بازبینی، همین‌جا ----------
 
@@ -395,7 +383,7 @@ export function CheckoutFlow() {
                 className="btn btn--primary co__pay"
                 disabled={!canPay}
                 onClick={() => {
-                  saveAccount({ phone, name, password: makeAccount ? password : undefined });
+                  saveAccount({ phone, name, password });
                   setStep('gateway');
                 }}
               >
@@ -404,7 +392,7 @@ export function CheckoutFlow() {
               </button>
 
               {!canPay && (phone || name) && (
-                <p className="co__hint">برای ادامه، موبایل و نامت را کامل کن.</p>
+                <p className="co__hint">برای ادامه، موبایل و نام و رمز را کامل کن.</p>
               )}
             </section>
           )}

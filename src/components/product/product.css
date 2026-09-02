@@ -379,10 +379,42 @@
   color: #fff;
 }
 
-.pcard__prices { margin-inline-start: auto; display: flex; align-items: baseline; gap: 6px; }
-.pcard__was { font-size: 11px; color: var(--ink-faint); }
-.pcard__now { font-size: var(--text-md); font-weight: 900; color: var(--ink); }
-.pcard__unit { font-size: 10px; color: var(--ink-faint); }
+/* قیمت، دو خط — نه یک خطِ سه‌تکه.
+
+   کارتِ تخفیف‌دار سه چیز کنار هم داشت: قیمت خط‌خورده، قیمت جدید،
+   و «تومان» — و همه در یک ردیف با دکمه‌ی خرید. در کارتِ باریکِ
+   ردیف تخفیف‌ها این‌ها جا نمی‌شدند و آخرش («تومان» و بخشی از عدد)
+   از کارت می‌زد بیرون.
+
+   حالا خط‌خورده بالا می‌نشیند و عدد و واحد پایینش. عرضِ لازم
+   نصف می‌شود و ترتیبِ خواندن هم درست‌تر است: اول قیمتِ قبلی، بعد
+   قیمتی که می‌دهی. */
+.pcard__prices {
+  margin-inline-start: auto;
+  display: grid;
+  justify-items: end;
+  gap: 1px;
+  min-width: 0;
+  text-align: end;
+}
+.pcard__was {
+  font-size: 10px;
+  color: var(--ink-faint);
+  line-height: 1.4;
+}
+.pcard__now {
+  font-size: var(--text-md);
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.pcard__unit { font-size: 10px; color: var(--ink-faint); line-height: 1.2; }
+.pcard__nowrow { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+
+/* دکمه‌ی خرید نباید زیر فشارِ قیمت جمع شود */
+.pcard__foot > .pcard__addwrap { flex-shrink: 0; }
+.pcard__foot { min-width: 0; }
 
 /* ============================================================
    مسیر راهنما
@@ -1626,3 +1658,74 @@
 .shop__grid--3 { grid-template-columns: repeat(3, 1fr); }
 @media (max-width: 1080px) { .shop__grid--3 { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px)  { .shop__grid--3 { grid-template-columns: 1fr; } }
+
+
+/* ============================================================
+   کارت‌ها روی موبایل و تبلت
+   ============================================================
+
+   شبکه‌ها زیر ۸۲۰ پیکسل دو ستونی و زیر ۴۶۰ تک‌ستونی می‌شدند. نتیجه
+   این بود که روی تبلتِ ۷۶۸ هر کارت نزدیک ۳۵۰ پیکسل عرض می‌گرفت و
+   چون تصویر نسبتِ ۱۶:۹ دارد، ارتفاعش هم به همان نسبت بالا می‌رفت —
+   کارتی که روی دسکتاپ جمع‌وجور بود، روی تبلت یک بلوکِ درشت
+   می‌شد و در هر پرده فقط دوتا دیده می‌شد.
+
+   حالا دو چیز عوض شده:
+
+   ۱ شکستِ تک‌ستونی خیلی دیرتر می‌آید (۴۰۰ به‌جای ۴۶۰) و تبلت سه
+     ستونه می‌شود. دو کارتِ درشت، نه چیزی را خواناتر می‌کند نه
+     مرور را آسان‌تر.
+
+   ۲ داخل کارت هم جمع می‌شود: پدینگ، فاصله‌ها و اندازه‌ی متن. تنها
+     تنگ‌تر کردنِ ستون‌ها بدون این، کارت‌های باریکِ بلند می‌سازد.
+   ============================================================ */
+
+/* تبلت سه ستونه می‌ماند تا ۷۰۰ پیکسل. دو کارتِ درشت روی تبلت، نه
+   چیزی را خواناتر می‌کند نه مرور را آسان‌تر. */
+@media (max-width: 1080px) and (min-width: 701px) {
+  .shop__grid { grid-template-columns: repeat(3, 1fr); }
+  .shop__grid--3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 700px) and (min-width: 361px) {
+  .shop__grid, .shop__grid--3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .pcard__body { padding-inline: var(--sp-4); gap: 6px; }
+  .pcard__name { font-size: var(--text-sm); }
+  .pcard__now { font-size: var(--text-sm); }
+  .pcard__art { margin: var(--sp-2); }
+  .pcard__art--game { margin-top: var(--sp-5); }
+  .pcard__acts { padding: 6px var(--sp-3) 0; }
+  .bub { width: 28px; height: 28px; }
+  .bub svg { width: 13px; height: 13px; }
+}
+
+@media (max-width: 560px) {
+  .shop__grid, .shop__grid--3 { gap: var(--sp-3); }
+  .pcard__body { padding-inline: var(--sp-3); padding-bottom: var(--sp-3); }
+  .pcard__foot { flex-direction: column; align-items: stretch; gap: var(--sp-2); }
+  .pcard__prices { margin-inline-start: 0; justify-items: start; text-align: start; }
+  .pcard__addwrap, .pcard__add { width: 100%; }
+  .pcard__add { justify-content: center; }
+  .pcard__rate { display: none; }
+}
+
+/* زیر ۳۶۰ پیکسل دو ستون دیگر خواندنی نیست — ولی این عرض تقریباً
+   فقط روی گوشی‌های خیلی قدیمی پیش می‌آید. */
+@media (max-width: 360px) {
+  .shop__grid, .shop__grid--3 { grid-template-columns: 1fr; }
+  .pcard__rate { display: inline-flex; }
+}
+
+
+/* ریلِ چیپ‌ها با مارجینِ منفی از ظرف می‌زند بیرون تا لبه‌به‌لبه
+   بلغزد. این عمدی است، ولی ظرف باید افقی ببُردش وگرنه کلِ صفحه
+   اسکرول افقی می‌گیرد.
+
+   clip است نه hidden: hidden یک ظرفِ اسکرول می‌سازد و هر چیزِ
+   sticky داخلش را می‌شکند — سرتیترِ چسبانِ زیرگروه‌ها دقیقاً
+   همان‌جاست. */
+.shop__head .wrap:has(> .shop__rail),
+.wrap:has(> .shop__rail) { overflow-x: clip; }

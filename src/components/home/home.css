@@ -1956,3 +1956,36 @@
 }
 .sec-head--mid .sec-head__lead { margin-inline: auto; }
 
+
+
+/* کارت نظر و مقاله روی موبایل و تبلت.
+
+   همان مشکلِ کارت محصول: ستونِ پهن یعنی کارتِ بلند. اینجا تصویرِ
+   ۱۶:۹ی مقاله بیشترین اثر را دارد. */
+@media (max-width: 900px) {
+  .art h3 { font-size: var(--text-sm); }
+  .art p { font-size: var(--text-xs); line-height: 1.9; }
+  .art .pill, .art h3, .art p, .art__meta { margin-inline: var(--sp-4); }
+  .art__topic { margin-top: var(--sp-4); }
+  .art__meta { margin-bottom: var(--sp-4); }
+
+  .review { padding: var(--sp-5); }
+  .review p { font-size: var(--text-sm); line-height: 2; }
+}
+
+@media (max-width: 560px) {
+  /* مقاله‌ها روی موبایل کشویی‌اند نه شبکه — سه کارتِ تمام‌عرض زیر
+     هم، یعنی سه پرده اسکرول برای سه تیتر. */
+  .arts.rail, .reviews.rail {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(74%, 260px);
+    gap: var(--sp-3);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .arts.rail::-webkit-scrollbar,
+  .reviews.rail::-webkit-scrollbar { display: none; }
+  .arts.rail > *, .reviews.rail > * { scroll-snap-align: start; }
+}
