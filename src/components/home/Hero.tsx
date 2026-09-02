@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { HERO_SLIDES } from '../../data/heroSlides';
@@ -36,6 +36,38 @@ export function Hero() {
   const [i, setI] = useState(0);
   const [tab, setTab] = useState<Tab>(TABS[0].id);
   const n = HERO_SLIDES.length;
+
+  /* ---------- چرخش خودکار ----------
+
+     هفت اسلاید داریم و بدون چرخش، شش‌تایشان را فقط کسی می‌بیند که
+     خودش بولت بزند — یعنی تقریباً هیچ‌کس. با چرخش، همه‌شان به
+     نوبت دیده می‌شوند.
+
+     سه قید:
+
+     ۱ با اولین تعاملِ کاربر برای همیشه می‌ایستد. اسلایدری که زیر
+       دستِ کاربر ادامه بدهد، وقتی دارد چیزی را می‌خواند آن را از
+       جلوی چشمش برمی‌دارد.
+
+     ۲ وقتی تب پنهان است نمی‌چرخد. مرورگر تایمرهای تبِ پس‌زمینه را
+       کند می‌کند ولی متوقف نمی‌کند؛ بدون این، کاربر که برمی‌گردد
+       چند اسلاید جلوتر است بی‌آنکه چیزی دیده باشد.
+
+     ۳ با prefers-reduced-motion اصلاً شروع نمی‌شود. */
+  const [paused, setPaused] = useState(false);
+  const stop = useRef(() => setPaused(true)).current;
+
+  useEffect(() => {
+    if (paused || n < 2) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const tick = () => {
+      if (document.visibilityState !== 'visible') return;
+      setI((v) => (v + 1) % n);
+    };
+    const id = window.setInterval(tick, 6000);
+    return () => window.clearInterval(id);
+  }, [paused, n]);
 
   const inTab = useMemo(
     () => (tab === 'numbers' ? [] : PRODUCTS.filter((p) => p.category === tab)),
@@ -75,7 +107,7 @@ export function Hero() {
           می‌کند و دو مزیت دارد: تصویرها از قبل بارگذاری شده‌اند پس
           موقع تعویض پرش ندارند، و ارتفاع بنر ثابت می‌ماند چون
           بلندترین اسلاید جای همه را باز کرده. */}
-      <div className="hero__slider">
+      <div className="hero__slider" onPointerDown={stop} onMouseEnter={stop}>
         {HERO_SLIDES.map((s, idx) => (
           <div
             key={s.id}
@@ -143,7 +175,7 @@ export function Hero() {
         <button
           type="button"
           className="hero__arrow hero__arrow--prev"
-          onClick={() => setI((v) => (v - 1 + n) % n)}
+          onClick={() => { stop(); setI((v) => (v - 1 + n) % n); }}
           aria-label="اسلاید قبلی"
         >
           <ChevronRight />
@@ -151,7 +183,7 @@ export function Hero() {
         <button
           type="button"
           className="hero__arrow hero__arrow--next"
-          onClick={() => setI((v) => (v + 1) % n)}
+          onClick={() => { stop(); setI((v) => (v + 1) % n); }}
           aria-label="اسلاید بعدی"
         >
           <ChevronLeft />
@@ -165,7 +197,7 @@ export function Hero() {
               aria-selected={idx === i}
               aria-label={`اسلاید ${idx + 1}`}
               className={idx === i ? 'is-on' : ''}
-              onClick={() => setI(idx)}
+              onClick={() => { stop(); setI(idx); }}
             />
           ))}
         </div>

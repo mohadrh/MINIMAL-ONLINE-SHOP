@@ -1705,10 +1705,23 @@
 @media (max-width: 560px) {
   .shop__grid, .shop__grid--3 { gap: var(--sp-3); }
   .pcard__body { padding-inline: var(--sp-3); padding-bottom: var(--sp-3); }
-  .pcard__foot { flex-direction: column; align-items: stretch; gap: var(--sp-2); }
-  .pcard__prices { margin-inline-start: 0; justify-items: start; text-align: start; }
-  .pcard__addwrap, .pcard__add { width: 100%; }
-  .pcard__add { justify-content: center; }
+
+  /* ⚠ ردیف می‌ماند، ستونی نمی‌شود.
+
+     نسخه‌ی قبل روی موبایل دکمه را تمام‌عرض بالا می‌برد و قیمت را
+     زیرش می‌گذاشت. نتیجه این بود که قیمت — مهم‌ترین عددِ کارت —
+     زیرِ دکمه گم می‌شد و ردیفِ پایینِ کارت به‌هم‌ریخته دیده
+     می‌شد.
+
+     در کارتِ ۲۸۰ پیکسلی، دکمه‌ی جمع‌وجور و قیمتِ دوخطی کنار هم
+     جا می‌شوند. */
+  .pcard__foot { flex-direction: row; align-items: center; gap: var(--sp-2); }
+  .pcard__prices { margin-inline-start: auto; justify-items: end; text-align: end; }
+  .pcard__add { padding-inline: 8px; }
+  .pcard__add-text { font-size: 10px; margin-inline-start: 4px; }
+  .pcard__now { font-size: var(--text-sm); }
+  .pcard__was { font-size: 9px; }
+  .pcard__unit { font-size: 9px; }
   .pcard__rate { display: none; }
 }
 

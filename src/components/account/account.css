@@ -634,3 +634,59 @@
 .tk__done-actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; justify-content: center; }
 
 .acc__newticket { justify-self: start; margin-bottom: var(--sp-2); }
+
+
+/* ============================================================
+   پنل کاربری روی موبایل و تبلت
+   ============================================================
+
+   پنل برای دسکتاپ چیده شده بود: ردیف‌های چندستونی که هر کدام
+   تاریخ، مبلغ و دکمه را کنار هم می‌گذارند. روی عرضِ گوشی همان
+   ردیف‌ها فشرده می‌شوند تا جایی که تاریخ به چهل‌وچهار پیکسل
+   می‌رسد و می‌شکند — و کارت به‌هم‌ریخته دیده می‌شود.
+
+   قاعده‌ی کلی این‌جا: ردیفی که سه چیز دارد، روی موبایل دو خط
+   می‌شود — نه اینکه هر سه را در یک خطِ تنگ بچپاند.
+   ============================================================ */
+
+@media (max-width: 700px) {
+  /* ---------- کارت سفارش ---------- */
+  .acc__order > footer {
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-3);
+  }
+  /* تاریخ خطِ خودش را می‌گیرد و دیگر نمی‌شکند */
+  .acc__date { flex: 1 0 100%; white-space: nowrap; }
+  .acc__order > footer .btn { margin-inline-start: auto; }
+
+  .acc__order > header { flex-wrap: wrap; gap: var(--sp-2); }
+
+  /* خطوط سفارش: عنوان و مبلغ زیر هم، نه کنار هم */
+  .acc__lines li {
+    flex-wrap: wrap;
+    gap: 2px var(--sp-2);
+    line-height: 1.9;
+  }
+  .acc__lines li .num { margin-inline-start: auto; }
+
+  /* ---------- آمار بالای پنل ---------- */
+  .acc__stats { grid-template-columns: repeat(2, 1fr); gap: var(--sp-4) var(--sp-3); }
+  .acc__who { gap: var(--sp-3); }
+  .acc__avatar { width: 44px; height: 44px; }
+
+  /* ---------- کارت‌ها ---------- */
+  .acc__hero, .acc__order, .acc__sub, .acc__tx, .acc__balance, .acc__side {
+    padding: var(--sp-4);
+    border-radius: var(--r-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  /* یک ستون: دو ستونِ آمار روی صفحه‌ی باریک، عددها را می‌شکند */
+  .acc__stats { grid-template-columns: 1fr 1fr; }
+  .acc__stats dd { font-size: var(--text-sm); }
+  .acc__order > footer .btn { width: 100%; margin-inline-start: 0; justify-content: center; }
+}
+
+/* توریِ پس‌زمینه چند پیکسل از قاب می‌زد بیرون */
+.acc__mesh { max-width: 100%; }
