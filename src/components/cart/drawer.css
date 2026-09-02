@@ -241,3 +241,110 @@
   .cdrawer__box, .cdrawer__scrim, .cdrawer__ok { animation: none; }
   .nav__cart-n { animation: none; }
 }
+
+
+/* ============================================================
+   پرداخت تک‌مرحله‌ای
+   ============================================================
+
+   سه صفحه‌ی جدا — تأیید هویت، بازبینی، پرداخت — شدند یک صفحه.
+   هیچ‌کدام آن‌قدر طولانی نبود که صفحه‌ی خودش را لازم داشته باشد، و
+   هر قدمِ اضافه در پرداخت فقط جا برای رها کردنِ سبد می‌سازد.
+   ============================================================ */
+
+.co__fields {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-4);
+}
+@media (max-width: 620px) { .co__fields { grid-template-columns: 1fr; } }
+
+.pdp-input em.co__err {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  font-style: normal;
+  color: #ef4444;
+}
+.pdp-input input[aria-invalid="true"] {
+  border-color: color-mix(in srgb, #ef4444 55%, transparent);
+}
+
+/* ---------- ساختنِ حساب، اختیاری ---------- */
+
+.co__opt {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: var(--sp-3);
+  margin-top: var(--sp-5);
+  padding: var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--wash);
+  cursor: pointer;
+}
+[data-theme="dark"] .co__opt {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.co__opt input { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--blue); }
+.co__opt b { display: block; font-size: var(--text-sm); }
+.co__opt em {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.8;
+  color: var(--ink-faint);
+}
+
+.co__pass { position: relative; margin-top: var(--sp-4); }
+.co__eye {
+  position: absolute;
+  inset-block-start: 2.1rem;
+  inset-inline-end: 12px;
+  display: grid; place-items: center;
+  width: 28px; height: 28px;
+  border: 0; border-radius: var(--r-md);
+  background: none; color: var(--ink-faint); cursor: pointer;
+}
+.co__eye:hover { color: var(--blue); }
+.co__eye svg { width: 16px; height: 16px; }
+
+/* ---------- بازبینی و درگاه، در همان صفحه ---------- */
+
+.co__review, .co__gatewrap {
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--line);
+}
+[data-theme="dark"] .co__review,
+[data-theme="dark"] .co__gatewrap { border-top-color: rgba(255, 255, 255, 0.09); }
+
+.co__review-h {
+  display: block;
+  margin-bottom: var(--sp-3);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  color: var(--ink-faint);
+}
+
+/* دکمه‌ی پرداخت، تمام‌عرض و آخرین چیزِ صفحه */
+.co__pay {
+  width: 100%;
+  justify-content: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-6);
+  height: 52px;
+  font-size: var(--text-base);
+}
+.co__pay svg { width: 16px; height: 16px; }
+
+.co__hint {
+  margin-top: var(--sp-3);
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  text-align: center;
+}
