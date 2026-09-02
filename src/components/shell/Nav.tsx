@@ -100,7 +100,7 @@ export function Nav() {
           <Link href="/track">پیگیری سفارش</Link>
           <Link href="/faq">سوالات متداول</Link>
           <span className="navtop__sep" aria-hidden="true" />
-          <Link href="/about" className="navtop__contact">تماس با ما</Link>
+          <Link href="/contact" className="navtop__contact">تماس با ما</Link>
         </div>
       </div>
 
@@ -145,7 +145,7 @@ export function Nav() {
           </Link>
 
           <Link href="/numbers">شماره مجازی</Link>
-          <Link href="/about">تماس با ما</Link>
+          <Link href="/contact">تماس با ما</Link>
 
           {mega && (
             <div className="nav__mega">
@@ -282,7 +282,8 @@ export function Nav() {
               <Link href="/reseller" onClick={() => setOpen(false)}>نمایندگی فروش</Link>
               <Link href="/track" onClick={() => setOpen(false)}>پیگیری سفارش</Link>
               <Link href="/faq" onClick={() => setOpen(false)}>سوالات متداول</Link>
-              <Link href="/about" onClick={() => setOpen(false)}>تماس با ما</Link>
+              <Link href="/about" onClick={() => setOpen(false)}>درباره‌ی ما</Link>
+              <Link href="/contact" onClick={() => setOpen(false)}>تماس با ما</Link>
             </nav>
           </div>
         </div>

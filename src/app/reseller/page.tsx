@@ -79,7 +79,7 @@ export default function ResellerPage() {
 
           <div className="club-cta">
             <Link href="/account" className="btn btn--primary">درخواست نمایندگی</Link>
-            <Link href="/about" className="btn btn--ghost">سوالی داری؟</Link>
+            <Link href="/contact" className="btn btn--ghost">سوالی داری؟</Link>
           </div>
 
           <p className="pguide__help">

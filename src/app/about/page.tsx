@@ -1,20 +1,18 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { LifeBuoy, MessageCircle, Send, ShieldCheck } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'درباره‌ی ما و تماس | فونیکس شاپ',
-  description:
-    'فونیکس شاپ چه می‌کند، چطور کار می‌کند، و از کجا می‌شود با پشتیبانی تماس گرفت.',
+  title: 'درباره‌ی ما | فونیکس شاپ',
+  description: 'فونیکس شاپ چه می‌کند و چطور کار می‌کند.',
 };
 
 /**
- * درباره‌ی ما و تماس.
+ * درباره‌ی ما.
  *
- * یک صفحه برای هر دو، عمداً. جدا کردنشان یعنی دو صفحه‌ی کوتاه که
- * هیچ‌کدام کامل نیست؛ کسی که «درباره‌ی ما» را باز می‌کند معمولاً
- * دنبال همان چیزی است که در «تماس با ما» هم هست — اینکه پشت این
- * سایت کسی هست یا نه.
+ * از «تماس با ما» جدا شد. اول یک صفحه بودند، ولی این دو قصدِ
+ * متفاوت‌اند: یکی می‌خواهد بداند ما کی هستیم، دیگری همین حالا
+ * مشکلی دارد و دنبال راهِ رسیدن به آدم است. کسی که مشکل دارد
+ * نباید اول سه پاراگرافِ معرفی را رد کند.
  *
  * ⚠ اطلاعات حقوقی — شماره‌ی ثبت، نشانی، نماد اعتماد الکترونیکی —
  * هنوز از کارفرما گرفته نشده. جای هرکدام مشخص است و همین که
@@ -69,42 +67,20 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ---------- تماس ---------- */}
-      <section className="section section--tint" id="contact">
-        <div className="wrap">
-          <div className="sec-head sec-head--mid">
-            <span className="sec-head__kicker">تماس</span>
-            <h2>از کجا به ما برسی</h2>
-            <p className="sec-head__lead">
-              همه‌ی روزهای هفته پاسخگوییم. برای پیگیری سفارش، تیکت سریع‌ترین راه است
-              چون شماره‌ی سفارش همان‌جا جلوی چشم ماست.
+      <section className="section section--tint">
+        <div className="wrap abt">
+          <article className="abt__block">
+            <h2>سوالی داری؟</h2>
+            <p>
+              راه‌های تماس، زمان جواب، و اینکه هر کدام به چه دردی می‌خورد، در
+              <Link href="/contact"> صفحه‌ی تماس با ما </Link>
+              نوشته شده.
             </p>
-          </div>
+          </article>
 
-          <div className="abt__ways">
-            <Link href="/account" className="abt__way">
-              <span className="abt__way-ico" aria-hidden="true"><LifeBuoy /></span>
-              <b>تیکت پشتیبانی</b>
-              <span>برای هر چیزی که به سفارش مشخصی مربوط است.</span>
-            </Link>
-
-            <a href="https://t.me/" target="_blank" rel="noopener noreferrer" className="abt__way">
-              <span className="abt__way-ico" aria-hidden="true"><Send /></span>
-              <b>تلگرام</b>
-              <span>برای سوال‌های سریع پیش از خرید.</span>
-            </a>
-
-            <Link href="/faq" className="abt__way">
-              <span className="abt__way-ico" aria-hidden="true"><MessageCircle /></span>
-              <b>سوالات متداول</b>
-              <span>جواب بیشتر سوال‌ها همین‌جا هست.</span>
-            </Link>
-
-            <Link href="/rules" className="abt__way">
-              <span className="abt__way-ico" aria-hidden="true"><ShieldCheck /></span>
-              <b>قوانین و گارانتی</b>
-              <span>شرایط مرجوعی، تعویض و پشتیبانی.</span>
-            </Link>
+          <div className="club-cta">
+            <Link href="/contact" className="btn btn--primary">تماس با ما</Link>
+            <Link href="/shop" className="btn btn--ghost">دیدن محصولات</Link>
           </div>
         </div>
       </section>

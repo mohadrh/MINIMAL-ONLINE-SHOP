@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { AlertCircle, Check, Eye, EyeOff, Lock, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../app/providers';
 import {
-  emailOk, passwordOk, phoneOk, saveAccount,
+  nameOk, passwordOk, phoneOk, saveAccount,
 } from '../../lib/account';
 import { newOrderCode, saveOrder, scheduleFulfilment, type Order } from '../../lib/orders';
 import { Loader } from '../ui/Loader';
@@ -47,7 +47,7 @@ export function CheckoutFlow() {
 
   const [step, setStep] = useState<Step>('form');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [makeAccount, setMakeAccount] = useState(true);
   const [showPass, setShowPass] = useState(false);
@@ -113,9 +113,9 @@ export function CheckoutFlow() {
   /* اعتبارسنجی از lib/account می‌آید تا الگوها در دو جا تکرار
      نشوند و از هم نیفتند. */
   const okPhone = phoneOk(phone);
-  const okEmail = emailOk(email);
-  const okPass = !makeAccount || passwordOk(password);
-  const canPay = okPhone && okEmail && okPass;
+  const okName = nameOk(name);
+  const okPass = passwordOk(password);
+  const canPay = okPhone && okName && okPass;
 
   if (count === 0 && step !== 'done') {
     return (
@@ -260,8 +260,8 @@ export function CheckoutFlow() {
             <section className="co__card">
               <h2>اطلاعات تحویل</h2>
               <p className="co__lead">
-                دو فیلد، و تمام. کد پیگیری به موبایلت پیامک می‌شود و اشتراک روی
-                همان ایمیلی فعال می‌شود که این‌جا می‌دهی.
+                دو فیلد، و تمام. کد پیگیری به موبایلت پیامک می‌شود؛ ایمیلی که
+                اشتراک روی آن فعال می‌شود را قبلاً در صفحه‌ی خودِ محصول داده‌ای.
               </p>
 
               <div className="co__fields">
@@ -283,17 +283,16 @@ export function CheckoutFlow() {
                 </label>
 
                 <label className="pdp-input">
-                  <span>ایمیل</span>
+                  <span>نام و نام خانوادگی</span>
                   <input
-                    type="email"
-                    autoComplete="email"
-                    dir="ltr"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    aria-invalid={email.length > 0 && !okEmail}
+                    type="text"
+                    autoComplete="name"
+                    placeholder="برای پشتیبانی و فاکتور"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    aria-invalid={name.length > 0 && !okName}
                   />
-                  {email && !okEmail && <em className="co__err">ایمیل کامل نیست.</em>}
+                  {name && !okName && <em className="co__err">نام را کامل بنویس.</em>}
                 </label>
               </div>
 
@@ -315,7 +314,10 @@ export function CheckoutFlow() {
                 />
                 <span>
                   <b>یک حساب برایم بساز</b>
-                  <em>تا سفارش‌ها و تحویل‌هایت یک‌جا باشد. با همین ایمیل وارد می‌شوی.</em>
+                  <em>
+                    تا سفارش‌ها و تحویل‌هایت یک‌جا باشد. با همین شماره‌ی موبایل
+                    وارد می‌شوی — یوزرنیم جدا لازم نیست.
+                  </em>
                 </span>
               </label>
 
@@ -393,8 +395,7 @@ export function CheckoutFlow() {
                 className="btn btn--primary co__pay"
                 disabled={!canPay}
                 onClick={() => {
-                  if (makeAccount) saveAccount({ email, phone, password });
-                  else saveAccount({ email, phone });
+                  saveAccount({ phone, name, password: makeAccount ? password : undefined });
                   setStep('gateway');
                 }}
               >
@@ -402,8 +403,8 @@ export function CheckoutFlow() {
                 پرداخت <span className="num">{fmt(subtotal)}</span> تومان
               </button>
 
-              {!canPay && (phone || email) && (
-                <p className="co__hint">برای ادامه، موبایل و ایمیل را کامل کن.</p>
+              {!canPay && (phone || name) && (
+                <p className="co__hint">برای ادامه، موبایل و نامت را کامل کن.</p>
               )}
             </section>
           )}

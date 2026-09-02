@@ -22,11 +22,29 @@
 const KEY = 'phoenix.account.v1';
 
 export interface Account {
-  /** شناسه‌ی ورود — ایمیل کاربر */
-  email: string;
-  /** برای کد پیگیری و پیامک تحویل */
+  /**
+   * شناسه‌ی حساب — شماره‌ی موبایل.
+   *
+   * یوزرنیمِ جدا عمداً نداریم. موبایل در ایران کلید یکتای طبیعی
+   * است: با پیامک تأیید می‌شود، تکراری نمی‌شود، و کاربر همیشه
+   * یادش هست. شناسه‌ی دوم یعنی دو ایندکس یکتا و یک سوال همیشگی —
+   * اگر کاربر یوزرنیمش را عوض کند، سفارش‌های قبلی به چه چیزی وصل
+   * می‌مانند؟ با یک کلید، این سوال اصلاً پیش نمی‌آید.
+   */
   phone: string;
-  /** فقط نشانه: کاربر هنگام ثبت‌نام رمز گذاشت یا مهمان ماند */
+  /** برای پشتیبانی و فاکتور — نه برای ورود */
+  name: string;
+  /**
+   * ایمیل اختیاری است و شناسه نیست.
+   *
+   * در این سایت ایمیل یک چیزِ *محصولی* است نه هویتی: اشتراک روی
+   * همان ایمیل فعال می‌شود و کاربر ممکن است برای هر سفارش ایمیل
+   * دیگری بدهد. همین حالا هم در requiredInputs هر محصول گرفته
+   * می‌شود. اگر شناسه‌ی حسابش می‌کردیم، کسی که برای سفارش بعدی
+   * ایمیل کاری‌اش را می‌دهد، حسابِ دومی می‌ساخت.
+   */
+  email?: string;
+  /** فقط نشانه: کاربر رمز گذاشت یا مهمان ماند */
   hasPassword: boolean;
   createdAt: string;
 }
@@ -52,11 +70,13 @@ export function getAccount(): Account | null {
  * فراخوانی بدون تغییر به سرور برود.
  */
 export function saveAccount(
-  { email, phone, password }: { email: string; phone: string; password?: string },
+  { phone, name, email, password }:
+  { phone: string; name: string; email?: string; password?: string },
 ): Account {
   const acc: Account = {
-    email: email.trim(),
     phone: phone.trim(),
+    name: name.trim(),
+    email: email?.trim() || undefined,
     hasPassword: Boolean(password && password.length > 0),
     createdAt: getAccount()?.createdAt ?? new Date().toISOString(),
   };
@@ -92,3 +112,9 @@ export const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.tri
 
 /** رمز اختیاری است، ولی اگر گذاشته شد باید حداقلی داشته باشد */
 export const passwordOk = (v: string) => v.length === 0 || v.length >= 6;
+
+/** نام — فقط اینکه خالی نباشد و یک حرف واقعی داشته باشد.
+
+    سخت‌گیری بیشتر روی نام، بیش از آنکه چیزی را درست کند، آدم‌هایی
+    را که نامشان در الگوی ما نمی‌گنجد بیرون می‌گذارد. */
+export const nameOk = (v: string) => v.trim().length >= 2;
