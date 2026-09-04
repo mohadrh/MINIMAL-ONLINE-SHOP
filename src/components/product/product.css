@@ -1742,3 +1742,39 @@
    همان‌جاست. */
 .shop__head .wrap:has(> .shop__rail),
 .wrap:has(> .shop__rail) { overflow-x: clip; }
+
+
+/* ---------- دکمه‌ی مقایسه با برچسب ----------
+
+   آیکونِ تنها را کاربر باید حدس بزند، و امکانی که حدس لازم داشته
+   باشد استفاده نمی‌شود. حالا کلمه هم هست، پس دکمه از دایره به
+   کپسول تبدیل می‌شود. */
+.bub--cmp {
+  width: auto;
+  gap: 5px;
+  padding-inline: 10px;
+  grid-auto-flow: column;
+  font-size: 10px;
+  font-weight: 700;
+}
+.bub--cmp span { white-space: nowrap; }
+.bub--cmp.is-on { color: var(--brand-ink); }
+[data-theme='dark'] .bub--cmp.is-on { color: var(--brand-ink); }
+
+/* در حالت انتخاب‌شده کهربایی می‌شود، نه بنفش — مقایسه یک کنشِ
+   نیمه‌اصلی است و باید از لینک‌های معمولی جدا دیده شود. */
+.bub--cmp.is-on {
+  border-color: color-mix(in srgb, var(--brand) 70%, transparent);
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--brand) 94%, transparent),
+    color-mix(in srgb, var(--brand-hover) 70%, transparent));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 0 14px -3px color-mix(in srgb, var(--brand) 70%, transparent);
+}
+
+/* روی کارتِ باریکِ موبایل فقط آیکون می‌ماند */
+@media (max-width: 480px) {
+  .bub--cmp span { display: none; }
+  .bub--cmp { width: 28px; padding-inline: 0; }
+}

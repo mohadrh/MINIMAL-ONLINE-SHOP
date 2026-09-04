@@ -404,3 +404,104 @@ a { color: inherit; text-decoration: none; }
   color: #e9ecf3;
 }
 [data-theme='dark'] option:disabled { color: #7f8697; }
+
+
+/* ============================================================
+   دکمه‌ی «شفق» — نسخه‌ی آزمایشی برای مقایسه
+   ============================================================
+
+   پس‌زمینه‌اش روشن است، مثل کاغذِ خودِ سایت. داخلش چند حبابِ
+   کوچکِ محو از رنگ‌های کمانِ ققنوس آرام می‌گردند.
+
+   نسخه‌ی اول یک گرادیانتِ مخروطیِ تمام‌رنگ بود که کلِ دکمه را
+   می‌پوشاند — رنگین‌کمانِ چرخان، نه شیشه. حالا رنگ‌ها فقط
+   لکه‌های کوچکی‌اند که از پشتِ شیشه‌ی مات دیده می‌شوند.
+
+   ⚠ فقط روی یک دکمه نشسته — «مشاهده‌ی محصول» در اسلایدر هیرو —
+   تا کنارِ کهربایی‌ها مقایسه شود. اگر پسندیده شد، همین‌ها به
+   .btn--primary منتقل می‌شوند؛ اگر نه، کل بلوک حذف می‌شود.
+
+   متن تیره می‌ماند: زمینه روشن است و متنِ تیره روی آن در تمام
+   لحظاتِ چرخش بالای هشت می‌ماند.
+   ============================================================ */
+
+.btn--aurora {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 40%, transparent);
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 8px 22px -16px rgba(15, 17, 32, 0.4);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .btn--aurora {
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    backdrop-filter: blur(14px) saturate(1.4);
+  }
+}
+[data-theme='dark'] .btn--aurora {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #f2f5fb;
+}
+
+/* حباب‌ها — سه لکه‌ی کوچک که روی مدارهای متفاوت می‌گردند.
+
+   محو شده‌اند تا لبه‌ی تیزی نداشته باشند و از پشتِ شیشه دیده
+   شوند، نه رویش. */
+.btn--aurora::before,
+.btn--aurora::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.btn--aurora::before {
+  width: 46px; height: 46px;
+  inset-block-start: -14px;
+  inset-inline-start: 12%;
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--brand) 85%, transparent) 0%, transparent 70%);
+  animation: bubble-a 7s ease-in-out infinite;
+}
+
+.btn--aurora::after {
+  width: 38px; height: 38px;
+  inset-block-end: -12px;
+  inset-inline-end: 18%;
+  background: radial-gradient(circle,
+    color-mix(in srgb, #c86bf0 80%, transparent) 0%, transparent 70%);
+  animation: bubble-b 9s ease-in-out infinite;
+}
+
+@keyframes bubble-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(-38px, 14px) scale(1.18); }
+  66%      { transform: translate(-16px, 4px) scale(0.9); }
+}
+@keyframes bubble-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%      { transform: translate(46px, -12px) scale(1.22); }
+  70%      { transform: translate(20px, -4px) scale(0.92); }
+}
+
+.btn--aurora:hover {
+  border-color: color-mix(in srgb, var(--brand) 70%, transparent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 28px -16px color-mix(in srgb, var(--brand) 80%, transparent);
+}
+.btn--aurora:hover::before { animation-duration: 3.5s; }
+.btn--aurora:hover::after { animation-duration: 4.5s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn--aurora::before,
+  .btn--aurora::after { animation: none; }
+}

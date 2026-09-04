@@ -153,7 +153,11 @@ export function Hero() {
                   ))}
                 </h2>
                 <p>{s.description}</p>
-                <Link href={s.href} className="btn btn--primary">
+                {/* ⚠ نسخه‌ی آزمایشیِ گرادیانتِ چرخان — فقط همین یک
+                    دکمه، تا کنارِ کهربایی‌های دیگر مقایسه شود.
+                    اگر پسندیده شد btn--aurora برداشته می‌شود و
+                    همان استایل به btn--primary می‌رود. */}
+                <Link href={s.href} className="btn btn--primary btn--aurora">
                   {s.ctaLabel}
                   <ArrowLeft aria-hidden="true" />
                 </Link>

@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check } from 'lucide-react';
-import { AI_MODELS, AI_COMPARE } from '../../data/aiModels';
+import { ArrowLeft, Check, Columns2 } from 'lucide-react';
+import { AI_MODELS } from '../../data/aiModels';
 import { getProductBySlug, getLowestPrice } from '../../data/catalog';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
@@ -118,37 +118,27 @@ export function AiPicker() {
           </div>
         </div>
 
-        {/* ---------- جدول مقایسه ---------- */}
+        {/* ---------- مقایسه‌ی سریع ----------
+
+            جدولِ ثابتِ قبلی این‌جا بود و سه ستون بیشتر نداشت —
+            یعنی فقط سه هوش مصنوعی را با هم می‌سنجید و بقیه‌ی
+            بیست‌وچند محصول اصلاً در آن نبودند. ابزارِ مقایسه‌ی
+            سایت هر چیزی را با هر چیزی می‌سنجد؛ این جدول فقط
+            نسخه‌ی ناقصِ آن بود.
+
+            حالا به‌جای جدول، خودِ ابزار معرفی می‌شود. */}
         <div className="aip__compare">
           <h3 className="aip__compare-title">مقایسه‌ی سریع</h3>
           <p className="aip__compare-lead">
-            سطری که به کارت می‌آید را پیدا کن، ستونش جواب توست.
+            روی هر محصولی که دیدی دکمه‌ی «مقایسه» هست. هر چند تا هوش مصنوعی یا
+            اکانتی که خواستی را انتخاب کن تا قیمت، پلن‌ها، زمان تحویل و گارانتی‌شان
+            را کنار هم ببینی — و همان‌جا بخری.
           </p>
 
-          <div className="aip__table-wrap">
-            <table className="aip__table">
-              <thead>
-                <tr>
-                  <th scope="col">ویژگی</th>
-                  {AI_MODELS.map((m) => (
-                    <th key={m.id} scope="col" style={{ ['--accent' as string]: m.accent }}>
-                      {m.name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {AI_COMPARE.map((row) => (
-                  <tr key={row.row}>
-                    <th scope="row">{row.row}</th>
-                    {AI_MODELS.map((m) => (
-                      <td key={m.id}>{row.values[m.id] ?? '—'}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Link href="/shop" className="btn btn--primary btn--sm aip__compare-cta">
+            <Columns2 aria-hidden="true" />
+            انتخاب برای مقایسه
+          </Link>
         </div>
       </div>
     </section>

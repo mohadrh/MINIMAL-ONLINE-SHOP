@@ -14,27 +14,27 @@ import { ProductArt } from '../ui/ProductArt';
  * باز می‌کرد نه جایی می‌رفت. یعنی کاربری که می‌خواست چیزی را پیدا
  * کند، تنها ابزارِ پیدا کردن را می‌زد و هیچ اتفاقی نمی‌افتاد.
  *
- * حالا یک نوارِ شیشه‌ایِ کشیده زیر منو باز می‌شود و همان‌جا نتیجه
- * می‌دهد: محصولات، و سرویس‌های شماره‌ی مجازی. نتیجه زیر خودِ نوار
- * می‌آید، نه در صفحه‌ی دیگری — کسی که دنبال «کلاد» می‌گردد،
- * نمی‌خواهد اول به صفحه‌ی نتایج برود بعد به محصول.
+ * ⚠ این کامپوننت فیلد ندارد — فقط نتیجه.
  *
- * سه رفتار که یک جست‌وجوی واقعی باید داشته باشد:
- *   Escape می‌بندد، کلیک بیرون می‌بندد، و فوکوس با باز شدن می‌رود
- *   داخل فیلد. بدون این سه، فیلد فقط یک جعبه است.
+ * خودِ بیضیِ نوبار با باز شدن به ورودی تبدیل می‌شود و متن آن‌جا
+ * تایپ می‌شود. دو نسخه‌ی قبلی هر کدام یک فیلدِ دوم می‌ساختند:
+ * یکی در سکشنِ تمام‌عرض، یکی در کشویی. هر بار کاربر که روی بیضی
+ * هاور کرده بود، ناگهان جعبه‌ی دیگری جلویش سبز می‌شد و نمی‌دانست
+ * در کدام بنویسد.
+ *
+ * حالا یک ورودی هست و یک فهرستِ نتیجه زیرش. همین.
  */
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 const MAX = 6;
 
-export function NavSearch({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [q, setQ] = useState('');
+export function NavSearch(
+  { open, q, onClose }: { open: boolean; q: string; onClose: () => void },
+) {
   const boxRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!open) return;
-    inputRef.current?.focus();
 
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     const onDown = (e: PointerEvent) => {
@@ -51,10 +51,6 @@ export function NavSearch({ open, onClose }: { open: boolean; onClose: () => voi
       window.clearTimeout(t);
     };
   }, [open, onClose]);
-
-  /* با بسته شدن، متن پاک می‌شود — باز کردنِ بعدی باید از صفر شروع
-     شود، نه از جست‌وجوی دیروز. */
-  useEffect(() => { if (!open) setQ(''); }, [open]);
 
   const hits = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -81,24 +77,10 @@ export function NavSearch({ open, onClose }: { open: boolean; onClose: () => voi
 
   return (
     <div className="navsearch" ref={boxRef}>
-      <div className="wrap">
-        <div className="navsearch__pill">
-          <Search aria-hidden="true" />
-          <input
-            ref={inputRef}
-            type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="دنبال چه می‌گردی؟ چت‌جی‌پی‌تی، کلاد، بتلفیلد، شماره‌ی تلگرام…"
-            aria-label="جست‌وجو در فونیکس شاپ"
-          />
-          <button type="button" onClick={onClose} aria-label="بستن جست‌وجو">
-            <X aria-hidden="true" />
-          </button>
-        </div>
-
-        {q.trim().length >= 2 && (
-          <div className="navsearch__out">
+      {q.trim().length < 2 ? (
+        <p className="navsearch__tip">دست‌کم دو حرف بنویس</p>
+      ) : (
+        <div className="navsearch__out">
             {empty && (
               <p className="navsearch__none">
                 چیزی با «{q.trim()}» پیدا نشد. شاید املای انگلیسی‌اش را امتحان کنی.
@@ -148,10 +130,9 @@ export function NavSearch({ open, onClose }: { open: boolean; onClose: () => voi
                   </Link>
                 ))}
               </>
-            )}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

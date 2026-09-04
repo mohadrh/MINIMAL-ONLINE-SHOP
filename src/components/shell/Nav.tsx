@@ -43,6 +43,8 @@ export function Nav() {
   const [assistOpen, setAssistOpen] = useState(false);
   const [mega, setMega] = useState(false);
   const [search, setSearch] = useState(false);
+  const [q, setQ] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
 
   /* مقصد پروازِ جت.
 
@@ -152,17 +154,33 @@ export function Nav() {
               کار می‌کند چون روی لمسی هاوری در کار نیست. خودِ بیضی
               هیچ‌وقت جمع نمی‌شود — عرضش ثابت است تا با باز و بسته
               شدنش ردیفِ دکمه‌ها جابه‌جا نشود. */}
-          <button
-            type="button"
-            aria-label="جست‌وجو"
-            aria-expanded={search}
-            className={`navpill ${search ? 'is-on' : ''}`}
-            onMouseEnter={() => { setSearch(true); setMega(false); }}
-            onClick={() => { setSearch((v) => !v); setMega(false); }}
+          <div
+            className="navpill-wrap"
+            onMouseEnter={() => { setSearch(true); setMega(false); searchRef.current?.focus(); }}
+            onMouseLeave={() => { if (!q.trim()) setSearch(false); }}
           >
-            <Search aria-hidden="true" />
-            <span>جست‌وجو در فونیکس شاپ</span>
-          </button>
+            {/* خودِ بیضی ورودی است — نه دکمه‌ای که ورودیِ دیگری
+                باز کند. با هاور فوکوس می‌گیرد و همان‌جا تایپ
+                می‌شود. */}
+            <label className={`navpill ${search ? 'is-on' : ''}`}>
+              <Search aria-hidden="true" />
+              <input
+                ref={searchRef}
+                type="search"
+                value={q}
+                onChange={(e) => { setQ(e.target.value); setSearch(true); }}
+                onFocus={() => { setSearch(true); setMega(false); }}
+                placeholder="جست‌وجو در فونیکس شاپ"
+                aria-label="جست‌وجو در فونیکس شاپ"
+              />
+            </label>
+
+            <NavSearch
+              open={search && q.trim().length > 0}
+              q={q}
+              onClose={() => { setSearch(false); setQ(''); }}
+            />
+          </div>
 
           {/* همیشه دکمه است، حتی وقتی تم هنوز معلوم نیست.
 
@@ -232,8 +250,6 @@ export function Nav() {
           </button>
         </div>
       </div>
-
-      <NavSearch open={search} onClose={() => setSearch(false)} />
 
       {assistOpen && <ShoppingAssistant onClose={() => setAssistOpen(false)} />}
 
