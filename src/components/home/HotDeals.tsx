@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Flame } from 'lucide-react';
-import { PRODUCTS, type CategorySlug } from '../../data/catalog';
+import { CATEGORIES, PRODUCTS, type CategorySlug } from '../../data/catalog';
 import { ProductCard } from '../product/ProductCard';
 
 /**
@@ -35,7 +35,14 @@ import { ProductCard } from '../product/ProductCard';
    می‌کند دنبال دسته نیست، دنبال تخفیف است. تفکیک هنوز هست — همان
    تب‌ها — ولی پیش‌فرض همه‌شان را نشان می‌دهد. */
 const LANES: { id: string; title: string; cats: CategorySlug[] }[] = [
-  { id: 'all',    title: 'همه',              cats: ['ai', 'creative', 'social', 'education', 'gaming'] },
+  /* ⚠ فهرستِ دستی نه — از خودِ دسته‌بندی‌ها.
+
+     این‌جا پنج دسته دستی نوشته شده بود، و روزی که گیفت کارت
+     اضافه شد ششمین دسته از قلم افتاد. امروز ضرری ندارد چون
+     هیچ گیفت کارتی تخفیف ندارد؛ ولی اولین تخفیفی که رویشان
+     بیاید، در تبِ «همه» دیده نمی‌شد و هیچ‌کس متوجه نمی‌شد.
+     حالا دسته‌ی تازه خودش داخل می‌شود. */
+  { id: 'all',    title: 'همه',              cats: CATEGORIES.map((c) => c.slug) },
   { id: 'gaming', title: 'گیم',              cats: ['gaming'] },
   { id: 'ai',     title: 'هوش مصنوعی',       cats: ['ai'] },
   { id: 'apps',   title: 'اکانت‌های دیگر',   cats: ['creative', 'social', 'education'] },
@@ -89,7 +96,7 @@ export function HotDeals() {
   const deals = useMemo(() => {
     const l = LANES.find((x) => x.id === active);
     if (!l) return [];
-    /* حداکثر هشت — بیشترش دیگر مرور نیست، خستگی است. بقیه در
+    /* حداکثر دوازده — بیشترش دیگر مرور نیست، خستگی است. بقیه در
        فروشگاه‌اند و لینکش همین بالاست. */
     return all.filter((d) => l.cats.includes(d.p.category)).slice(0, 12);
   }, [all, active]);
