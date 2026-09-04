@@ -149,27 +149,89 @@ a { color: inherit; text-decoration: none; }
               color var(--dur) var(--ease);
 }
 
+/* ---------- دکمه‌ها: شیشه‌ی پاستلی ----------
+
+   سه لایه، و هر سه لازم:
+     فیلمِ نیمه‌شفافِ رنگی، بلورِ پشت، و یک خطِ روشن در بالا که
+     لبه‌ی شیشه را می‌سازد. بدون لایه‌ی سوم، دکمه فقط یک مستطیلِ
+     کم‌رنگ است نه شیشه.
+
+   ⚠ متن روی کهربایی تیره است نه سفید، و این با اندازه‌گیری تصمیم
+   گرفته شد: سفید روی #ffa63d نسبت ۲٫۹ می‌دهد که مردود است، ولی
+   #14151b روی همان ۹٫۳۵ می‌دهد — و وقتی شیشه‌ای می‌شود و با کاغذ
+   ترکیب، به ۱۰ هم می‌رسد. اگر کهربایی را آن‌قدر تیره می‌کردیم که
+   سفید رویش بخواند، قهوه‌ای می‌شد. */
 .btn--primary {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: #fff;
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(160deg,
+      color-mix(in srgb, #fff 26%, var(--brand)) 0%,
+      var(--brand) 52%,
+      color-mix(in srgb, var(--brand-hover) 88%, transparent) 100%);
+  border-color: color-mix(in srgb, var(--brand-hover) 70%, transparent);
+  color: var(--brand-ink);
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -2px 6px -3px rgba(120, 60, 0, 0.22),
+    0 6px 18px -12px color-mix(in srgb, var(--brand) 90%, transparent);
 }
-.btn--primary:hover { background: var(--blue-hover); border-color: var(--blue-hover); }
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .btn--primary {
+    -webkit-backdrop-filter: blur(10px) saturate(1.35);
+    backdrop-filter: blur(10px) saturate(1.35);
+  }
+}
+.btn--primary:hover {
+  background:
+    linear-gradient(160deg,
+      color-mix(in srgb, #fff 18%, var(--brand)) 0%,
+      var(--brand-hover) 60%,
+      var(--brand-hover) 100%);
+  border-color: var(--brand-hover);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 10px 26px -14px color-mix(in srgb, var(--brand) 95%, transparent);
+}
+.btn--primary svg { color: inherit; }
 
+/* دکمه‌ی ثانویه هم شیشه است، ولی بنفشِ خیلی کم‌رنگ */
 .btn--ghost {
-  background: transparent;
-  border-color: var(--line);
-  color: var(--ink);
+  background: color-mix(in srgb, var(--blue) 7%, transparent);
+  border-color: color-mix(in srgb, var(--blue) 22%, transparent);
+  color: var(--blue-hover);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
-.btn--ghost:hover { border-color: var(--blue); color: var(--blue); }
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .btn--ghost {
+    -webkit-backdrop-filter: blur(8px) saturate(1.2);
+    backdrop-filter: blur(8px) saturate(1.2);
+  }
+}
+.btn--ghost:hover {
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+  border-color: color-mix(in srgb, var(--blue) 42%, transparent);
+  color: var(--blue-hover);
+}
+[data-theme='dark'] .btn--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--blue);
+}
+[data-theme='dark'] .btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: color-mix(in srgb, var(--blue) 55%, transparent);
+}
 
-/* روی نوار آبی، دکمه‌ی سفید */
+
+/* روی نوارِ رنگی، دکمه‌ی سفید */
 .section--blue .btn--primary {
   background: #fff;
   border-color: #fff;
   color: var(--blue-hover);
 }
-.section--blue .btn--primary:hover { background: #eaf0ff; border-color: #eaf0ff; }
+.section--blue .btn--primary:hover { background: #f2ecff; border-color: #f2ecff; }
 
 /* ۱۰ پیکسل padding با متن ۱۳ پیکسلی می‌شد ۳۴ — زیر حداقلِ لمسی.
    ۱۲ می‌شود ۳۸ و ظاهرش هم عوض نمی‌شود. */
@@ -276,6 +338,16 @@ a { color: inherit; text-decoration: none; }
   scroll-padding-inline: var(--gutter);
 }
 .rail::-webkit-scrollbar { display: none; }
+
+/* ریل با مارجینِ منفی از ظرف می‌زند بیرون تا لبه‌به‌لبه بلغزد.
+   این عمدی است، ولی ظرفش باید افقی ببُردش وگرنه کلِ صفحه اسکرول
+   افقی می‌گیرد — روی صفحه‌ی محصول همین اتفاق افتاده بود و کارت‌های
+   «مطالب مرتبط» صفحه را نُه پیکسل جابه‌جا می‌کردند.
+
+   clip است نه hidden: hidden یک ظرفِ اسکرول می‌سازد و هر چیزِ
+   sticky داخلش را می‌شکند. */
+.wrap:has(> .rail),
+.section:has(.rail) > .wrap { overflow-x: clip; }
 .rail > * { flex: 0 0 82%; scroll-snap-align: center; }
 
 @media (min-width: 768px) {

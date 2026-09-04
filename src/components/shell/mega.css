@@ -50,7 +50,7 @@
   inset-block-start: calc(100% + 14px);
   inset-inline-start: 0;
   z-index: 70;
-  width: min(66rem, calc(100vw - var(--sp-8)));
+  width: min(58rem, calc(100vw - var(--sp-8)));
   animation: mega-in 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes mega-in {
@@ -77,8 +77,9 @@
    می‌ماند و عوض شدن دسته، ارتفاع را نمی‌پراند. */
 .mega {
   display: grid;
-  grid-template-columns: 14rem 1fr 16rem;
-  max-height: min(34rem, calc(100vh - 8rem));
+  /* یک ستون: نوارِ دسته‌ها بالا، محصولات پایین. */
+  grid-template-columns: 1fr;
+  max-height: min(32rem, calc(100vh - 8rem));
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--r-xl);
@@ -118,40 +119,42 @@
 }
 /* دو ردیفِ آخر با یک خط از دسته‌ها جدا می‌شوند — بی‌آنکه سرتیترِ
    جداگانه‌ای بگیرند که پایینِ ستون نصفه بماند. */
-/* فاصله‌ی جداکننده عمداً کم است: با ۱۶+۱۶ پیکسل، دو ردیفِ آخر از
-   سقفِ پنل می‌زدند بیرون. */
+/* شماره‌ی مجازی دسته‌ی کاتالوگ نیست — با یک خطِ عمودی جدا می‌شود */
 .mega__cat--sep {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
-  border-radius: 0 0 var(--r-md) var(--r-md);
+  margin-inline-start: var(--sp-2);
+  padding-inline-start: var(--sp-4);
+  border-inline-start: 1px solid var(--line);
+  border-radius: 0;
 }
-[data-theme="dark"] .mega__cat--sep { border-top-color: rgba(255, 255, 255, 0.08); }
-.mega__cat--sep + .mega__cat { margin-top: 0; padding-top: 9px; border-top: 0; }
+[data-theme="dark"] .mega__cat--sep { border-inline-start-color: rgba(255, 255, 255, 0.1); }
 
 /* ---------- ستون یک: دسته‌ها ---------- */
 
+/* نوارِ افقیِ دسته‌ها.
+
+   با انگشت هم می‌شود کشیدش، ولی روی دسکتاپ هر شش‌تا جا می‌شوند.
+   نوار خودش نمی‌لغزد مگر لازم شود. */
 .mega__cats {
-  display: grid;
-  align-content: start;
-  gap: 2px;
-  padding: var(--sp-4) var(--sp-3);
-  overflow-y: auto;
-  border-inline-end: 1px solid var(--line);
+  display: flex;
+  gap: 4px;
+  padding: var(--sp-3);
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-block-end: 1px solid var(--line);
   background: var(--wash);
 }
+.mega__cats::-webkit-scrollbar { display: none; }
 [data-theme="dark"] .mega__cats {
   background: rgba(255, 255, 255, 0.025);
-  border-inline-end-color: rgba(255, 255, 255, 0.08);
+  border-block-end-color: rgba(255, 255, 255, 0.08);
 }
 
 .mega__cat {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  gap: var(--sp-3);
-  width: 100%;
-  padding: 9px 11px;
+  gap: var(--sp-2);
+  flex: 0 0 auto;
+  padding: 8px 13px;
   border: 0;
   border-radius: var(--r-md);
   background: none;
@@ -161,12 +164,8 @@
   cursor: pointer;
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
-.mega__cat > svg {
-  width: 14px; height: 14px;
-  opacity: 0;
-  translate: 4px 0;
-  transition: opacity var(--dur) var(--ease), translate var(--dur) var(--ease);
-}
+/* فلشِ ستونیِ قبلی در نوارِ افقی معنا ندارد */
+.mega__cat > svg { display: none; }
 .mega__cat:hover { background: color-mix(in srgb, var(--blue) 7%, transparent); }
 .mega__cat.is-on {
   background: var(--paper);
@@ -178,19 +177,20 @@
 
 /* آیکون بدون کادر — همان قاعده‌ی همیشگی سایت */
 .mega__cat-ico { display: grid; place-items: center; color: var(--blue); }
-.mega__cat-ico svg { width: 20px; height: 20px; }
+.mega__cat-ico svg { width: 18px; height: 18px; }
 
-.mega__cat-txt b { display: block; font-size: var(--text-sm); font-weight: 600; line-height: 1.6; }
-.mega__cat-txt small { font-size: 11px; color: var(--ink-faint); }
+.mega__cat-txt { display: flex; align-items: baseline; gap: 5px; white-space: nowrap; }
+.mega__cat-txt b { font-size: var(--text-sm); font-weight: 600; }
+.mega__cat-txt small { font-size: 10px; color: var(--ink-faint); }
 
 /* ---------- ستون دو: شش محصول ---------- */
 
 .mega__body {
   display: grid;
-  grid-template-rows: auto auto auto auto;
   align-content: start;
   padding: var(--sp-5) var(--sp-6);
-  overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .mega__head {
@@ -208,11 +208,13 @@
    منوی یک فروشگاه، تصویر همان چیزی است که انتخاب را ممکن می‌کند —
    کسی «کال آو دیوتی» را از روی اسم تشخیص نمی‌دهد، از روی جلدش
    می‌دهد. */
+/* سه ستون حالا که کلِ عرضِ پنل آزاد شده */
 .mega__grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--sp-3);
 }
+@media (max-width: 1180px) { .mega__grid { grid-template-columns: repeat(2, 1fr); } }
 
 /* عرضِ ستونِ تصویر با clamp می‌آید نه با عدد ثابت: در پنلِ باریک‌تر
    خودش کوچک می‌شود و متن جا می‌ماند، به‌جای اینکه نام محصول به سه
@@ -412,9 +414,7 @@
    با هاور کار می‌کند و روی لمسی هاوری در کار نیست، پس در آن
    اندازه‌ها اصلاً ابزار درستی نیست. */
 @media (max-width: 1260px) {
-  .nav__mega { width: min(44rem, calc(100vw - var(--sp-8))); }
-  .mega { grid-template-columns: 13rem 1fr; }
-  .mega__peek { display: none; }
+  .nav__mega { width: min(46rem, calc(100vw - var(--sp-8))); }
 }
 
 @media (max-width: 1020px) {

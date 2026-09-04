@@ -28,6 +28,7 @@
 @import '../components/shell/mega.css' layer(components);
 @import '../components/shell/navmobile.css' layer(components);
 @import '../components/shell/navsearch.css' layer(components);
+@import '../components/shell/promo.css' layer(components);
 @import '../components/shell/footer.css' layer(components);
 @import '../components/home/home.css' layer(components);
 @import '../components/product/product.css' layer(components);

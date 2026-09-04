@@ -41,7 +41,6 @@ const fmt = (n: number) => n.toLocaleString('fa-IR');
 
 export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
   const [active, setActive] = useState<CategorySlug>(CATEGORIES[0].slug as CategorySlug);
-  const [peek, setPeek] = useState<string | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onNavigate?.(); };
@@ -75,18 +74,17 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
     [all, shown],
   );
 
-  /* محصولی که ستون سوم نشان می‌دهد: آن‌که زیر نشانگر است، وگرنه
-     اولی — تا ستون سوم هیچ‌وقت خالی نماند. */
-  const detail = shown.find((p) => p.slug === peek) ?? shown[0];
-
-  const pickCat = (slug: CategorySlug) => { setActive(slug); setPeek(null); };
+  const pickCat = (slug: CategorySlug) => setActive(slug);
 
   return (
     <div className="mega" role="menu" aria-label="محصولات">
-      {/* ---------- ستون یک: دسته‌ها ---------- */}
-      <div className="mega__cats" role="tablist" aria-orientation="vertical">
-        <span className="mega__label">دسته‌بندی</span>
+      {/* ---------- ردیف بالا: دسته‌ها ----------
 
+          از ستونِ کناری به نوارِ بالا آمدند. ستونِ عمودی یک‌سومِ
+          عرضِ پنل را می‌گرفت تا شش ردیفِ کوتاه را نشان بدهد؛ در
+          نوارِ افقی همان شش‌تا یک ردیف می‌شوند و کلِ عرض برای
+          محصولات آزاد می‌ماند. */}
+      <div className="mega__cats" role="tablist" aria-orientation="horizontal">
         {CATEGORIES.map((c) => {
           const n = PRODUCTS.filter((p) => p.category === c.slug).length;
           const on = active === c.slug;
@@ -113,9 +111,6 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
 
-        {/* برچسبِ «جای دیگر» برداشته شد: پایینِ ستون بود و اغلب
-            نصفه می‌ماند، و برای دو ردیفِ آخر هم چیزی روشن نمی‌کرد
-            که از خودشان معلوم نباشد. */}
         <Link href="/numbers" className="mega__cat mega__cat--sep" onClick={onNavigate}>
           <span className="mega__cat-ico" aria-hidden="true"><Glyph name="number" /></span>
           <span className="mega__cat-txt">
@@ -125,14 +120,6 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
           <ChevronLeft aria-hidden="true" />
         </Link>
 
-        <Link href="/shop" className="mega__cat" onClick={onNavigate}>
-          <span className="mega__cat-ico" aria-hidden="true"><Glyph name="spark" /></span>
-          <span className="mega__cat-txt">
-            <b>همه‌ی محصولات</b>
-            <small>{fmt(PRODUCTS.length)} مورد</small>
-          </span>
-          <ChevronLeft aria-hidden="true" />
-        </Link>
       </div>
 
       {/* ---------- ستون دو: شش محصول ---------- */}
@@ -152,10 +139,8 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
             <Link
               key={p.slug}
               href={`/product/${p.slug}`}
-              className={`mega__box ${detail?.slug === p.slug ? 'is-on' : ''}`}
+              className="mega__box"
               style={{ ['--accent' as string]: p.media.accent }}
-              onMouseEnter={() => setPeek(p.slug)}
-              onFocus={() => setPeek(p.slug)}
               onClick={onNavigate}
             >
               <ProductArt
@@ -218,61 +203,6 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
         </Link>
       </div>
 
-      {/* ---------- ستون سه: جزئیات ---------- */}
-      {detail && (
-        <div className="mega__peek" style={{ ['--accent' as string]: detail.media.accent }}>
-          <ProductArt
-            className="mega__peek-art"
-            src={detail.media.thumbnail}
-            title={detail.englishTitle}
-            brand={detail.brand}
-          />
-
-          <b className="mega__peek-name">{detail.title}</b>
-          <p className="mega__peek-note">{detail.shortDescription}</p>
-
-          {/* پلن‌ها با قیمتشان — همان چیزی که کاربر برای مقایسه لازم
-              دارد و تا حالا باید صفحه را باز می‌کرد تا ببیند. */}
-          <div className="mega__peek-plans">
-            <span className="mega__peek-plans-head">
-              <Layers aria-hidden="true" />
-              {fmt(detail.variants.length)} پلن
-            </span>
-            <ul>
-              {detail.variants.slice(0, 3).map((v) => (
-                <li key={v.id}>
-                  <span>{v.label}</span>
-                  <b className="num">{fmt(v.price)}</b>
-                </li>
-              ))}
-              {detail.variants.length > 3 && (
-                <li className="mega__peek-rest">
-                  و {fmt(detail.variants.length - 3)} پلن دیگر
-                </li>
-              )}
-            </ul>
-          </div>
-
-          <div className="mega__peek-cta">
-            <Link
-              href={`/product/${detail.slug}`}
-              className="btn btn--primary btn--sm"
-              onClick={onNavigate}
-            >
-              <ShoppingBag aria-hidden="true" />
-              خرید
-            </Link>
-            <Link
-              href={`/product/${detail.slug}#about`}
-              className="btn btn--ghost btn--sm"
-              onClick={onNavigate}
-            >
-              <Info aria-hidden="true" />
-              اطلاعات بیشتر
-            </Link>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

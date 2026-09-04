@@ -162,3 +162,61 @@
 }
 
 @media (prefers-reduced-motion: reduce) { .navsearch { animation: none; } }
+
+
+/* ============================================================
+   بیضیِ جست‌وجو در نوبار
+   ============================================================
+
+   جای دکمه‌ی ذره‌بین را گرفت. ذره‌بینِ تنها یک آیکون است که باید
+   حدس بزنی چه می‌کند؛ بیضی خودش می‌گوید جست‌وجوست و هدفِ کلیکِ
+   بزرگ‌تری هم دارد.
+
+   عرضش ثابت است و با باز و بسته شدن عوض نمی‌شود، وگرنه هر بار
+   ردیفِ دکمه‌های کنارش جابه‌جا می‌شد.
+   ============================================================ */
+
+.navpill {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: clamp(9rem, 16vw, 15rem);
+  height: 38px;
+  padding-inline: var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: var(--wash);
+  color: var(--ink-faint);
+  font: inherit;
+  font-size: var(--text-xs);
+  text-align: start;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease),
+              color var(--dur) var(--ease);
+}
+[data-theme="dark"] .navpill {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.navpill svg { width: 15px; height: 15px; flex-shrink: 0; }
+.navpill span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.navpill:hover,
+.navpill.is-on {
+  border-color: color-mix(in srgb, var(--blue) 45%, transparent);
+  background: color-mix(in srgb, var(--blue) 7%, var(--paper));
+  color: var(--blue-hover);
+}
+[data-theme="dark"] .navpill:hover,
+[data-theme="dark"] .navpill.is-on {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--blue);
+}
+
+/* زیر ۱۰۲۰ پیکسل، بیضی جا نمی‌شود — همان‌جا که مگامنو هم می‌رود.
+   روی موبایل جست‌وجو از منوی کشویی باز می‌شود. */
+@media (max-width: 1020px) { .navpill { display: none; } }

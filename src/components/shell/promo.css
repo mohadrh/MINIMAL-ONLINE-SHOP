@@ -1,0 +1,169 @@
+/* ============================================================
+   نوار تبلیغاتی بالای نوبار
+   ============================================================
+
+   جای نوارِ لینک‌های کاربری را گرفت. یک نوارِ باریکِ همیشه‌حاضر
+   جای گران‌قیمتی است و نباید صرفِ لینک‌هایی شود که کسی روزی یک بار
+   هم نمی‌زندشان.
+
+   حرکتش عمداً کند است: درخششی که هر هشت ثانیه یک بار از راست به
+   چپ رد می‌شود — همان جهتی که چشم در متن فارسی می‌رود. نوارِ
+   باریکی که تند سوسو بزند، خواندنِ بقیه‌ی صفحه را سخت می‌کند.
+   ============================================================ */
+
+.promo {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(100deg,
+      color-mix(in srgb, var(--brand) 18%, transparent) 0%,
+      color-mix(in srgb, var(--blue) 16%, transparent) 55%,
+      color-mix(in srgb, var(--brand) 14%, transparent) 100%),
+    var(--paper);
+  border-bottom: 1px solid color-mix(in srgb, var(--brand) 22%, var(--line));
+}
+[data-theme="dark"] .promo {
+  background:
+    linear-gradient(100deg,
+      color-mix(in srgb, var(--brand) 20%, transparent) 0%,
+      color-mix(in srgb, var(--blue) 22%, transparent) 55%,
+      color-mix(in srgb, var(--brand) 16%, transparent) 100%),
+    #12141b;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+/* درخشش — یک نوارِ روشنِ باریک که آرام رد می‌شود */
+.promo__sheen {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: -40%;
+  width: 40%;
+  background: linear-gradient(100deg,
+    transparent, rgba(255, 255, 255, 0.5) 50%, transparent);
+  animation: promo-sheen 8s ease-in-out infinite;
+  pointer-events: none;
+}
+[data-theme="dark"] .promo__sheen {
+  background: linear-gradient(100deg,
+    transparent, rgba(255, 255, 255, 0.09) 50%, transparent);
+}
+@keyframes promo-sheen {
+  0%, 55% { transform: translateX(0); }
+  100%    { transform: translateX(-350%); }
+}
+
+.promo__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+}
+
+/* key روی لینک عوض می‌شود، پس با هر پیام از نو mount و انیمیت
+   می‌شود — بدون هیچ منطقی در جاوااسکریپت. */
+.promo__link {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  color: var(--ink);
+  text-align: center;
+  animation: promo-in 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+[data-theme="dark"] .promo__link { color: #e9ecf3; }
+@keyframes promo-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.promo__link b { font-weight: 800; }
+.promo__link span { color: var(--ink-faint); }
+.promo__link svg {
+  width: 13px; height: 13px;
+  color: var(--brand-hover);
+  transition: translate var(--dur) var(--ease);
+}
+[data-theme="dark"] .promo__link svg { color: var(--brand); }
+.promo__link:hover svg { translate: -3px 0; }
+
+/* روی موبایل فقط جمله‌ی اصلی می‌ماند — دو جمله در ۳۸ پیکسل
+   ارتفاع، هر دو را ناخوانا می‌کند. */
+@media (max-width: 620px) {
+  .promo__link span { display: none; }
+  .promo__row { min-height: 34px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo__sheen { animation: none; opacity: 0; }
+  .promo__link { animation: none; }
+}
+
+/* ============================================================
+   آیکون چت آنلاین — که حالا دستیار خرید هم هست
+   ============================================================
+
+   دو دکمه‌ی جدا بودند و هر دو یک کار می‌کردند: کمک به کاربری که
+   نمی‌داند چه بخرد یا مشکلی دارد. کاربر فرقشان را نمی‌دانست و
+   نتیجه‌اش این بود که هیچ‌کدام را نمی‌زد.
+
+   جرقه‌ها از دکمه‌ی قبلیِ دستیار آمده‌اند: چهار ستاره‌ی clip-path
+   که با تأخیر پله‌ای باز می‌شوند. همه aria-hidden، چون تزئینی‌اند.
+   ============================================================ */
+
+.nav__chat {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px; height: 38px;
+  border: 1px solid color-mix(in srgb, var(--brand) 30%, transparent);
+  border-radius: var(--r-full);
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  color: var(--brand-hover);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease),
+              translate var(--dur) var(--ease);
+}
+[data-theme="dark"] .nav__chat {
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  color: var(--brand);
+}
+.nav__chat svg { width: 18px; height: 18px; }
+
+.nav__chat:hover {
+  translate: 0 -1px;
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 55%, transparent);
+}
+
+/* نقطه‌ی سبزِ «آنلاین» */
+.nav__chat-dot {
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-end: 2px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 2px var(--paper);
+}
+[data-theme="dark"] .nav__chat-dot { box-shadow: 0 0 0 2px #0f1116; }
+
+/* جرقه‌ها — فقط روی هاور */
+.nav__chat-spark {
+  position: absolute;
+  width: 11px; height: 11px;
+  background: var(--brand);
+  clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+  scale: 0;
+  pointer-events: none;
+  transition: scale 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: calc(var(--i) * 60ms);
+}
+.nav__chat-spark--sm { width: 8px; height: 8px; }
+.nav__chat:hover .nav__chat-spark { scale: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav__chat:hover { translate: none; }
+  .nav__chat-spark { transition: none; }
+}

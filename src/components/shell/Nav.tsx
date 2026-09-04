@@ -2,11 +2,12 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Menu, Moon, Search, ShoppingBag, Sun, X } from 'lucide-react';
+import { ChevronDown, Menu, MessageCircle, Moon, Search, ShoppingBag, Sun, X } from 'lucide-react';
 import { AccountMenu } from './AccountMenu';
 import { ShoppingAssistant } from './ShoppingAssistant';
 import { MegaMenu } from './MegaMenu';
 import { NavSearch } from './NavSearch';
+import { PromoBar } from './PromoBar';
 import { CATEGORIES } from '../../data/catalog';
 import { Glyph, type GlyphName } from '../ui/Glyph';
 import { asset } from '../../lib/asset';
@@ -91,18 +92,7 @@ export function Nav() {
 
   return (
     <header className="nav">
-      {/* ---------- ردیف بالا ---------- */}
-      <div className="navtop">
-        <div className="wrap navtop__row">
-          <Link href="/guide">راهنمای خرید</Link>
-          <Link href="/blog">مقالات و آموزش</Link>
-          <Link href="/club">باشگاه مشتریان</Link>
-          <Link href="/track">پیگیری سفارش</Link>
-          <Link href="/faq">سوالات متداول</Link>
-          <span className="navtop__sep" aria-hidden="true" />
-          <Link href="/contact" className="navtop__contact">تماس با ما</Link>
-        </div>
-      </div>
+      <PromoBar />
 
       <div className="wrap nav__inner">
         <Link href="/" className="nav__brand">
@@ -145,7 +135,8 @@ export function Nav() {
           </Link>
 
           <Link href="/numbers">شماره مجازی</Link>
-          <Link href="/contact">تماس با ما</Link>
+          <Link href="/blog">آموزش و مقاله</Link>
+          <Link href="/club">باشگاه مشتریان</Link>
 
           {mega && (
             <div className="nav__mega">
@@ -155,17 +146,22 @@ export function Nav() {
         </nav>
 
         <div className="nav__actions">
-          {/* تا امروز این دکمه هیچ onClick نداشت — کاربری که دنبال
-              چیزی می‌گشت، تنها ابزارِ پیدا کردن را می‌زد و هیچ
-              اتفاقی نمی‌افتاد. */}
+          {/* بیضیِ جست‌وجو — بین گزینه‌های منو و آیکون‌ها.
+
+              با هاور باز می‌شود و پنلِ نتیجه زیرش می‌آید؛ کلیک هم
+              کار می‌کند چون روی لمسی هاوری در کار نیست. خودِ بیضی
+              هیچ‌وقت جمع نمی‌شود — عرضش ثابت است تا با باز و بسته
+              شدنش ردیفِ دکمه‌ها جابه‌جا نشود. */}
           <button
             type="button"
             aria-label="جست‌وجو"
             aria-expanded={search}
-            className={`nav__icon ${search ? 'is-on' : ''}`}
+            className={`navpill ${search ? 'is-on' : ''}`}
+            onMouseEnter={() => { setSearch(true); setMega(false); }}
             onClick={() => { setSearch((v) => !v); setMega(false); }}
           >
-            {search ? <X /> : <Search />}
+            <Search aria-hidden="true" />
+            <span>جست‌وجو در فونیکس شاپ</span>
           </button>
 
           {/* همیشه دکمه است، حتی وقتی تم هنوز معلوم نیست.
@@ -202,24 +198,27 @@ export function Nav() {
             {count > 0 && <span className="nav__cart-n num">{count.toLocaleString('fa-IR')}</span>}
           </a>
 
-          {/* دکمه‌ی اصلی نوبار — دستیار خرید.
+          {/* چت آنلاین، که حالا همان دستیار خرید هم هست.
 
-              افکت جرقه‌ها از نمونه: چهار ستاره‌ی clip-path که از
-              scale(0) با تأخیر پله‌ای باز می‌شوند. همه aria-hidden
-              چون تزئینی‌اند و صفحه‌خوان نباید بخواندشان. */}
+              دو دکمه‌ی جدا بودند و هر دو یک کار می‌کردند: کمک به
+              کاربری که نمی‌داند چه بخرد یا مشکلی دارد. کاربر
+              نمی‌داند فرقشان چیست و همین باعث می‌شود هیچ‌کدام را
+              نزند. حالا یکی است و افکتِ جرقه‌ی دستیار روی همین
+              نشسته. */}
           <button
             type="button"
-            className="assistbtn"
+            className="nav__chat"
             onClick={() => setAssistOpen(true)}
             aria-haspopup="dialog"
             aria-expanded={assistOpen}
+            aria-label="چت آنلاین و دستیار خرید"
           >
-            <span className="assistbtn__spark" style={{ ['--i' as string]: 0, top: '-9px', insetInlineStart: '14%' }} aria-hidden="true" />
-            <span className="assistbtn__spark" style={{ ['--i' as string]: 1, top: '-12px', insetInlineEnd: '22%' }} aria-hidden="true" />
-            <span className="assistbtn__spark assistbtn__spark--sm" style={{ ['--i' as string]: 2, bottom: '-9px', insetInlineEnd: '10%' }} aria-hidden="true" />
-            <span className="assistbtn__spark assistbtn__spark--sm" style={{ ['--i' as string]: 3, bottom: '-11px', insetInlineStart: '28%' }} aria-hidden="true" />
-            <em className="assistbtn__glyph" aria-hidden="true">✦</em>
-            دستیار خرید
+            <span className="nav__chat-spark" style={{ ['--i' as string]: 0, top: '-7px', insetInlineStart: '10%' }} aria-hidden="true" />
+            <span className="nav__chat-spark" style={{ ['--i' as string]: 1, top: '-9px', insetInlineEnd: '16%' }} aria-hidden="true" />
+            <span className="nav__chat-spark nav__chat-spark--sm" style={{ ['--i' as string]: 2, bottom: '-7px', insetInlineEnd: '8%' }} aria-hidden="true" />
+            <span className="nav__chat-spark nav__chat-spark--sm" style={{ ['--i' as string]: 3, bottom: '-8px', insetInlineStart: '22%' }} aria-hidden="true" />
+            <MessageCircle aria-hidden="true" />
+            <span className="nav__chat-dot" aria-hidden="true" />
           </button>
 
           <button
