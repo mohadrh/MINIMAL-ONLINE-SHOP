@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Menu, MessageCircle, Moon, Search, ShoppingBag, Sun, X } from 'lucide-react';
+import { ChevronDown, Menu, Moon, Search, ShoppingBag, Sun, X } from 'lucide-react';
 import { AccountMenu } from './AccountMenu';
 import { MegaMenu } from './MegaMenu';
 import { NavSearch } from './NavSearch';
@@ -33,7 +33,7 @@ import { useCart, useFlight } from '../../app/providers';
 /* آیکون هر دسته در منوی موبایل — همان‌هایی که مگامنو دارد */
 const MOBILE_ICONS: Record<string, GlyphName> = {
   ai: 'ai', creative: 'creative', social: 'social',
-  education: 'education', gaming: 'gaming',
+  education: 'education', gaming: 'gaming', giftcard: 'gift',
 };
 
 export function Nav() {
@@ -214,27 +214,12 @@ export function Nav() {
             {count > 0 && <span className="nav__cart-n num">{count.toLocaleString('fa-IR')}</span>}
           </a>
 
-          {/* چت آنلاین، که حالا همان دستیار خرید هم هست.
+          {/* ⚠ این‌جا عمداً دکمه‌ی چت نیست.
 
-              دو دکمه‌ی جدا بودند و هر دو یک کار می‌کردند: کمک به
-              کاربری که نمی‌داند چه بخرد یا مشکلی دارد. کاربر
-              نمی‌داند فرقشان چیست و همین باعث می‌شود هیچ‌کدام را
-              نزند. حالا یکی است و افکتِ جرقه‌ی دستیار روی همین
-              نشسته. */}
-          <button
-            type="button"
-            className="nav__chat"
-            onClick={() => window.dispatchEvent(new CustomEvent('phoenix:chat-open'))}
-            aria-haspopup="dialog"
-            aria-label="چت آنلاین و دستیار خرید"
-          >
-            <span className="nav__chat-spark" style={{ ['--i' as string]: 0, top: '-7px', insetInlineStart: '10%' }} aria-hidden="true" />
-            <span className="nav__chat-spark" style={{ ['--i' as string]: 1, top: '-9px', insetInlineEnd: '16%' }} aria-hidden="true" />
-            <span className="nav__chat-spark nav__chat-spark--sm" style={{ ['--i' as string]: 2, bottom: '-7px', insetInlineEnd: '8%' }} aria-hidden="true" />
-            <span className="nav__chat-spark nav__chat-spark--sm" style={{ ['--i' as string]: 3, bottom: '-8px', insetInlineStart: '22%' }} aria-hidden="true" />
-            <MessageCircle aria-hidden="true" />
-            <span className="nav__chat-dot" aria-hidden="true" />
-          </button>
+              چت آنلاین دکمه‌ی شناورِ خودش را کنار صفحه دارد و
+              همیشه در دسترس است. دکمه‌ی دومی در نوبار فقط همان
+              اشتباهِ قبلی را تکرار می‌کرد: دو ورودی به یک چیز، و
+              کاربری که نمی‌داند فرقشان چیست. */}
 
           <button
             type="button"

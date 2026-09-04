@@ -139,6 +139,69 @@ const MARKS: Record<string, (p: P) => React.ReactElement> = {
     </>, className,
   ),
 
+
+  /* دسته‌ی بازی — پلی‌استیشن */
+  playstation: ({ className }) => box(
+    <>
+      <rect x="2.6" y="7.4" width="18.8" height="9.2" rx="4.6" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M6.6 10.6v3.2M5 12.2h3.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="16.4" cy="10.9" r="1.05" fill="currentColor" />
+      <circle cx="18.4" cy="13.3" r="1.05" fill="currentColor" />
+    </>, className,
+  ),
+
+  /* ایکس‌باکس — دو کمانِ متقاطع */
+  xbox: ({ className }) => box(
+    <>
+      <circle cx="12" cy="12" r="8.7" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6.4 18.4C8 14 10 11 12 8.6c2 2.4 4 5.4 5.6 9.8M7.2 6.2C9 7.4 10.7 9 12 10.4c1.3-1.4 3-3 4.8-4.2"
+        stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </>, className,
+  ),
+
+  /* کنوا — دایره با حرف C */
+  canva: ({ className }) => box(
+    <>
+      <circle cx="12" cy="12" r="8.7" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M15 9.4a3.4 3.4 0 0 0-4.9 1c-1 1.7-.7 3.8.7 4.6 1.1.6 2.5.1 3.4-1"
+        stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </>, className,
+  ),
+
+  /* کپ‌کات — قیچیِ برش */
+  capcut: ({ className }) => box(
+    <>
+      <circle cx="7" cy="17" r="2.4" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="17" cy="17" r="2.4" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M8.6 15.2 17.5 4.8M15.4 15.2 6.5 4.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </>, className,
+  ),
+
+  /* فیگما — سه دایره‌ی روی هم */
+  figma: ({ className }) => box(
+    <>
+      <rect x="8" y="2.8" width="8" height="6.2" rx="3.1" stroke="currentColor" strokeWidth="1.5" />
+      <rect x="8" y="8.9" width="8" height="6.2" rx="3.1" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M12 15.1H10a3.1 3.1 0 1 0 0 6.2 3.1 3.1 0 0 0 3.1-3.1v-3.1Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </>, className,
+  ),
+
+  /* کرسر — مکان‌نمای متن */
+  cursor: ({ className }) => box(
+    <path d="M12 3.2 20 7.8v8.4L12 20.8 4 16.2V7.8L12 3.2Zm0 0v17.6M20 7.8 12 12.4 4 7.8"
+      stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />, className,
+  ),
+
+  /* گیفت کارت — جعبه با روبان */
+  gift: ({ className }) => box(
+    <>
+      <rect x="3.2" y="8.6" width="17.6" height="11.8" rx="2.2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M3.2 12.6h17.6M12 8.6v11.8" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M12 8.6C10.4 6.2 9 4.6 7.6 4.6a2 2 0 0 0 0 4h4.4Zm0 0c1.6-2.4 3-4 4.4-4a2 2 0 0 1 0 4H12Z"
+        stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    </>, className,
+  ),
+
   /* حباب پیام با قفل — سیگنال */
   signal: ({ className }) => box(
     <>

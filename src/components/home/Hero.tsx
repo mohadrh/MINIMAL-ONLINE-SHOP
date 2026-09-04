@@ -9,6 +9,7 @@ import {
   type CategorySlug,
 } from '../../data/catalog';
 import { asset } from '../../lib/asset';
+import { ServiceMark } from '../numbers/ServiceMark';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -166,6 +167,28 @@ export function Hero() {
                   aria-hidden="true"
                   loading={idx === 0 ? 'eager' : 'lazy'}
                 />
+
+                {/* نشانِ سرویس‌ها روی بنر.
+
+                    تا حالا مربع‌های حرفی در خودِ PNG پخته شده
+                    بودند: برای عوض کردن یکی‌شان باید کلِ تصویر
+                    دوباره ساخته می‌شد، در حالت شب همان روشناییِ
+                    روز را داشتند، و روی صفحه‌ی رتینا نرم دیده
+                    می‌شدند. حالا SVG‌اند — تیز در هر اندازه و
+                    هماهنگ با تم. */}
+                {s.marks && s.marks.length > 0 && (
+                  <span className="hero__marks" aria-hidden="true">
+                    {s.marks.map((m, mi) => (
+                      <span
+                        key={m}
+                        className="hero__mark"
+                        style={{ ['--i' as string]: mi }}
+                      >
+                        <ServiceMark id={m} mark={m.slice(0, 1).toUpperCase()} />
+                      </span>
+                    ))}
+                  </span>
+                )}
               </div>
             </div>
           </div>

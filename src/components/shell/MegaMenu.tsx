@@ -34,6 +34,7 @@ const ICONS: Record<CategorySlug, GlyphName> = {
   social: 'social',
   education: 'education',
   gaming: 'gaming',
+  giftcard: 'gift',
 };
 
 const SHOWN = 6;

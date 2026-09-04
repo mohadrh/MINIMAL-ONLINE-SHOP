@@ -4,7 +4,7 @@
    هیچ کامپوننتی دست نمی‌خوره. همین ساختار خروجی ووکامرس هم خواهد بود.
    ============================================================ */
 
-export type CategorySlug = 'ai' | 'creative' | 'social' | 'education' | 'gaming';
+export type CategorySlug = 'ai' | 'creative' | 'social' | 'education' | 'gaming' | 'giftcard';
 
 /** بعد از پرداخت چه اتفاقی می‌افته */
 export type FulfillmentMode =
@@ -219,6 +219,14 @@ export const CATEGORIES: Category[] = [
     accent: '#8b3fd4',
     order: 5,
   },
+  {
+    slug: 'giftcard',
+    title: 'گیفت کارت',
+    tagline: 'شارژ استور و کیف پول، با کد اورجینال',
+    icon: 'gift',
+    accent: '#ff9900',
+    order: 6,
+  },
 ];
 
 /* ---------------------------------------------------------------
@@ -247,6 +255,7 @@ const INPUT_TELEGRAM: RequiredInput = {
 --------------------------------------------------------------- */
 
 import { GAMES } from './games';
+import { GIFT_CARDS } from './giftcards';
 
 /** محصولات غیرگیم — بازی‌ها از games.ts می‌آیند تا این فایل قابل مدیریت بماند */
 const SUBSCRIPTIONS: Product[] = [
@@ -640,7 +649,7 @@ const SUBSCRIPTIONS: Product[] = [
 ];
 
 /** کاتالوگ کامل — اشتراک‌ها و بازی‌ها */
-export const PRODUCTS: Product[] = [...SUBSCRIPTIONS, ...GAMES];
+export const PRODUCTS: Product[] = [...SUBSCRIPTIONS, ...GAMES, ...GIFT_CARDS];
 
 /* ---------------------------------------------------------------
    کمکی‌ها

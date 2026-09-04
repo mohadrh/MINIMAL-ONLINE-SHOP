@@ -27,6 +27,17 @@ export interface HeroSlideData {
   highlights: string[];
   /** لایه ۱ — تصویر پس‌زمینه، ۱۶:۹ */
   backdrop: string;
+  /**
+   * نشانِ سرویس‌هایی که روی بنر می‌نشینند.
+   *
+   * تا حالا مربع‌های حرفی در خودِ تصویرِ PNG پخته شده بودند — یعنی
+   * برای عوض کردن یکی‌شان باید کلِ بنر دوباره ساخته می‌شد، و در
+   * حالت شب هم همان روشناییِ روز را داشتند.
+   *
+   * حالا شناسه‌اند و کامپوننت خودش نشان را می‌کشد: برداری، تیز در
+   * هر اندازه، و هماهنگ با تم.
+   */
+  marks?: string[];
   /** لایه ۳ — PNG/WebP شفاف. نبودش هیرو را نمی‌شکند */
   cutout?: string;
   /** کاراکتر قدبلند است یا نشان‌واره‌ی پهن — اندازه و موشن‌شان فرق دارد */
@@ -40,24 +51,6 @@ export interface HeroSlideData {
 }
 
 export const HERO_SLIDES: HeroSlideData[] = [
-  {
-    id: 'gaming-bf6',
-    kind: 'gaming',
-    kindLabel: 'گیم',
-    badge: 'جدید',
-    titleLead: 'بتلفیلد',
-    titleAccent: 'شش',
-    englishTitle: 'Battlefield 6 · EA',
-    kicker: 'از نبرد جدید جا نمان',
-    description:
-      'نقشه‌های بزرگ، ۶۴ بازیکن و تخریبی که ساختمان‌ها را واقعاً فرو می‌ریزد. اکانت روی کنسول خودت فعال می‌شود و بخش آنلاین کامل در اختیارت است.',
-    highlights: ['اکانت قانونی', 'دسترسی کامل به آنلاین', 'گارانتی مادام‌العمر'],
-    backdrop: '/hero/banner/slide-game-v2.png',
-    tint: '#6ea8c7',
-    ctaLabel: 'مشاهده‌ی محصول',
-    href: '/product/battlefield-6',
-    platforms: ['PS5', 'Xbox', 'PC'],
-  },
   {
     id: 'ai-claude',
     kind: 'ai',
@@ -78,6 +71,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#e8862e',
     ctaLabel: 'دیدن پلن‌ها',
     href: '/product/claude-pro',
+    marks: ['claude', 'openai', 'gemini'],
     platforms: ['Web', 'iOS', 'Android'],
   },
   {
@@ -100,7 +94,50 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#4a7cf7',
     ctaLabel: 'مقایسه‌ی پلن‌ها',
     href: '/ai',
+    marks: ['gemini', 'openai', 'midjourney'],
     platforms: ['Web', 'Android', 'iOS'],
+  },
+  {
+    id: 'giftcard',
+    kind: 'gaming',
+    kindLabel: 'گیفت کارت',
+    badge: 'تازه اضافه شد',
+    titleLead: 'گیفت',
+    titleAccent: 'کارت',
+    englishTitle: 'PlayStation · Xbox · Steam · Apple',
+    kicker: 'کد اورجینال، تحویل سیستمی',
+    description:
+      'شارژ استور و کیف پول، بدون کارت ارزی. کد را می‌گیری و خودت در حسابت وارد می‌کنی — اعتبار همان‌جا می‌نشیند و تاریخ انقضا هم ندارد.',
+    highlights: [
+      'پلی‌استیشن، ایکس‌باکس، استیم، اپل و گوگل پلی',
+      'مبالغ ده تا صد دلاری',
+      'تضمین سالم بودن کد',
+    ],
+    backdrop: '/hero/banner/slide-gift-v2.png',
+    tint: '#ff9900',
+    ctaLabel: 'دیدن گیفت کارت‌ها',
+    href: '/giftcard',
+    marks: ['playstation', 'xbox', 'steam'],
+    platforms: ['PS5', 'Xbox', 'PC', 'iOS'],
+  },
+  {
+    id: 'gaming-bf6',
+    kind: 'gaming',
+    kindLabel: 'گیم',
+    badge: 'جدید',
+    titleLead: 'بتلفیلد',
+    titleAccent: 'شش',
+    englishTitle: 'Battlefield 6 · EA',
+    kicker: 'از نبرد جدید جا نمان',
+    description:
+      'نقشه‌های بزرگ، ۶۴ بازیکن و تخریبی که ساختمان‌ها را واقعاً فرو می‌ریزد. اکانت روی کنسول خودت فعال می‌شود و بخش آنلاین کامل در اختیارت است.',
+    highlights: ['اکانت قانونی', 'دسترسی کامل به آنلاین', 'گارانتی مادام‌العمر'],
+    backdrop: '/hero/banner/slide-game-v2.png',
+    tint: '#6ea8c7',
+    ctaLabel: 'مشاهده‌ی محصول',
+    href: '/product/battlefield-6',
+    marks: ['playstation', 'xbox', 'steam'],
+    platforms: ['PS5', 'Xbox', 'PC'],
   },
   {
     id: 'ai-gemini-partner',
@@ -122,6 +159,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#7c5cf0',
     ctaLabel: 'دیدن پلن فمیلی',
     href: '/product/gemini-pro',
+    marks: ['openai', 'claude', 'cursor'],
     platforms: ['Web', 'Android', 'iOS'],
   },
   {
@@ -143,7 +181,30 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#7c93b8',
     ctaLabel: 'مشاهده‌ی محصول',
     href: '/product/call-of-duty-modern-warfare',
+    marks: ['playstation', 'xbox', 'steam'],
     platforms: ['PC', 'Steam', 'Battle.net'],
+  },
+  {
+    id: 'creative-suite',
+    kind: 'creative',
+    kindLabel: 'طراحی و ادیت',
+    titleLead: 'ابزارهای',
+    titleAccent: 'طراحی و ادیت',
+    englishTitle: 'Canva · CapCut · Figma',
+    kicker: 'سه ابزار، یک بار پرداخت',
+    description:
+      'کنوا برای طرح، کپ‌کات برای تدوین، فیگما برای رابط. هر سه بدون واترمارک و روی ایمیل خودت — همان چیزی که یک فریلنسر واقعاً لازم دارد.',
+    highlights: [
+      'خروجی بدون واترمارک',
+      'دوره‌های تا یک سال',
+      'پرداخت ریالی، بدون کارت ارزی',
+    ],
+    backdrop: '/hero/banner/slide-tools-v2.png',
+    tint: '#00c4cc',
+    ctaLabel: 'دیدن دسته',
+    href: '/creative',
+    marks: ['canva', 'capcut', 'figma'],
+    platforms: ['Web', 'Desktop', 'Mobile'],
   },
   {
     id: 'gaming-gta',
@@ -165,29 +226,10 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#d977b8',
     ctaLabel: 'دیدن اکانت‌های گیم',
     href: '/gaming',
+    marks: ['playstation', 'xbox'],
     platforms: ['PS5', 'Xbox'],
   },
-  {
-    id: 'creative-suite',
-    kind: 'creative',
-    kindLabel: 'طراحی و ادیت',
-    titleLead: 'ابزارهای',
-    titleAccent: 'طراحی و ادیت',
-    englishTitle: 'Canva · CapCut · Figma',
-    kicker: 'سه ابزار، یک بار پرداخت',
-    description:
-      'کنوا برای طرح، کپ‌کات برای تدوین، فیگما برای رابط. هر سه بدون واترمارک و روی ایمیل خودت — همان چیزی که یک فریلنسر واقعاً لازم دارد.',
-    highlights: [
-      'خروجی بدون واترمارک',
-      'دوره‌های تا یک سال',
-      'پرداخت ریالی، بدون کارت ارزی',
-    ],
-    backdrop: '/hero/banner/slide-tools-v2.png',
-    tint: '#00c4cc',
-    ctaLabel: 'دیدن دسته',
-    href: '/creative',
-    platforms: ['Web', 'Desktop', 'Mobile'],
-  },
+
 ];
 
 /* ============================================================

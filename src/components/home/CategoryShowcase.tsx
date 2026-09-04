@@ -33,7 +33,7 @@ import { MorphBackdrop } from '../ui/MorphBackdrop';
 
 const ICONS: Record<string, GlyphName> = {
   ai: 'ai', creative: 'creative', social: 'social',
-  education: 'education', gaming: 'gaming', numbers: 'number',
+  education: 'education', gaming: 'gaming', giftcard: 'gift', numbers: 'number',
 };
 
 /* رنگ هر دسته از کمان ققنوس، نه از یک آبیِ مشترک */
@@ -43,6 +43,7 @@ const TUBES: Record<string, string> = {
   gaming: '#ff4d9f',
   social: '#c94ff5',
   education: '#7a6bff',
+  giftcard: '#ff9900',
   numbers: '#3ddcff',
 };
 
