@@ -161,26 +161,30 @@ a { color: inherit; text-decoration: none; }
    #14151b روی همان ۹٫۳۵ می‌دهد — و وقتی شیشه‌ای می‌شود و با کاغذ
    ترکیب، به ۱۰ هم می‌رسد. اگر کهربایی را آن‌قدر تیره می‌کردیم که
    سفید رویش بخواند، قهوه‌ای می‌شد. */
+/* شیشه‌ی روشن، با حباب‌های رنگیِ کمانِ ققنوس که پشتش می‌گردند.
+
+   ⚠ زمینه‌ی کهربایی برداشته شد — دکمه در حالت عادی نارنجیِ یک‌دست
+   نیست، شیشه‌ای است که رنگ‌ها از پشتش می‌گذرند. */
 .btn--primary {
   position: relative;
   isolation: isolate;
-  background:
-    linear-gradient(160deg,
-      color-mix(in srgb, #fff 26%, var(--brand)) 0%,
-      var(--brand) 52%,
-      color-mix(in srgb, var(--brand-hover) 88%, transparent) 100%);
-  border-color: color-mix(in srgb, var(--brand-hover) 70%, transparent);
-  color: var(--brand-ink);
+  background: color-mix(in srgb, var(--paper) 55%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 42%, transparent);
+  color: var(--ink);
   font-weight: 700;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.62),
-    inset 0 -2px 6px -3px rgba(120, 60, 0, 0.22),
-    0 6px 18px -12px color-mix(in srgb, var(--brand) 90%, transparent);
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 8px 22px -16px rgba(15, 17, 32, 0.35);
+}
+[data-theme='dark'] .btn--primary {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #f2f5fb;
 }
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .btn--primary {
-    -webkit-backdrop-filter: blur(10px) saturate(1.35);
-    backdrop-filter: blur(10px) saturate(1.35);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    backdrop-filter: blur(12px) saturate(1.4);
   }
 }
 .btn--primary:hover {
@@ -407,101 +411,97 @@ a { color: inherit; text-decoration: none; }
 
 
 /* ============================================================
-   دکمه‌ی «شفق» — نسخه‌ی آزمایشی برای مقایسه
+   شیشه‌ی حبابی روی هاورِ دکمه‌ی اصلی
    ============================================================
 
-   پس‌زمینه‌اش روشن است، مثل کاغذِ خودِ سایت. داخلش چند حبابِ
-   کوچکِ محو از رنگ‌های کمانِ ققنوس آرام می‌گردند.
+   حباب‌های رنگی همیشه می‌گردند، ولی در حالت عادی کم‌رنگ‌اند و از
+   پشتِ کهربایی فقط رنگ‌آمیزی‌اش می‌کنند — نه اینکه خودشان دیده
+   شوند. با هاور کهربایی کنار می‌رود، شیشه می‌ماند و حباب‌ها
+   پررنگ می‌شوند.
 
-   نسخه‌ی اول یک گرادیانتِ مخروطیِ تمام‌رنگ بود که کلِ دکمه را
-   می‌پوشاند — رنگین‌کمانِ چرخان، نه شیشه. حالا رنگ‌ها فقط
-   لکه‌های کوچکی‌اند که از پشتِ شیشه‌ی مات دیده می‌شوند.
+   چرا کم‌رنگ و نه تمام‌رنگ: حبابِ پررنگِ همیشه‌درحال‌گردش روی هر
+   دکمه‌ی صفحه، حواس را از خودِ متنِ دکمه پرت می‌کند. در این
+   شدت، فقط کهربایی را زنده نگه می‌دارد.
 
-   ⚠ فقط روی یک دکمه نشسته — «مشاهده‌ی محصول» در اسلایدر هیرو —
-   تا کنارِ کهربایی‌ها مقایسه شود. اگر پسندیده شد، همین‌ها به
-   .btn--primary منتقل می‌شوند؛ اگر نه، کل بلوک حذف می‌شود.
+   ساخت:
 
-   متن تیره می‌ماند: زمینه روشن است و متنِ تیره روی آن در تمام
-   لحظاتِ چرخش بالای هشت می‌ماند.
+   ۱ حباب‌ها روی دو شبه‌عنصرند و هر کدام سه لکه‌ی رنگی دارد — با
+     چند radial-gradient در یک background. پس شش رنگ می‌گردد بدون
+     اینکه شش عنصر لازم باشد.
+
+   ۲ هر شبه‌عنصر مدارِ خودش را دارد با مدت متفاوت، وگرنه هر شش
+     لکه با هم حرکت می‌کنند و مثل یک چیزِ واحد دیده می‌شوند.
+
+   ۳ متن تیره می‌ماند. زمینه در هر دو حالت روشن است، پس کنتراست
+     بالای هشت می‌ماند — چه کهربایی باشد چه شیشه.
    ============================================================ */
 
-.btn--aurora {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--paper) 88%, transparent);
-  border-color: color-mix(in srgb, var(--brand) 40%, transparent);
-  color: var(--ink);
-  font-weight: 700;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 8px 22px -16px rgba(15, 17, 32, 0.4);
-}
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .btn--aurora {
-    -webkit-backdrop-filter: blur(14px) saturate(1.4);
-    backdrop-filter: blur(14px) saturate(1.4);
-  }
-}
-[data-theme='dark'] .btn--aurora {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: #f2f5fb;
-}
+.btn--primary { overflow: hidden; }
 
-/* حباب‌ها — سه لکه‌ی کوچک که روی مدارهای متفاوت می‌گردند.
-
-   محو شده‌اند تا لبه‌ی تیزی نداشته باشند و از پشتِ شیشه دیده
-   شوند، نه رویش. */
-.btn--aurora::before,
-.btn--aurora::after {
+.btn--primary::before,
+.btn--primary::after {
   content: '';
   position: absolute;
+  inset: -55%;
   z-index: -1;
-  border-radius: 50%;
-  filter: blur(10px);
+  /* پررنگ و همیشه در گردش — چیزی که از پشتِ شیشه دیده می‌شود */
+  opacity: 0.85;
   pointer-events: none;
+  filter: blur(13px);
+  transition: opacity 320ms var(--ease), filter 320ms var(--ease);
 }
 
-.btn--aurora::before {
-  width: 46px; height: 46px;
-  inset-block-start: -14px;
-  inset-inline-start: 12%;
-  background: radial-gradient(circle,
-    color-mix(in srgb, var(--brand) 85%, transparent) 0%, transparent 70%);
-  animation: bubble-a 7s ease-in-out infinite;
+/* شش حباب روی دو مدار. رنگ‌ها همان کمانِ لوگو، با اشباعِ کامل —
+   شیشه و بلورِ رویشان خودشان ملایمشان می‌کنند. */
+.btn--primary::before {
+  background:
+    radial-gradient(30% 30% at 20% 32%, #ffb14e 0%, transparent 60%),
+    radial-gradient(26% 26% at 70% 22%, #ff4d9f 0%, transparent 60%),
+    radial-gradient(28% 28% at 44% 78%, #7a6bff 0%, transparent 60%);
+  animation: bub-spin-a 9s linear infinite;
 }
 
-.btn--aurora::after {
-  width: 38px; height: 38px;
-  inset-block-end: -12px;
-  inset-inline-end: 18%;
-  background: radial-gradient(circle,
-    color-mix(in srgb, #c86bf0 80%, transparent) 0%, transparent 70%);
-  animation: bubble-b 9s ease-in-out infinite;
+.btn--primary::after {
+  background:
+    radial-gradient(24% 24% at 80% 68%, #3ddcff 0%, transparent 60%),
+    radial-gradient(28% 28% at 28% 72%, #ff8342 0%, transparent 60%),
+    radial-gradient(22% 22% at 62% 42%, #c94ff5 0%, transparent 60%);
+  animation: bub-spin-b 13s linear infinite reverse;
 }
 
-@keyframes bubble-a {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%      { transform: translate(-38px, 14px) scale(1.18); }
-  66%      { transform: translate(-16px, 4px) scale(0.9); }
-}
-@keyframes bubble-b {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  40%      { transform: translate(46px, -12px) scale(1.22); }
-  70%      { transform: translate(20px, -4px) scale(0.92); }
-}
+@keyframes bub-spin-a { to { rotate: 360deg; } }
+@keyframes bub-spin-b { to { rotate: 360deg; } }
 
-.btn--aurora:hover {
-  border-color: color-mix(in srgb, var(--brand) 70%, transparent);
+/* روی هاور شیشه شفاف‌تر می‌شود و حباب‌ها تیزتر — انگار نزدیک‌تر
+   آمده‌ای و از پشتِ شیشه بهتر می‌بینی. */
+.btn--primary:hover {
+  background: color-mix(in srgb, var(--paper) 38%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 65%, transparent);
+  color: var(--ink);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 12px 28px -16px color-mix(in srgb, var(--brand) 80%, transparent);
+    0 14px 32px -18px color-mix(in srgb, var(--brand) 70%, transparent);
 }
-.btn--aurora:hover::before { animation-duration: 3.5s; }
-.btn--aurora:hover::after { animation-duration: 4.5s; }
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .btn--primary:hover {
+    -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    backdrop-filter: blur(16px) saturate(1.5);
+  }
+}
+[data-theme='dark'] .btn--primary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #f4f7fd;
+}
+
+.btn--primary:hover::before,
+.btn--primary:hover::after { opacity: 1; filter: blur(9px); }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn--aurora::before,
-  .btn--aurora::after { animation: none; }
+  .btn--primary::before,
+  .btn--primary::after { animation: none; }
 }
+
+/* کلاسِ آزمایشیِ قبلی دیگر چیزی اضافه نمی‌کند — همان رفتار حالا
+   روی همه‌ی دکمه‌های اصلی است. */
+.btn--aurora { /* عمداً خالی */ }

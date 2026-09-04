@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Menu, MessageCircle, Moon, Search, ShoppingBag, Sun, X } from 'lucide-react';
 import { AccountMenu } from './AccountMenu';
-import { ShoppingAssistant } from './ShoppingAssistant';
 import { MegaMenu } from './MegaMenu';
 import { NavSearch } from './NavSearch';
 import { PromoBar } from './PromoBar';
@@ -40,7 +39,6 @@ const MOBILE_ICONS: Record<string, GlyphName> = {
 export function Nav() {
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark' | null>(null);
-  const [assistOpen, setAssistOpen] = useState(false);
   const [mega, setMega] = useState(false);
   const [search, setSearch] = useState(false);
   const [q, setQ] = useState('');
@@ -226,9 +224,8 @@ export function Nav() {
           <button
             type="button"
             className="nav__chat"
-            onClick={() => setAssistOpen(true)}
+            onClick={() => window.dispatchEvent(new CustomEvent('phoenix:chat-open'))}
             aria-haspopup="dialog"
-            aria-expanded={assistOpen}
             aria-label="چت آنلاین و دستیار خرید"
           >
             <span className="nav__chat-spark" style={{ ['--i' as string]: 0, top: '-7px', insetInlineStart: '10%' }} aria-hidden="true" />
@@ -250,8 +247,6 @@ export function Nav() {
           </button>
         </div>
       </div>
-
-      {assistOpen && <ShoppingAssistant onClose={() => setAssistOpen(false)} />}
 
       {/* ---------- منوی موبایل ----------
 
