@@ -1,0 +1,239 @@
+
+
+/* ============================================================
+   فروشگاه — ستون فیلتر کنار، جست‌وجو و ترتیب بالا
+
+   پیش از این همه‌ی فیلترها پشت یک دکمه بودند و پنلشان محصولات را
+   یک صفحه پایین‌تر می‌فرستاد؛ یعنی برای باریک کردنِ فهرست باید
+   فهرست را از دست می‌دادی.
+
+   ⚠ چگالی عمدی است. کارفرما گفت روی دسکتاپ باکس‌ها بی‌دلیل بزرگ‌اند
+   و باید در همان کادرِ اول همه‌چیز دیده شود. پس شبکه با auto-fill
+   پر می‌شود نه با ستون‌های ثابت: روی نمایشگر پهن، پنج و شش کارت
+   در هر ردیف می‌نشیند به‌جای سه.
+   ============================================================ */
+
+/* ⚠ ظرفِ فروشگاه پهن‌تر از بقیه‌ی سایت است.
+
+   ظرفِ عمومی ۱۱۰۰ پیکسل است که برای متن درست است — خطِ
+   طولانی خوانده نمی‌شود. ولی فهرستِ محصول متن نیست؛ روی
+   نمایشگر ۱۴۴۰، آن ۱۱۰۰ یعنی ستونِ محصولات فقط ۸۴۴ پیکسل
+   می‌شد و چهار کارت در ردیف جا می‌گرفت در حالی که جای
+   ششتا بود. */
+.shopx {
+  max-width: 1400px;
+  padding-block-end: var(--sp-16);
+}
+
+/* سرصفحه‌ی جمع‌تر — هر پیکسلِ آن یک پیکسل از محصولات
+   کم می‌کند، و کاربر برای دیدنِ فهرست آمده نه برای
+   خواندنِ تیتر. */
+.shop__head { padding-block: var(--sp-8) var(--sp-5); }
+.shop__head h1 { font-size: var(--text-2xl); }
+
+/* ---------- نوار بالا ---------- */
+
+.shopx__top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-block-end: var(--sp-5);
+}
+
+.shopx__search {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex: 1 1 260px;
+  min-width: 0;
+  padding: 10px var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+}
+[data-theme="dark"] .shopx__search {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.shopx__search:focus-within { border-color: var(--brand); }
+.shopx__search > svg { width: 17px; height: 17px; flex: none; color: var(--ink-faint); }
+.shopx__search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  outline: none;
+}
+.shopx__search input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.shopx__search button {
+  display: grid;
+  place-items: center;
+  width: 22px; height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--wash);
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+.shopx__search button svg { width: 13px; height: 13px; }
+
+.shopx__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.shopx__sort select {
+  padding: 9px var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--paper);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+}
+[data-theme="dark"] .shopx__sort select {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.shopx__count { font-size: var(--text-sm); color: var(--ink-faint); white-space: nowrap; }
+
+/* دکمه‌ی فیلتر فقط روی موبایل دیده می‌شود */
+.shopx__toggle {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 9px var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--paper);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+}
+.shopx__toggle svg { width: 15px; height: 15px; }
+.shopx__badge {
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: var(--brand-ink);
+  font-size: 11px;
+}
+
+/* ---------- بدنه: ستون + شبکه ---------- */
+
+.shopx__body {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: var(--sp-6);
+  align-items: start;
+}
+
+.shopx__side {
+  position: sticky;
+  top: calc(var(--nav-h, 64px) + var(--sp-4));
+  display: grid;
+  gap: var(--sp-5);
+  padding: var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--paper);
+  /* ستون بلندتر از پنجره نباید صفحه را قفل کند */
+  max-height: calc(100vh - var(--nav-h, 64px) - var(--sp-8));
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+[data-theme="dark"] .shopx__side {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.shopx__side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding-block-end: var(--sp-3);
+  border-block-end: 1px solid var(--line);
+  font-size: var(--text-sm);
+}
+[data-theme="dark"] .shopx__side-head { border-block-end-color: rgba(255, 255, 255, 0.1); }
+
+.shopx__clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--brand);
+  cursor: pointer;
+}
+.shopx__clear svg { width: 12px; height: 12px; }
+
+.shopx__group { display: grid; gap: var(--sp-2); }
+.shopx__group-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+}
+
+.shopx__opts { display: grid; gap: 2px; }
+
+.shopx__opt {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 6px 8px;
+  margin-inline: -8px;
+  border-radius: var(--r);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease);
+}
+.shopx__opt:hover { background: var(--wash); }
+.shopx__opt input { accent-color: var(--brand); cursor: pointer; }
+.shopx__opt span { flex: 1; min-width: 0; }
+.shopx__opt i { font-size: 11px; font-style: normal; color: var(--ink-faint); }
+
+/* ---------- شبکه‌ی محصولات ----------
+
+   auto-fill با کف ۱۹۸ پیکسل: روی نمایشگر پهن پنج‌شش کارت در ردیف
+   می‌نشیند و کاربر در همان پرده‌ی اول فهرست را می‌بیند، نه سه
+   کارتِ بزرگ. */
+.shopx__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(198px, 1fr));
+  gap: var(--sp-4);
+}
+
+@media (max-width: 900px) {
+  .shopx__body { grid-template-columns: minmax(0, 1fr); }
+  .shopx__toggle { display: inline-flex; }
+  .shopx__side {
+    position: static;
+    max-height: none;
+    display: none;
+  }
+  .shopx__side.is-open { display: grid; }
+}
+
+@media (max-width: 560px) {
+  .shopx__grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--sp-3); }
+}

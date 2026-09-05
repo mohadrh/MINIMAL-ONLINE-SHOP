@@ -33,6 +33,10 @@
 @import '../components/home/home.css' layer(components);
 @import '../components/home/showcase.css' layer(components);
 @import '../components/product/product.css' layer(components);
+/* ⚠ shop.css تا امروز ایمپورت نمی‌شد — فایل بود و بارگذاری
+   نمی‌شد. بعد از product می‌آید تا قاعده‌های فروشگاه بر همان‌ها
+   مقدم باشند. */
+@import '../components/shop/shop.css' layer(components);
 @import '../components/product/plans.css' layer(components);
 @import '../components/cart/cart.css' layer(components);
 @import '../components/cart/drawer.css' layer(components);

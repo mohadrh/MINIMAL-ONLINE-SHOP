@@ -3,39 +3,12 @@
 import React, { useMemo, useState } from 'react';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import {
-  PRODUCTS, TAGS, TAG_GROUP_LABELS, getLowestPrice,
+  CATEGORIES, PRODUCTS, TAGS, TAG_GROUP_LABELS, getLowestPrice,
   type CategorySlug, type TagGroup,
 } from '../../data/catalog';
 import { ProductCard } from '../product/ProductCard';
 
 type Sort = 'hot' | 'new' | 'price_asc' | 'price_desc' | 'rating';
-
-/* سه دنیای جدا.
-
-   قبلاً هر ۲۷ محصول در یک شبکه‌ی واحد می‌آمدند و اکانت گیم دقیقاً
-   کنار اشتراک چت‌جی‌پی‌تی می‌نشست. این دو، دو خریدارِ متفاوت با دو
-   ذهنیت متفاوت‌اند؛ وقتی دسته‌ای انتخاب نشده، هر دنیا سرفصل خودش
-   را می‌گیرد. */
-const WORLDS: { id: string; title: string; lead: string; cats: CategorySlug[] }[] = [
-  {
-    id: 'ai',
-    title: 'هوش مصنوعی',
-    lead: 'اشتراک مدل‌های زبانی و ابزارهای کدنویسی، روی حساب خودت.',
-    cats: ['ai'],
-  },
-  {
-    id: 'apps',
-    title: 'اکانت و اشتراک',
-    lead: 'ابزار طراحی و ادیت، شبکه‌های اجتماعی و آموزش زبان.',
-    cats: ['creative', 'social', 'education'],
-  },
-  {
-    id: 'gaming',
-    title: 'گیم',
-    lead: 'اکانت قانونی بازی‌ها با گارانتی مادام‌العمر.',
-    cats: ['gaming'],
-  },
-];
 
 const SORTS: { id: Sort; label: string }[] = [
   { id: 'hot',        label: 'محبوب‌ترین' },
@@ -51,42 +24,60 @@ const norm = (s: string) =>
   s.replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').replace(/‌/g, ' ').toLowerCase().trim();
 
 /**
- * فروشگاه.
+ * فروشگاه — جست‌وجو و ترتیب بالا، فیلترها کنار.
  *
- * فیلترها روی موبایل جمع‌شونده‌اند و بالای نتایج یک ریل دسته هست.
- * درسی که در نسخه‌ی یک گرفتیم: پانزده گزینه‌ی چیده‌شده روی هم،
- * محصولات را دو صفحه پایین‌تر می‌فرستد. فیلتر غالب «دسته» است و
- * باید یک‌ضربه‌ای باشد؛ بقیه پشت یک ضربه‌ی اضافه.
+ * پیش از این همه‌ی فیلترها پشت یک دکمه‌ی «فیلتر و ترتیب» بودند و
+ * وقتی باز می‌شدند، پنلشان محصولات را یک صفحه پایین‌تر می‌فرستاد.
+ * یعنی برای باریک کردنِ فهرست باید فهرست را از دست می‌دادی.
+ *
+ * حالا چیدمانِ متعارفِ فروشگاه است: ستونِ فیلتر کنارِ شبکه‌ی
+ * محصولات می‌ماند، پس با هر تیک، نتیجه همان‌جا جلوی چشم عوض
+ * می‌شود. ترتیب و جست‌وجو بالای هر دو، چون به کلِ نتیجه مربوط‌اند
+ * نه به یک ستون.
+ *
+ * ⚠ روی موبایل ستون کنار نمی‌گنجد و پشت دکمه‌ی «فیلترها» می‌رود —
+ * همان درسِ نسخه‌ی یک، که پانزده گزینه‌ی چیده‌شده روی هم محصولات
+ * را از صفحه بیرون می‌کرد.
+ *
+ * دسته‌ها چندتایی‌اند: کسی که دنبال گیفت کارت و گیم است، هر دو را
+ * می‌زند. ولی تگ‌ها با «و» ترکیب می‌شوند نه «یا» — کسی که «تحویل
+ * آنی» و «کامپیوتر» را زده دنبال چیزی است که هر دو را داشته باشد.
  */
 export function ShopBrowser() {
-  const [world, setWorld] = useState<string | null>(null);
   const [q, setQ] = useState('');
   const [sort, setSort] = useState<Sort>('hot');
-  const [open, setOpen] = useState(false);
+  const [cats, setCats] = useState<CategorySlug[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [onlyDeals, setOnlyDeals] = useState(false);
+  /** فقط روی موبایل معنی دارد؛ روی دسکتاپ ستون همیشه هست */
+  const [openFilters, setOpenFilters] = useState(false);
 
-  const toggleTag = (slug: string) =>
-    setTags((t) => (t.includes(slug) ? t.filter((x) => x !== slug) : [...t, slug]));
+  const toggle = <T,>(list: T[], v: T) =>
+    (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
+
+  const activeCount = cats.length + tags.length + (onlyDeals ? 1 : 0);
+
+  const clearAll = () => {
+    setCats([]);
+    setTags([]);
+    setOnlyDeals(false);
+  };
 
   const results = useMemo(() => {
     const nq = norm(q);
-    const list = PRODUCTS.filter((p) => {
-      if (world) {
-        const w = WORLDS.find((x) => x.id === world);
-        if (w && !w.cats.includes(p.category)) return false;
-      }
-      /* چند تگ با «و» ترکیب می‌شوند نه «یا».
 
-         کسی که هم «تحویل آنی» و هم «کامپیوتر» را زده، دنبال چیزی
-         است که هر دو را داشته باشد؛ اگر «یا» بگیریم، فیلتر به‌جای
-         باریک کردن، فهرست را پهن‌تر می‌کند. */
+    const list = PRODUCTS.filter((p) => {
+      if (cats.length && !cats.includes(p.category)) return false;
       if (tags.length && !tags.every((t) => p.tags?.includes(t))) return false;
+      if (onlyDeals && !p.variants.some((v) => v.compareAt && v.compareAt > v.price)) {
+        return false;
+      }
       if (!nq) return true;
       return (
-        norm(p.title).includes(nq) ||
-        norm(p.englishTitle).includes(nq) ||
-        norm(p.brand).includes(nq) ||
-        norm(p.shortDescription).includes(nq)
+        norm(p.title).includes(nq)
+        || norm(p.englishTitle).includes(nq)
+        || norm(p.brand).includes(nq)
+        || norm(p.shortDescription).includes(nq)
       );
     });
 
@@ -101,159 +92,157 @@ export function ShopBrowser() {
       );
     }
     return sorted;
-  }, [world, q, sort, tags]);
+  }, [q, sort, cats, tags, onlyDeals]);
+
+  /* چند محصول زیر هر دسته می‌ماند — عدد کنارِ نام، پیش از کلیک
+     می‌گوید آن تیک چه‌قدر فهرست را باریک می‌کند. */
+  const countFor = (slug: CategorySlug) =>
+    PRODUCTS.filter((p) => p.category === slug).length;
 
   return (
     <>
       <header className="section shop__head">
         <div className="wrap">
-          <h1>{world ? WORLDS.find((w) => w.id === world)?.title : 'محصولات فونیکس شاپ'}</h1>
+          <h1>محصولات فونیکس شاپ</h1>
           <p className="sec-head__lead">
             اشتراک‌های بین‌المللی و اکانت‌های گیم، با پرداخت ریالی و گارانتی تمام دوره.
           </p>
         </div>
       </header>
 
-      <div className="wrap shop">
-        {/* ---------- ریل دسته — میان‌بر یک‌ضربه‌ای ---------- */}
-        {/* ریل دنیاها.
-
-            دکمه‌ی «همه» برداشته شد: محصولات همیشه تفکیک‌شده می‌آیند،
-            چون خریدارِ اکانت گیم و خریدارِ اشتراک هوش مصنوعی دو آدم
-            متفاوت‌اند و یک شبکه‌ی درهم، هر دو را کند می‌کند.
-
-            زدنِ دوباره‌ی همان دنیا، انتخاب را برمی‌دارد و دوباره هر
-            سه سرفصل می‌آیند — جای همان دکمه‌ی «همه» را می‌گیرد بدون
-            اینکه گزینه‌ی اضافه‌ای در ریل باشد. */}
-        <div className="shop__rail" role="group" aria-label="دنیای محصول">
-          {WORLDS.map((w) => (
-            <button
-              key={w.id}
-              className={`shop__chip ${world === w.id ? 'is-on' : ''}`}
-              aria-pressed={world === w.id}
-              onClick={() => setWorld(world === w.id ? null : w.id)}
-            >
-              <span className="shop__chip-dot" aria-hidden="true" />
-              {w.title}
-            </button>
-          ))}
-        </div>
-
-        {/* ---------- نوار جست‌وجو و ترتیب ---------- */}
-        <div className="shop__bar">
-          <div className="shop__search">
+      <div className="wrap shopx">
+        {/* ---------- بالا: جست‌وجو، ترتیب، شمارش ---------- */}
+        <div className="shopx__top">
+          <div className="shopx__search">
             <Search aria-hidden="true" />
             <input
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="جست‌وجو در محصولات…"
-              aria-label="جست‌وجو"
+              aria-label="جست‌وجو در محصولات"
             />
             {q && (
-              <button type="button" onClick={() => setQ('')} aria-label="پاک کردن">
+              <button type="button" onClick={() => setQ('')} aria-label="پاک کردن جست‌وجو">
                 <X aria-hidden="true" />
               </button>
             )}
           </div>
 
-          <div className="shop__bar-end">
-            <span className="shop__count num" aria-live="polite">
-              {results.length.toLocaleString('fa-IR')} محصول
-            </span>
+          <label className="shopx__sort">
+            <span>ترتیب بر اساس</span>
+            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
+              {SORTS.map((s) => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </label>
 
-            <button
-              type="button"
-              className="shop__filter-btn"
-              onClick={() => setOpen((v) => !v)}
-              aria-expanded={open}
-            >
-              <SlidersHorizontal aria-hidden="true" />
-              فیلتر و ترتیب
-            </button>
-          </div>
+          <span className="shopx__count num" aria-live="polite">
+            {results.length.toLocaleString('fa-IR')} محصول
+          </span>
+
+          {/* فقط موبایل */}
+          <button
+            type="button"
+            className="shopx__toggle"
+            onClick={() => setOpenFilters((v) => !v)}
+            aria-expanded={openFilters}
+          >
+            <SlidersHorizontal aria-hidden="true" />
+            فیلترها
+            {activeCount > 0 && (
+              <b className="shopx__badge num">{activeCount.toLocaleString('fa-IR')}</b>
+            )}
+          </button>
         </div>
 
-        {open && (
-          <div className="shop__panel">
-            <div className="shop__panel-group">
-              <span className="shop__panel-title">ترتیب</span>
-              <div className="shop__sorts">
-                {SORTS.map((s) => (
-                  <button
-                    key={s.id}
-                    className={`shop__chip ${sort === s.id ? 'is-on' : ''}`}
-                    onClick={() => setSort(s.id)}
-                  >
-                    {s.label}
-                  </button>
+        <div className="shopx__body">
+          {/* ---------- ستون فیلتر ---------- */}
+          <aside
+            className={`shopx__side ${openFilters ? 'is-open' : ''}`}
+            aria-label="فیلترها"
+          >
+            <div className="shopx__side-head">
+              <b>فیلترها</b>
+              {activeCount > 0 && (
+                <button type="button" className="shopx__clear" onClick={clearAll}>
+                  <X aria-hidden="true" />
+                  پاک کردن
+                </button>
+              )}
+            </div>
+
+            <div className="shopx__group">
+              <span className="shopx__group-title">دسته‌بندی</span>
+              <div className="shopx__opts">
+                {CATEGORIES.map((c) => (
+                  <label key={c.slug} className="shopx__opt">
+                    <input
+                      type="checkbox"
+                      checked={cats.includes(c.slug as CategorySlug)}
+                      onChange={() => setCats((v) => toggle(v, c.slug as CategorySlug))}
+                    />
+                    <span>{c.title}</span>
+                    <i className="num">{countFor(c.slug as CategorySlug).toLocaleString('fa-IR')}</i>
+                  </label>
                 ))}
               </div>
             </div>
 
-            {/* تگ‌ها گروه‌به‌گروه می‌آیند، نه یک فهرست بلندِ بی‌سر و ته */}
+            <div className="shopx__group">
+              <span className="shopx__group-title">پیشنهادها</span>
+              <div className="shopx__opts">
+                <label className="shopx__opt">
+                  <input
+                    type="checkbox"
+                    checked={onlyDeals}
+                    onChange={() => setOnlyDeals((v) => !v)}
+                  />
+                  <span>فقط تخفیف‌دارها</span>
+                </label>
+              </div>
+            </div>
+
+            {/* تگ‌ها گروه‌به‌گروه، نه یک فهرست بلندِ بی‌سر و ته */}
             {(Object.keys(TAG_GROUP_LABELS) as TagGroup[]).map((g) => {
               const items = TAGS.filter((t) => t.group === g);
               if (!items.length) return null;
               return (
-                <div key={g} className="shop__panel-group">
-                  <span className="shop__panel-title">{TAG_GROUP_LABELS[g]}</span>
-                  <div className="shop__sorts">
+                <div key={g} className="shopx__group">
+                  <span className="shopx__group-title">{TAG_GROUP_LABELS[g]}</span>
+                  <div className="shopx__opts">
                     {items.map((t) => (
-                      <button
-                        key={t.slug}
-                        className={`shop__chip ${tags.includes(t.slug) ? 'is-on' : ''}`}
-                        onClick={() => toggleTag(t.slug)}
-                        title={t.hint}
-                      >
-                        {t.label}
-                      </button>
+                      <label key={t.slug} className="shopx__opt" title={t.hint}>
+                        <input
+                          type="checkbox"
+                          checked={tags.includes(t.slug)}
+                          onChange={() => setTags((v) => toggle(v, t.slug))}
+                        />
+                        <span>{t.label}</span>
+                      </label>
                     ))}
                   </div>
                 </div>
               );
             })}
+          </aside>
 
-            {tags.length > 0 && (
-              <button type="button" className="shop__clear" onClick={() => setTags([])}>
-                <X aria-hidden="true" />
-                پاک کردن {tags.length.toLocaleString('fa-IR')} فیلتر
-              </button>
+          {/* ---------- نتایج ---------- */}
+          <div className="shopx__main">
+            {results.length === 0 ? (
+              <p className="shop__empty">
+                چیزی با این فیلترها پیدا نشد. یکی از تیک‌ها را بردار یا املای دیگری امتحان کن.
+              </p>
+            ) : (
+              <div className="shopx__grid">
+                {results.map((p) => (
+                  <ProductCard key={p.slug} product={p} />
+                ))}
+              </div>
             )}
           </div>
-        )}
-
-        {/* ---------- نتایج ---------- */}
-        {results.length === 0 ? (
-          <p className="shop__empty">
-            چیزی با این جست‌وجو پیدا نشد. املای دیگری امتحان کن یا دسته را عوض کن.
-          </p>
-        ) : !q && tags.length === 0 ? (
-          /* بدون فیلتر، سه دنیا جدا نشان داده می‌شوند */
-          WORLDS.filter((w) => !world || w.id === world).map((w) => {
-            const items = results.filter((p) => w.cats.includes(p.category));
-            if (!items.length) return null;
-            return (
-              <section key={w.id} className="shop__world">
-                <div className="sec-head">
-                  <h2>{w.title}</h2>
-                  <p className="sec-head__lead">{w.lead}</p>
-                </div>
-                <div className="shop__grid">
-                  {items.map((p) => (
-                    <ProductCard key={p.slug} product={p} />
-                  ))}
-                </div>
-              </section>
-            );
-          })
-        ) : (
-          <div className="shop__grid">
-            {results.map((p) => (
-              <ProductCard key={p.slug} product={p} />
-            ))}
-          </div>
-        )}
+        </div>
       </div>
     </>
   );
