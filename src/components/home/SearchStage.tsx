@@ -138,6 +138,9 @@ export function SearchStage({ variant = 'section' }: { variant?: 'section' | 'he
           </div>
         )}
 
+        {/* جعبه و نتیجه‌ها در یک ظرفِ مکان‌دار، تا درونِ هیرو
+            نتیجه‌ها شناور باشند و ارتفاعِ سکشن را تکان ندهند. */}
+        <div className="srst__field">
         <div className={`srst__box ${live ? 'is-live' : ''}`}>
           <Search aria-hidden="true" />
           <input
@@ -230,6 +233,7 @@ export function SearchStage({ variant = 'section' }: { variant?: 'section' | 'he
                 : `چیزی با «${q.trim()}» پیدا نشد. شاید املای انگلیسی‌اش را امتحان کنی.`}
             </p>
           )}
+        </div>
         </div>
       </div>
     </section>

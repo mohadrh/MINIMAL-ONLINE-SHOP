@@ -691,7 +691,46 @@
 
 /* داخل هیرو نتیجه‌ها کوتاه‌ترند — جعبه‌ی محاسبه پایین‌ترش نباید
    خیلی دور بیفتد */
-.srst--hero .srst__out { min-height: 0; gap: 6px; }
+/* ⚠ درونِ هیرو، نتیجه‌ها شناورند.
+
+   تا حالا در جریان بودند، پس با هر چرخه‌ی تایپ ارتفاعِ
+   هیرو کم و زیاد می‌شد و کلِ صفحه بالا پایین می‌پرید — چشم را
+   اذیت می‌کرد و CLS هم می‌ساخت.
+
+   حالا دراپ‌داونی است که زیرِ جعبه می‌ایستد، به اندازه‌ی
+   محتوای خودش بلند می‌شود، و هیچ فضایی از چیدمان نمی‌گیرد. */
+.srst__field {
+  position: relative;
+  width: min(620px, 100%);
+  margin-inline: auto;
+}
+
+.srst--hero .srst__out {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  min-height: 0;
+  gap: 6px;
+  width: 100%;
+  margin-block-start: 0;
+  padding: 8px;
+  border-radius: 18px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: 0 26px 60px -34px rgba(15, 17, 32, 0.5);
+}
+[data-theme="dark"] .srst--hero .srst__out {
+  background: #12141b;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+/* وقتی چیزی برای نشان دادن نیست، خودِ کادر هم نباشد */
+.srst--hero .srst__out:not(:has(.srst__hit)) {
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
+  padding: 0;
+}
 .srst--hero .srst__hit { padding: 8px var(--sp-3); }
 .srst--hero .srst__art,
 .srst--hero .srst__mark { width: 34px; height: 34px; }
@@ -742,16 +781,27 @@
 .catcard { border-radius: 28px; }
 .catcard__chips { border-radius: 18px; }
 
-@media (min-width: 981px) {
-  /* اولی دو ستون می‌گیرد تا چشم جایی برای شروع داشته باشد،
-     و آخری هم دو ستون تا ردیفِ آخر نیمه‌کاره نماند.
+/* چیدمانِ بنتو — نامنظم ولی هم‌راستا.
 
-     با هفت کارت در سه ستون، ۲ + ۵×۱ + ۲ دقیقاً نُه خانه می‌شود —
-     پس هیچ خانه‌ی خالی نمی‌ماند و لبه‌ی پایین صاف است. */
+   هفت کارتِ هم‌اندازه در سه ستون، سه ردیف می‌شد و سکشن بلند
+   می‌شد. در چهار ستون، کارتِ اول دو خانه می‌گیرد و بقیه یکی:
+   ۲ + ۶×۱ = ۸ خانه، دقیقاً دو ردیفِ کامل.
+
+   نتیجه هم کوتاه‌تر است هم یکنواخت نیست — ولی چون همه
+   روی همان شبکه‌ی چهارستونی نشسته‌اند، لبه‌هاشان صاف
+   می‌ماند. نامنظمیِ عمدی، نه بی‌نظمی. */
+
+@media (min-width: 1100px) {
+  .catshow__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .catcard:first-child { grid-column: span 2; }
+  /* کارتِ پهن جای بیشتری برای متن دارد */
+  .catcard:first-child .catcard__lead { max-width: 46ch; }
+}
+
+/* بینِ ۹۸۱ تا ۱۱۰۰ سه ستون می‌ماند؛ آن‌جا اولی و آخری دو
+   خانه می‌گیرند تا نُه خانه پر شود و ردیفِ آخر نیمه‌کاره نماند. */
+@media (min-width: 981px) and (max-width: 1099px) {
   .catcard:first-child,
-  .catcard:last-child {
-    grid-column: span 2;
-  }
-  /* در کارتِ پهن، نام‌ها و متن کنار هم می‌نشینند نه زیر هم */
+  .catcard:last-child { grid-column: span 2; }
   .catcard:first-child .catcard__lead { max-width: 46ch; }
 }
