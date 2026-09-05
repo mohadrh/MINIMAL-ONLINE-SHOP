@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft, Smartphone, BookOpen, Medal, PackageSearch, Handshake, LifeBuoy,
+  ArrowLeft, Smartphone, BookOpen, Medal, PackageSearch, Handshake, Columns2,
 } from 'lucide-react';
 
 /**
@@ -19,12 +19,15 @@ import {
  */
 
 const EXTRAS = [
-  { icon: Smartphone, title: 'شماره مجازی', href: '/numbers' },
+  /* مقایسه اول می‌آید: ابزاری است که تا حالا فقط روی خودِ
+     کارتِ محصول دیده می‌شد، یعنی کسی که نمی‌دانست هست،
+     پیدایش نمی‌کرد. */
+  { icon: Columns2, title: 'مقایسه‌ی محصولات', href: '/shop' },
   { icon: Medal, title: 'باشگاه مشتریان', href: '/club' },
+  { icon: Smartphone, title: 'شماره مجازی', href: '/numbers' },
   { icon: PackageSearch, title: 'پیگیری سفارش', href: '/track' },
   { icon: BookOpen, title: 'آموزش و مقاله', href: '/blog' },
   { icon: Handshake, title: 'نمایندگی و همکاری', href: '/reseller' },
-  { icon: LifeBuoy, title: 'راهنمای خرید', href: '/guide' },
 ];
 
 export function PopularServices() {

@@ -405,11 +405,22 @@
    پشت‌سرهم که هر دو دسته‌ها را فهرست می‌کردند واقعاً تکراری بود.
 --------------------------------------------------------------- */
 
+/* نام‌ها روی یک پنلِ طوسیِ ملایم می‌نشینند.
+
+   در حالت شب، اختلافِ روشناییِ خودِ تراشه‌ها کافی بود تا گروه
+   دیده شود؛ در حالت روز همه‌چیز روشن است و تراشه‌ها در کارت
+   حل می‌شدند. پنل مرزِ گروه را برمی‌گرداند. */
 .catcard__chips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-block-start: var(--sp-3);
+  padding: var(--sp-3);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--wash) 70%, transparent);
+}
+[data-theme="dark"] .catcard__chips {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .catcard__chip {
@@ -418,7 +429,8 @@
   padding: 7px 10px;
   border-radius: 999px;
   color: var(--ink-faint);
-  background: var(--wash);
+  /* روی پنلِ طوسی، تراشه باید روشن‌تر از آن باشد وگرنه گم می‌شود */
+  background: var(--paper);
   transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 [data-theme="dark"] .catcard__chip { background: rgba(255, 255, 255, 0.07); }
