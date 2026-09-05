@@ -14,6 +14,8 @@ import { useCart, useFlight } from '../../app/providers';
 import { ProductCard } from './ProductCard';
 import { ShareBubble } from './ShareBubble';
 import { ProductTerms } from './ProductTerms';
+import { useUsdRate } from '../../lib/useRate';
+import { tomanFromUsd } from '../../lib/rate';
 import { PlanGuide } from './PlanGuide';
 import { useCompare } from '../shop/Compare';
 import { Faq } from '../ui/Faq';
@@ -103,6 +105,19 @@ export function ProductView({ product: p }: { product: Product }) {
   /* مقاله‌های هم‌موضوع با دسته‌ی این محصول */
   const helpful = getArticlesForCategory(p.category, 3);
 
+  /* نرخ دلار.
+
+     محصولاتی که ذاتاً دلاری‌اند — گیفت کارت و بیشترِ اشتراک‌ها —
+     قیمتِ تومانی‌شان حاصل‌ضربِ مبلغِ دلاری در نرخِ روز است. کارفرما
+     خواست کاربر نرخ را ببیند تا بفهمد عدد از کجا آمده، نه اینکه
+     یک مبلغِ بی‌توضیح جلویش باشد.
+
+     محصولی که usd ندارد قیمتِ ثابتِ خودش را نگه می‌دارد. */
+  const { rate, live } = useUsdRate();
+  const priceOf = (v: typeof variant) =>
+    (v.usd ? tomanFromUsd(v.usd, rate) : v.price);
+  const price = priceOf(variant);
+
   const missing = p.requiredInputs.filter((i) => !inputs[i.key]?.trim());
   const canAdd = missing.length === 0;
 
@@ -161,6 +176,14 @@ export function ProductView({ product: p }: { product: Product }) {
               </button>
               <ShareBubble title={p.title} path={`/product/${p.slug}`} variant="wide" />
             </div>
+
+            {/* شرایط، همین‌جا زیرِ تصویر.
+
+                قبلاً یک سکشنِ جدا پایینِ صفحه بود و کارفرما گفت
+                کاربر نباید برای دیدنِ شرطِ خرید اسکرول کند. حالا
+                کنارِ همان چیزی است که دارد نگاهش می‌کند، و چون
+                بازشو است جای زیادی هم نمی‌گیرد. */}
+            <ProductTerms p={p} />
           </div>
 
           <div className="pdp-hero__buy" id="buy">
@@ -184,7 +207,7 @@ export function ProductView({ product: p }: { product: Product }) {
                   onClick={() => setVariantId(v.id)}
                 >
                   <span className="pdp-plan__label">{v.label}</span>
-                  <span className="pdp-plan__price num">{fmt(v.price)}</span>
+                  <span className="pdp-plan__price num">{fmt(priceOf(v))}</span>
                   {v.compareAt && <s className="pdp-plan__was num">{fmt(v.compareAt)}</s>}
                 </button>
               ))}
@@ -220,9 +243,33 @@ export function ProductView({ product: p }: { product: Product }) {
               </div>
             )}
 
+            {/* ردیفِ نرخ — فقط وقتی محصول دلاری است.
+
+                برای محصولی که قیمتش تومانیِ ثابت است، نشان دادنِ
+                نرخِ دلار فقط سوال می‌سازد. */}
+            {variant.usd ? (
+              <dl className="pdp-fx">
+                <div>
+                  <dt>مبلغ</dt>
+                  <dd className="num">{variant.usd.toLocaleString('fa-IR')} دلار</dd>
+                </div>
+                <div>
+                  <dt>
+                    قیمت دلار
+                    {live && <span className="pdp-fx__live">لحظه‌ای</span>}
+                  </dt>
+                  <dd className="num">{fmt(rate)} تومان</dd>
+                </div>
+                <div className="pdp-fx__total">
+                  <dt>مبلغ نهایی</dt>
+                  <dd className="num">{fmt(price)} تومان</dd>
+                </div>
+              </dl>
+            ) : null}
+
             <div className="pdp-buy">
               <span className="pdp-buy__price">
-                <b className="num">{fmt(variant.price)}</b>
+                <b className="num">{fmt(price)}</b>
                 <span>تومان</span>
               </span>
               <button
@@ -243,6 +290,56 @@ export function ProductView({ product: p }: { product: Product }) {
           </div>
         </div>
       </section>
+
+{/* ---------- ۵ مرتبط‌ها ---------- */}
+      {related.length > 0 && (
+        <section className="section reveal" id="related">
+          <div className="wrap">
+            <div className="sec-head">
+              <h2>سرویس‌های مشابه</h2>
+            </div>
+            <div className="rail grid--4">
+              {related.map((r, i) => (
+                /* --i پله‌ی تأخیرِ ورود را می‌سازد؛ CSS خودش
+                   ضربدر شصت میلی‌ثانیه می‌کند */
+                <ProductCard key={r.slug} product={r} style={{ ['--i' as string]: i }} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+{/* ---------- مطالب مرتبط ----------
+
+           کسی که تا اینجا خوانده هنوز مردد است، وگرنه بالا سفارش
+           داده بود. مقاله‌ی هم‌موضوع دقیقاً همان چیزی است که تصمیم
+           را می‌بندد — و اگر امروز نخرد، بهانه‌ای برای برگشتن
+           می‌سازد. */}
+      {helpful.length > 0 && (
+        <section className="section section--tint reveal" id="reads">
+          <div className="wrap">
+            <div className="sec-head">
+              <h2>مطالبی که کمک می‌کند</h2>
+              <p className="sec-head__lead">
+                قبل از خرید بخوان، یا بعدش برای اینکه بیشتر ازش دربیاوری.
+              </p>
+            </div>
+
+            <div className="rail grid--3">
+              {helpful.map((a) => (
+                <Link key={a.slug} href={`/blog/${a.slug}`} className="art">
+                  <span className="art__topic" style={{ ['--accent' as string]: a.accent }}>
+                    {a.topicLabel}
+                  </span>
+                  <b>{a.title}</b>
+                  <p>{a.excerpt}</p>
+                  <span className="art__meta num">{a.readMinutes} دقیقه خواندن</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ---------- ۳ تصویر و متن ---------- */}
       <section className="section reveal" id="about">
@@ -296,17 +393,7 @@ export function ProductView({ product: p }: { product: Product }) {
         </div>
       </section>
 
-      {/* شرایط سفارش، پیش از جدول مشخصات.
-
-          مشخصات برای کسی است که مقایسه می‌کند؛ شرایط برای کسی که
-          می‌خواهد بخرد و نمی‌داند بعدش چه می‌شود. دومی زودتر لازم
-          می‌شود. */}
-      <section className="section reveal">
-        <div className="wrap">
-          <ProductTerms p={p} />
-        </div>
-      </section>
-
+      
       {/* ---------- مشخصات و آموزش فعال‌سازی ---------- */}
       <ProductSpecs p={p} />
 
@@ -334,24 +421,7 @@ export function ProductView({ product: p }: { product: Product }) {
         </div>
       </section>
 
-      {/* ---------- ۵ مرتبط‌ها ---------- */}
-      {related.length > 0 && (
-        <section className="section reveal" id="related">
-          <div className="wrap">
-            <div className="sec-head">
-              <h2>سرویس‌های مشابه</h2>
-            </div>
-            <div className="rail grid--4">
-              {related.map((r, i) => (
-                /* --i پله‌ی تأخیرِ ورود را می‌سازد؛ CSS خودش
-                   ضربدر شصت میلی‌ثانیه می‌کند */
-                <ProductCard key={r.slug} product={r} style={{ ['--i' as string]: i }} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
+      
       {/* ---------- ۶ و ۷ فهرست مطالب و سوالات ---------- */}
       {p.faq && p.faq.length > 0 && (
         <section className="section section--tint reveal" id="faq">
@@ -390,38 +460,7 @@ export function ProductView({ product: p }: { product: Product }) {
         </div>
       </section>
 
-      {/* ---------- مطالب مرتبط ----------
-
-           کسی که تا اینجا خوانده هنوز مردد است، وگرنه بالا سفارش
-           داده بود. مقاله‌ی هم‌موضوع دقیقاً همان چیزی است که تصمیم
-           را می‌بندد — و اگر امروز نخرد، بهانه‌ای برای برگشتن
-           می‌سازد. */}
-      {helpful.length > 0 && (
-        <section className="section section--tint reveal" id="reads">
-          <div className="wrap">
-            <div className="sec-head">
-              <h2>مطالبی که کمک می‌کند</h2>
-              <p className="sec-head__lead">
-                قبل از خرید بخوان، یا بعدش برای اینکه بیشتر ازش دربیاوری.
-              </p>
-            </div>
-
-            <div className="rail grid--3">
-              {helpful.map((a) => (
-                <Link key={a.slug} href={`/blog/${a.slug}`} className="art">
-                  <span className="art__topic" style={{ ['--accent' as string]: a.accent }}>
-                    {a.topicLabel}
-                  </span>
-                  <b>{a.title}</b>
-                  <p>{a.excerpt}</p>
-                  <span className="art__meta num">{a.readMinutes} دقیقه خواندن</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
+      
       {/* ---------- ۹ بستنِ صفحه ----------
 
            کسی که تا اینجا خوانده، تصمیمش را گرفته. اگر آخر صفحه

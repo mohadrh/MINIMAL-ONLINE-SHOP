@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ChevronDown, CircleAlert, Clock, KeyRound, ShieldCheck } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChevronDown, ChevronLeft, CircleAlert, Clock, KeyRound, ShieldCheck, X, Zap } from 'lucide-react';
 import type { Product } from '../../data/catalog';
+import { termsFor, type ProductGuide } from '../../data/productTerms';
 
 /**
  * شرایط و توضیحات سفارش.
@@ -26,6 +27,14 @@ import type { Product } from '../../data/catalog';
 
 export function ProductTerms({ p }: { p: Product }) {
   const [open, setOpen] = useState(false);
+  const [guide, setGuide] = useState<string | null>(null);
+
+  /* متنِ اختصاصیِ همین محصول، اگر کارفرما داده باشد.
+     شرطِ کلاد درباره‌ی Organization ID است و شرطِ تلگرام
+     درباره‌ی درست وارد کردنِ آیدی — این‌ها از داده در
+     نمی‌آیند و حدسِ غلط روی صفحه‌ی پرداخت گران تمام
+     می‌شود. */
+  const own = termsFor(p.slug);
 
   const needs = p.requiredInputs ?? [];
   /* «روی حساب خودت» یعنی ما چیزی را ارتقا می‌دهیم یا شارژ می‌کنیم،
@@ -89,6 +98,9 @@ export function ProductTerms({ p }: { p: Product }) {
 
       {open && (
         <div className="pterms__full">
+          {own ? (
+            own.body.map((t, i) => <p key={i}>{t}</p>)
+          ) : (
           <p>
             {onOwnAccount ? (
               <>
@@ -103,8 +115,9 @@ export function ProductTerms({ p }: { p: Product }) {
               </>
             )}
           </p>
+          )}
 
-          {needs.length > 0 && (
+          {!own && needs.length > 0 && (
             <p>
               برای انجام سفارش، {needs.map((i) => i.label).join(' و ')} را لازم
               داریم. این را در همین صفحه پیش از پرداخت وارد می‌کنی و بعد از ثبت
@@ -114,6 +127,9 @@ export function ProductTerms({ p }: { p: Product }) {
 
           <h3>نکات مهم</h3>
           <ul>
+            {own?.notes?.length
+              ? own.notes.map((n) => <li key={n}>{n}</li>)
+              : <>
             <li>مسئولیت درستی اطلاعاتی که وارد می‌کنی با خودت است.</li>
             <li>
               {p.warrantyLabel} — اگر وسط دوره مشکلی پیش آمد، جایگزین می‌کنیم یا
@@ -127,6 +143,7 @@ export function ProductTerms({ p }: { p: Product }) {
               اگر سفارشت بیش از زمان معمول طول کشید، از پنل کاربری تیکت بزن؛
               شماره‌ی سفارش همان‌جا جلوی چشم ماست و سریع‌تر پیگیری می‌شود.
             </li>
+                </>}
           </ul>
 
           {p.notes?.length ? (
@@ -139,6 +156,108 @@ export function ProductTerms({ p }: { p: Product }) {
           ) : null}
         </div>
       )}
+
+      {/* راهنماها جدا از متنِ شرایط‌اند.
+
+          کسی که دنبالِ «Organization ID را از کجا بیاورم» است، دارد
+          یک کارِ مشخص را انجام می‌دهد و نباید مجبور شود کلِ شرایط
+          را باز کند تا پیدایش کند. */}
+      {own?.guides?.map((g) => (
+        <button
+          key={g.id}
+          type="button"
+          className="pterms__guide"
+          onClick={() => setGuide(g.id)}
+        >
+          <Zap aria-hidden="true" />
+          <span>{g.title}</span>
+          <ChevronLeft aria-hidden="true" />
+        </button>
+      ))}
+
+      {guide && own?.guides && (
+        <GuideModal
+          guides={own.guides}
+          activeId={guide}
+          onSelect={setGuide}
+          onClose={() => setGuide(null)}
+        />
+      )}
     </section>
   );
 }
+
+/* ---------------------------------------------------------------
+   پنجره‌ی راهنما
+--------------------------------------------------------------- */
+
+function GuideModal({
+  guides, activeId, onSelect, onClose,
+}: {
+  guides: ProductGuide[];
+  activeId: string;
+  onSelect: (id: string) => void;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const g = guides.find((x) => x.id === activeId) ?? guides[0];
+
+  /* Escape می‌بندد و فوکوس می‌رود داخلِ پنجره. بدونِ این، کاربرِ
+     صفحه‌کلید پنجره را باز می‌کند و فوکوس پشتِ آن در صفحه می‌ماند
+     — یعنی عملاً نمی‌تواند ببنددش. */
+  useEffect(() => {
+    ref.current?.focus();
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="gmod" role="presentation" onClick={onClose}>
+      <div
+        ref={ref}
+        className="gmod__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label={g.title}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="gmod__head">
+          <b>آموزش و راهنما</b>
+          <button type="button" className="gmod__x" onClick={onClose} aria-label="بستن">
+            <X aria-hidden="true" />
+          </button>
+        </div>
+
+        {guides.length > 1 && (
+          <div className="gmod__tabs" role="tablist">
+            {guides.map((x) => (
+              <button
+                key={x.id}
+                role="tab"
+                aria-selected={x.id === activeId}
+                className={`gmod__tab ${x.id === activeId ? 'is-on' : ''}`}
+                onClick={() => onSelect(x.id)}
+              >
+                {x.title}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="gmod__body">
+          <h3>{g.title}</h3>
+          {g.body.map((t, i) => <p key={i}>{t}</p>)}
+          {g.bullets && <ul>{g.bullets.map((b, i) => <li key={i}>{b}</li>)}</ul>}
+          {g.footer && <p className="gmod__foot">{g.footer}</p>}
+        </div>
+
+        <button type="button" className="btn btn--primary gmod__ok" onClick={onClose}>
+          تایید و ادامه
+        </button>
+      </div>
+    </div>
+  );
+}
+

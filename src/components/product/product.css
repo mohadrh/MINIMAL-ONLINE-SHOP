@@ -1778,3 +1778,170 @@
   .bub--cmp span { display: none; }
   .bub--cmp { width: 28px; padding-inline: 0; }
 }
+
+/* ============================================================
+   نرخ دلار و مبلغ نهایی
+
+   الگو از سایت‌های همین بازار: کاربر می‌خواهد بداند عدد از کجا
+   آمده. مبلغِ دلاری، نرخِ روز، و حاصلِ ضرب — سه سطر، بدون توضیحِ
+   اضافه.
+   ============================================================ */
+
+.pdp-fx {
+  display: grid;
+  gap: 6px;
+  margin-block: var(--sp-4) var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--r-lg);
+  background: var(--wash);
+  font-size: var(--text-sm);
+}
+[data-theme="dark"] .pdp-fx { background: rgba(255, 255, 255, 0.05); }
+
+.pdp-fx > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.pdp-fx dt { color: var(--ink-faint); display: inline-flex; align-items: center; gap: 6px; }
+.pdp-fx dd { font-weight: 700; }
+
+.pdp-fx__total {
+  margin-block-start: 4px;
+  padding-block-start: 8px;
+  border-block-start: 1px solid var(--line);
+}
+[data-theme="dark"] .pdp-fx__total { border-block-start-color: rgba(255, 255, 255, 0.1); }
+.pdp-fx__total dt { color: var(--ink); font-weight: 700; }
+.pdp-fx__total dd { color: var(--brand); font-size: var(--text-base); }
+
+/* نشانِ «لحظه‌ای» فقط وقتی نرخ واقعاً از منبعِ زنده آمده باشد */
+.pdp-fx__live {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 999px;
+  color: #0a7a45;
+  background: rgba(16, 163, 127, 0.16);
+}
+[data-theme="dark"] .pdp-fx__live { color: #4ade9f; }
+
+/* ============================================================
+   دکمه‌ی راهنما و پنجره‌اش
+   ============================================================ */
+
+.pterms__guide {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  margin-block-start: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--paper);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+[data-theme="dark"] .pterms__guide {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.pterms__guide:hover { border-color: var(--brand); }
+.pterms__guide > span { flex: 1; }
+.pterms__guide svg { width: 16px; height: 16px; flex: none; color: var(--brand); }
+.pterms__guide svg:last-child { color: var(--ink-faint); }
+
+.gmod {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-4);
+  background: rgba(10, 11, 15, 0.62);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  animation: gmod-in 200ms var(--ease);
+}
+@keyframes gmod-in { from { opacity: 0; } to { opacity: 1; } }
+
+.gmod__panel {
+  width: min(680px, 100%);
+  max-height: min(86vh, 760px);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-xl);
+  background: var(--paper);
+  box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+[data-theme="dark"] .gmod__panel { background: #12141b; }
+
+.gmod__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-4) var(--sp-5);
+  border-block-end: 1px solid var(--line);
+}
+[data-theme="dark"] .gmod__head { border-block-end-color: rgba(255, 255, 255, 0.1); }
+
+.gmod__x {
+  display: grid;
+  place-items: center;
+  width: 32px; height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--wash);
+  cursor: pointer;
+  color: var(--ink-faint);
+}
+.gmod__x:hover { color: var(--ink); }
+.gmod__x svg { width: 16px; height: 16px; }
+
+.gmod__tabs {
+  display: flex;
+  gap: var(--sp-1);
+  padding-inline: var(--sp-5);
+  border-block-end: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.gmod__tabs::-webkit-scrollbar { display: none; }
+[data-theme="dark"] .gmod__tabs { border-block-end-color: rgba(255, 255, 255, 0.1); }
+
+.gmod__tab {
+  padding: var(--sp-3) var(--sp-3);
+  border: 0;
+  border-block-end: 2px solid transparent;
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.gmod__tab.is-on { color: var(--ink); font-weight: 700; border-block-end-color: var(--brand); }
+
+.gmod__body {
+  padding: var(--sp-5);
+  overflow-y: auto;
+  /* بدونِ این، فرزندِ فلکس کوچک‌تر از محتوایش نمی‌شود و اسکرول
+     هیچ‌وقت فعال نمی‌شود — همان دامی که در مگامنو هم افتادیم */
+  min-height: 0;
+  font-size: var(--text-sm);
+  line-height: 2;
+}
+.gmod__body h3 { font-size: var(--text-base); margin-block-end: var(--sp-3); }
+.gmod__body p { margin-block-end: var(--sp-3); color: var(--ink-faint); }
+.gmod__body ul { display: grid; gap: 8px; margin-block: var(--sp-3); padding-inline-start: var(--sp-4); }
+.gmod__body li { color: var(--ink-faint); list-style: square; }
+.gmod__foot { color: var(--ink); font-weight: 600; }
+
+.gmod__ok { margin: 0 var(--sp-5) var(--sp-5); }

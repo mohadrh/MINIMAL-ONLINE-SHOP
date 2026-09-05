@@ -20,9 +20,11 @@
    ============================================================ */
 
 import type { Product, Variant } from './catalog';
+import { DEFAULT_USD_RATE, tomanFromUsd } from '../lib/rate';
 
-/** نرخِ کاری برای تبدیل دلار به تومان — یک جا، نه نُه جا */
-const RATE = 110_000;
+/* نرخ از lib/rate می‌آید — همان عددی که صفحه‌ی محصول هم نشان
+   می‌دهد. قبلاً این‌جا یک ثابتِ جدا بود و دو جا باید عوض
+   می‌شد — یعنی یک روز یکیشان یادمان می‌رفت. */
 
 interface GiftCfg {
   slug: string;
@@ -169,9 +171,7 @@ const CFG: GiftCfg[] = [
 --------------------------------------------------------------- */
 
 function toman(usd: number) {
-  /* گرد به ده‌هزار تومان — قیمتِ با رقمِ خرد در این بازار
-     بی‌اعتماد به نظر می‌رسد */
-  return Math.round((usd * RATE) / 10_000) * 10_000;
+  return tomanFromUsd(usd, DEFAULT_USD_RATE);
 }
 
 function giftProduct(c: GiftCfg): Product {
@@ -179,6 +179,7 @@ function giftProduct(c: GiftCfg): Product {
     id: `${c.slug}-${usd}`,
     label: `${usd.toLocaleString('fa-IR')} دلاری`,
     price: toman(usd),
+    usd,
     stock: null,
     isDefault: i === 0,
     guide: {
