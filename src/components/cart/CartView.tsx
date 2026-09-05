@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { useCart } from '../../app/providers';
-import { asset } from '../../lib/asset';
+import { ProductArt } from '../ui/ProductArt';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -47,9 +47,18 @@ export function CartView() {
         <div className="cart__lines">
           {lines.map((l) => (
             <div key={l.key} className="cline">
-              <span className="cline__art">
-                <img src={asset(l.product.media.thumbnail)} alt="" aria-hidden="true" />
-              </span>
+              {/* از ProductArt می‌آید نه img مستقیم.
+
+                  گیفت کارت‌ها هنوز تصویر ندارند و با src خالی،
+                  مرورگر آدرسِ خودِ صفحه را می‌گرفت و کلِ صفحه را
+                  دوباره دانلود می‌کرد. ProductArt این حالت را
+                  می‌شناسد و جایگزینِ تایپوگرافیک می‌گذارد. */}
+              <ProductArt
+                className="cline__art"
+                src={l.product.media.thumbnail}
+                title={l.product.englishTitle}
+                brand={l.product.brand}
+              />
 
               <div className="cline__body">
                 <b className="cline__name">{l.product.title}</b>

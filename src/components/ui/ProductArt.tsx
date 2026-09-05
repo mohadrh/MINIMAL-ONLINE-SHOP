@@ -17,6 +17,17 @@ import { asset } from '../../lib/asset';
  *   رندر شده و پیش از رسیدن ری‌اکت شکسته. رویدادِ خطای آن هرگز به
  *   ری‌اکت نمی‌رسد، و اولین نسخه دقیقاً به همین دلیل هیچ جایگزینی
  *   نشان نمی‌داد.
+ *
+ * ⚠ و یک حالت سوم که گران‌تر از هر دو بود: src خالی.
+ *
+ * گیفت کارت‌ها هنوز تصویر ندارند و thumbnail آن‌ها رشته‌ی خالی
+ * است. با src="" مرورگر آدرسِ خودِ صفحه را می‌گیرد — یعنی برای هر
+ * کارت، کلِ صفحه دوباره دانلود می‌شود — و بعد چون تصویر نیست،
+ * جایگزین را نشان می‌دهد. یعنی هم ترافیک هدر می‌رفت هم نتیجه‌اش
+ * همان جایگزین بود.
+ *
+ * حالا رشته‌ی خالی همان اول یعنی «تصویر ندارد» و اصلاً img ساخته
+ * نمی‌شود.
  */
 export function ProductArt({
   src,
@@ -33,7 +44,7 @@ export function ProductArt({
 }) {
   const [failed, setFailed] = useState(false);
 
-  if (failed) {
+  if (failed || !src?.trim()) {
     return (
       <span className={`${className} ${blankClassName}`.trim()}>
         <span className="art-plate" aria-hidden="true">
