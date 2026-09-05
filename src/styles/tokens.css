@@ -216,3 +216,29 @@
 
   color-scheme: dark;
 }
+
+/* ============================================================
+   مختصاتِ گره‌های مشِ دکمه
+
+   ⚠ این‌ها باید با @property ثبت شوند، وگرنه انیمیشن کار نمی‌کند.
+
+   متغیرِ CSSِ ثبت‌نشده از نظر مرورگر یک رشته‌ی بی‌معناست، پس بین
+   دو مقدارش درون‌یابی نمی‌شود — کیفریم فقط در صد درصد می‌پرد و
+   حرکتی دیده نمی‌شود. با syntax: '<percentage>' مرورگر می‌فهمد
+   عدد است و نرم بین دو حالت حرکت می‌کند.
+
+   همین تفاوت است که اجازه می‌دهد خودِ لکه‌ها جابه‌جا شوند به‌جای
+   اینکه کل لایه بچرخد: چرخش، شش لکه را مثل یک چیزِ واحد می‌چرخاند
+   و از نزدیک مصنوعی دیده می‌شود؛ این‌جا هر گره مدار خودش را دارد.
+   ============================================================ */
+
+@property --pbtn-p1x { syntax: '<percentage>'; inherits: false; initial-value: 16%; }
+@property --pbtn-p1y { syntax: '<percentage>'; inherits: false; initial-value: 26%; }
+@property --pbtn-p2x { syntax: '<percentage>'; inherits: false; initial-value: 80%; }
+@property --pbtn-p2y { syntax: '<percentage>'; inherits: false; initial-value: 20%; }
+@property --pbtn-p3x { syntax: '<percentage>'; inherits: false; initial-value: 50%; }
+@property --pbtn-p3y { syntax: '<percentage>'; inherits: false; initial-value: 78%; }
+@property --pbtn-p4x { syntax: '<percentage>'; inherits: false; initial-value: 86%; }
+@property --pbtn-p4y { syntax: '<percentage>'; inherits: false; initial-value: 70%; }
+@property --pbtn-p5x { syntax: '<percentage>'; inherits: false; initial-value: 28%; }
+@property --pbtn-p5y { syntax: '<percentage>'; inherits: false; initial-value: 54%; }
