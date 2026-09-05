@@ -4,7 +4,7 @@ import { AccountView } from '../../components/account/AccountView';
 
 export const metadata: Metadata = {
   title: 'پنل کاربری | فونیکس شاپ',
-  description: 'سفارش‌ها، تحویل‌ها، اشتراک‌های فعال و کیف پول شما.',
+  description: 'سفارش‌ها، تحویل‌ها، اشتراک‌های فعال و کیف پولت.',
 };
 
 export default function AccountPage() {

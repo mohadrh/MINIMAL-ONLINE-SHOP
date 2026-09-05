@@ -409,7 +409,7 @@ export function AccountView() {
         {tab === 'club' && (
           <>
             <div className="acc__balance">
-              <span className="acc__label">امتیاز شما</span>
+              <span className="acc__label">امتیازت</span>
               <b className="num">{fmt(PROFILE.points)}</b>
             </div>
 

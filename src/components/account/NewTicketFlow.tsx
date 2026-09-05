@@ -89,7 +89,7 @@ export function NewTicketFlow({
     return (
       <div className="tk tk--done">
         <span className="tk__done-icon tk__done-icon--ok" aria-hidden="true"><CheckCircle2 /></span>
-        <h3>تیکت شما ثبت شد</h3>
+        <h3>تیکتت ثبت شد</h3>
         <p>
           شماره‌ی پیگیری: <b className="num" dir="ltr">{ticketId}</b>
           <br />
@@ -121,7 +121,7 @@ export function NewTicketFlow({
 
       {/* ---------- گام ۱ موضوع ---------- */}
       <div className="tk__field">
-        <label htmlFor="tk-subject">موضوع مشکل شما</label>
+        <label htmlFor="tk-subject">موضوع مشکل</label>
         <input
           id="tk-subject"
           type="text"
