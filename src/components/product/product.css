@@ -1945,3 +1945,157 @@
 .gmod__foot { color: var(--ink); font-weight: 600; }
 
 .gmod__ok { margin: 0 var(--sp-5) var(--sp-5); }
+
+/* ============================================================
+   شرایط و توضیحات
+
+   ⚠ این بلوک اصلاً استایل نداشت.
+
+   کامپوننتش کلاس‌ها را می‌نوشت — pterms__head، pterms__quick،
+   pterms__ico، pterms__toggle — ولی هیچ‌کدام قاعده‌ای نداشتند.
+   نتیجه‌اش این بود که آیکون‌ها بالای متنشان می‌نشستند، همه‌چیز
+   وسط‌چین بود (ترازِ ستونِ تصویر را ارث می‌برد)، و بلوک هیچ ظرفی
+   نداشت — در حالی که دکمه‌های راهنمای زیرش کارت داشتند و همین
+   تفاوت، بی‌نظمی را بیشتر به چشم می‌آورد.
+
+   الگو از همان تصویری که کارفرما داد: یک کارت، تیتر با خط
+   جداکننده‌ی زیرش، متنِ محو، و «بیشتر» در انتها.
+   ============================================================ */
+
+.pterms {
+  /* ترازِ ارث‌بری‌شده از ستونِ تصویر باید صریح خنثی شود */
+  text-align: start;
+  padding: var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--paper);
+}
+[data-theme="dark"] .pterms {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.pterms__head {
+  padding-block-end: var(--sp-3);
+  margin-block-end: var(--sp-4);
+  border-block-end: 1px solid var(--line);
+}
+[data-theme="dark"] .pterms__head { border-block-end-color: rgba(255, 255, 255, 0.1); }
+
+.pterms__head h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-base);
+  font-weight: 800;
+}
+/* آیکون کنارِ تیتر، نه بالایش — و بدون کادر */
+.pterms__head h2 svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--brand);
+}
+
+/* ---------- سه نکته‌ی همیشه‌پیدا ---------- */
+
+.pterms__quick {
+  display: grid;
+  gap: var(--sp-4);
+  margin-block-end: var(--sp-4);
+}
+
+.pterms__quick li {
+  display: grid;
+  /* آیکون کنار، متن کنارش — نه روی هم */
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sp-3);
+}
+
+/* آیکون تنهاست: نه کادر، نه پس‌زمینه. قاعده‌ی ثابتِ سایت. */
+.pterms__ico {
+  display: grid;
+  place-items: center;
+  color: var(--brand);
+}
+.pterms__ico svg { width: 18px; height: 18px; }
+
+.pterms__quick b {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  margin-block-end: 2px;
+}
+.pterms__quick p {
+  font-size: var(--text-sm);
+  line-height: 1.85;
+  color: var(--ink-faint);
+}
+
+/* ---------- کلید باز و بسته ---------- */
+
+.pterms__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--brand);
+  cursor: pointer;
+}
+.pterms__toggle svg {
+  width: 15px;
+  height: 15px;
+  transition: rotate var(--dur) var(--ease);
+}
+.pterms__toggle[aria-expanded="true"] svg { rotate: 180deg; }
+
+/* ---------- متنِ کامل ---------- */
+
+.pterms__full {
+  margin-block-start: var(--sp-4);
+  padding-block-start: var(--sp-4);
+  border-block-start: 1px solid var(--line);
+  font-size: var(--text-sm);
+  line-height: 2;
+}
+[data-theme="dark"] .pterms__full { border-block-start-color: rgba(255, 255, 255, 0.1); }
+
+.pterms__full p { color: var(--ink-faint); }
+.pterms__full p + p { margin-block-start: var(--sp-3); }
+
+.pterms__full h3 {
+  font-size: var(--text-sm);
+  font-weight: 800;
+  margin-block: var(--sp-4) var(--sp-2);
+}
+
+.pterms__full ul {
+  display: grid;
+  gap: 8px;
+  padding-inline-start: var(--sp-4);
+}
+.pterms__full li {
+  list-style: square;
+  color: var(--ink-faint);
+}
+.pterms__full li::marker { color: var(--brand); }
+
+/* ظرفِ بیرونی: کارتِ شرایط و ردیف‌های راهنما، با فاصله‌ی یکسان */
+.ptermsx { display: grid; gap: var(--sp-3); }
+.ptermsx .pterms__guide { margin-block-start: 0; }
+
+/* روی موبایل تب‌ها می‌پیچند، نه اینکه افقی بلغزند.
+
+   نوارِ لغزان اسکرول‌بارش پنهان است، پس تبِ دوم اصلاً دیده
+   نمی‌شود و هیچ نشانه‌ای هم نمی‌دهد که چیزی آن‌طرف هست. با دو تب،
+   پیچیدن چند پیکسل ارتفاع می‌گیرد و هر دو پیدا می‌مانند. */
+@media (max-width: 480px) {
+  .gmod__tabs { flex-wrap: wrap; overflow-x: visible; }
+  .gmod__tab { flex: 1 1 auto; text-align: center; }
+}

@@ -46,6 +46,10 @@ export function ProductTerms({ p }: { p: Product }) {
     || (p.tags ?? []).includes('upgrade-on-account');
 
   return (
+    /* کارتِ شرایط و ردیف‌های راهنما خواهر و برادرند، نه تودرتو.
+       در نمونه‌ای که کارفرما داد هم راهنماها کارت‌های جدا زیر
+       کارتِ شرایط‌اند — داخلِ آن بودنشان مرزها را قاطی می‌کرد. */
+    <div className="ptermsx">
     <section className="pterms">
       <div className="pterms__head">
         <h2>
@@ -157,6 +161,8 @@ export function ProductTerms({ p }: { p: Product }) {
         </div>
       )}
 
+    </section>
+
       {/* راهنماها جدا از متنِ شرایط‌اند.
 
           کسی که دنبالِ «Organization ID را از کجا بیاورم» است، دارد
@@ -183,7 +189,7 @@ export function ProductTerms({ p }: { p: Product }) {
           onClose={() => setGuide(null)}
         />
       )}
-    </section>
+    </div>
   );
 }
 
