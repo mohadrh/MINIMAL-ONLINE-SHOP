@@ -447,62 +447,70 @@ a { color: inherit; text-decoration: none; }
 
 .btn--primary { overflow: hidden; }
 
+/* حباب‌هایی که به هم می‌چسبند.
+
+   ⚠ نکته‌ای که چند بار از قلم افتاد: چسبیدن کارِ blur نیست.
+
+   blur لبه‌ی هر حباب را محو می‌کند، پس دو حبابِ نزدیک فقط روی هم
+   می‌افتند و همچنان دو چیزِ جدا دیده می‌شوند. چیزی که آن گردنه‌ی
+   کشیده‌ی بینِ دو قطره را می‌سازد، فیلترِ SVG در GooFilter است:
+   آلفا محو می‌شود و بعد با شیبِ تند کشیده می‌شود، پس هرجا آلفای
+   دو حباب روی هم جمع شده از آستانه رد می‌شود و پر می‌ماند.
+
+   برای همین لبه‌ی خودِ حباب‌ها این‌جا قاطع است (رنگ تا ۶۰٪ بعد
+   قطع) نه محو — کار محو کردن با فیلتر است، و اگر خودِ گرادیان هم
+   محو باشد چیزی برای چسباندن نمی‌ماند.
+
+   حرکت هم باید مستقل باشد وگرنه هیچ‌وقت به هم نمی‌رسند: هر حباب
+   یک لایه‌ی background جداست و background-position هر لایه به
+   مقصدِ خودش می‌رود. چرخشِ کلِ لایه این را نمی‌داد، چون فاصله‌ی
+   حباب‌ها ثابت می‌ماند. */
 .btn--primary::before,
 .btn--primary::after {
   content: '';
   position: absolute;
-  /* ⚠ لایه نزدیکِ خودِ دکمه می‌ماند.
-
-     با ‎-55%‎ لایه سه برابرِ دکمه می‌شد و حباب‌ها آن‌قدر از هم دور
-     می‌افتادند که هر کدام یک لکه‌ی جدا به نظر می‌رسید. حالا
-     نزدیک‌اند و مثل چند حبابِ کنار هم در یک مایع دیده می‌شوند. */
-  inset: -22%;
+  inset: -30%;
   z-index: -1;
-  /* پررنگ و همیشه در گردش — چیزی که از پشتِ شیشه دیده می‌شود */
-  /* پررنگ‌تر و حباب‌تر: بلورِ کمتر لبه‌ی لکه‌ها را نگه
-     می‌دارد پس حباب دیده می‌شود نه یک لكه‌ی پخش، و
-     اشباع رنگ را از پشتِ شیشه زنده نگه می‌دارد. */
   opacity: 0.95;
   pointer-events: none;
-  filter: blur(5px) saturate(1.55);
-  transition: opacity 320ms var(--ease), filter 320ms var(--ease);
+  background-repeat: no-repeat;
+  filter: url(#phx-goo);
+  transition: opacity 320ms var(--ease);
 }
 
-/* شش حباب روی دو مدار. رنگ‌ها همان کمانِ لوگو، با اشباعِ کامل —
-   شیشه و بلورِ رویشان خودشان ملایمشان می‌کنند. */
+/* اگر فیلترِ SVG در دسترس نبود، دست‌کم محوِ ساده بماند */
+@supports not (filter: url(#phx-goo)) {
+  .btn--primary::before,
+  .btn--primary::after { filter: blur(7px); }
+}
+
 .btn--primary::before {
-  background:
-    radial-gradient(22% 34% at 38% 40%, #ffb14e 0%, #ffb14e 62%, transparent 72%),
-    radial-gradient(19% 30% at 56% 33%, #ff4d9f 0%, #ff4d9f 62%, transparent 72%),
-    radial-gradient(21% 32% at 47% 62%, #7a6bff 0%, #7a6bff 62%, transparent 72%),
-    radial-gradient(16% 26% at 65% 58%, #ffd08a 0%, #ffd08a 62%, transparent 72%);
-  animation: bub-spin-a 13s cubic-bezier(.45, 0, .55, 1) infinite;
+  background-image:
+    radial-gradient(circle closest-side, #ffb14e 0 60%, transparent 62%),
+    radial-gradient(circle closest-side, #ff4d9f 0 60%, transparent 62%),
+    radial-gradient(circle closest-side, #7a6bff 0 60%, transparent 62%);
+  background-size: 62% 62%, 52% 52%, 58% 58%;
+  background-position: 18% 26%, 62% 20%, 40% 74%;
+  animation: goo-a 11s cubic-bezier(.45, 0, .55, 1) infinite alternate;
 }
 
 .btn--primary::after {
-  background:
-    radial-gradient(18% 29% at 60% 52%, #3ddcff 0%, #3ddcff 62%, transparent 72%),
-    radial-gradient(21% 33% at 42% 55%, #ff8342 0%, #ff8342 62%, transparent 72%),
-    radial-gradient(17% 27% at 52% 38%, #c94ff5 0%, #c94ff5 62%, transparent 72%),
-    radial-gradient(15% 24% at 36% 36%, #ff9fd0 0%, #ff9fd0 62%, transparent 72%);
-  animation: bub-spin-b 19s cubic-bezier(.45, 0, .55, 1) infinite reverse;
+  background-image:
+    radial-gradient(circle closest-side, #ff8342 0 60%, transparent 62%),
+    radial-gradient(circle closest-side, #c94ff5 0 60%, transparent 62%),
+    radial-gradient(circle closest-side, #3ddcff 0 60%, transparent 62%);
+  background-size: 54% 54%, 48% 48%, 44% 44%;
+  background-position: 74% 66%, 30% 62%, 56% 40%;
+  animation: goo-b 15s cubic-bezier(.45, 0, .55, 1) infinite alternate;
 }
 
-/* مایع، نه چرخ‌دنده.
-
-   چرخشِ تنها با شتابِ خطی، مکانیکی دیده می‌شود: فاصله‌ی حباب‌ها
-   ثابت است و کل نقش با سرعت یکنواخت می‌گردد. با نفسِ مقیاس و
-   شتابِ نرم، حباب‌ها موقع چرخش کمی به هم نزدیک و دور می‌شوند و
-   حرکت شبیه چیزی می‌شود که در مایع شناور است. */
-@keyframes bub-spin-a {
-  0%   { rotate: 0deg;   scale: 1; }
-  50%  { rotate: 180deg; scale: 1.14; }
-  100% { rotate: 360deg; scale: 1; }
+/* هر حباب مقصدِ خودش را دارد، پس در راه به هم می‌رسند، یکی
+   می‌شوند و دوباره جدا می‌شوند */
+@keyframes goo-a {
+  to { background-position: 52% 62%, 26% 58%, 68% 30%; }
 }
-@keyframes bub-spin-b {
-  0%   { rotate: 0deg;   scale: 1.1; }
-  50%  { rotate: 180deg; scale: 0.92; }
-  100% { rotate: 360deg; scale: 1.1; }
+@keyframes goo-b {
+  to { background-position: 34% 30%, 66% 34%, 28% 68%; }
 }
 
 /* روی هاور شیشه شفاف‌تر می‌شود و حباب‌ها تیزتر — انگار نزدیک‌تر
@@ -528,7 +536,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .btn--primary:hover::before,
-.btn--primary:hover::after { opacity: 1; filter: blur(4px) saturate(1.7); }
+.btn--primary:hover::after { opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
   .btn--primary::before,

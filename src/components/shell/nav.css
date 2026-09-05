@@ -198,10 +198,13 @@
 .stop svg, .chatfab svg, .assistfab svg { width: 19px; height: 19px; }
 
 /* چیدمان ستونی در گوشه‌ی پایین — هر کدام یک پله بالاتر */
-.stop      { inset-inline-start: var(--sp-6); bottom: var(--sp-6); }
-.chatfab   { inset-inline-end: var(--sp-6);   bottom: var(--sp-6);  background: var(--blue); border-color: var(--blue); color: #fff; }
+/* ⚠ چت سمتِ شروع (در راست‌به‌چپ یعنی راست) و بالا‌رفتن سمتِ پایان.
+   قبلاً برعکس بود و دکمه‌ی گفتگو گوشه‌ی چپ می‌افتاد — جایی
+   که کاربرِ فارسی‌زبان دنبالش نمی‌گردد. */
+.stop      { inset-inline-end: var(--sp-6);   bottom: var(--sp-6); }
+.chatfab   { inset-inline-start: var(--sp-6); bottom: var(--sp-6);  background: var(--blue); border-color: var(--blue); color: #fff; }
 .chatfab:hover { background: var(--blue-hover); border-color: var(--blue-hover); color: #fff; }
-.assistfab { inset-inline-end: var(--sp-6);   bottom: calc(var(--sp-6) + 56px); }
+.assistfab { inset-inline-start: var(--sp-6); bottom: calc(var(--sp-6) + 56px); }
 
 
 /* ============================================================
@@ -473,7 +476,7 @@
 .chatfab {
   position: fixed;
   z-index: 65;
-  inset-inline-end: var(--sp-6);
+  inset-inline-start: var(--sp-6);
   inset-block-end: var(--sp-6);
   width: 56px;
   height: 56px;

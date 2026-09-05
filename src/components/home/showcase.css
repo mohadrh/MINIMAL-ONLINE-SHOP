@@ -378,13 +378,15 @@
   border-radius: var(--r-lg);
   transition: background var(--dur) var(--ease), translate var(--dur) var(--ease);
 }
-/* هر خدمت رنگِ خودش را روی هاور می‌گیرد — شش خانه‌ی خاکستریِ
-   یکسان، فهرست به نظر می‌رسد نه شش کارِ متفاوت */
-.psv__x:hover {
-  translate: 0 -3px;
-  background: color-mix(in srgb, var(--tube) 12%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tube) 30%, transparent);
-}
+/* روی هاور خودِ آیتم روشن می‌شود، نه اینکه کادر بگیرد.
+
+   قاعده‌ی همیشگیِ سایت این‌جا هم هست: نشان و متن خودشان رنگ و نور
+   می‌گیرند، و هیچ جعبه‌ای پشتشان نمی‌آید. درخشش با drop-shadow
+   است نه box-shadow، چون drop-shadow خطوطِ خودِ نشان را دنبال
+   می‌کند و box-shadow دورِ مستطیل هاله می‌سازد — یعنی همان کادری
+   که نمی‌خواهیم. */
+.psv__x:hover { translate: 0 -3px; }
+.psv__x:hover b { color: var(--tube); }
 /* بدون کادر و بدون پس‌زمینه — خودِ نشان */
 .psv__x svg {
   width: 26px;
@@ -392,7 +394,13 @@
   color: var(--ink-faint);
   transition: color var(--dur) var(--ease);
 }
-.psv__x:hover svg { color: var(--tube); }
+.psv__x:hover svg {
+  color: var(--tube);
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--tube) 65%, transparent));
+  scale: 1.12;
+}
+.psv__x svg { transition: color var(--dur) var(--ease), filter var(--dur) var(--ease), scale var(--dur) var(--ease); }
+.psv__x b { transition: color var(--dur) var(--ease); }
 .psv__x b { font-size: var(--text-sm); font-weight: 700; }
 .psv__x-go {
   display: inline-flex;
@@ -662,6 +670,17 @@
 }
 .srst--hero .srst__inner { padding-inline: 0; }
 
+/* ⚠ روی موبایل حاشیه‌ی ظرف برمی‌گردد.
+
+   برداشتنِ padding در دسکتاپ درست است چون جعبه خودش عرضِ
+   محدود دارد و وسط می‌ایستد؛ ولی در موبایل همان باعث می‌شد
+   جعبه به دو لبه‌ی صفحه بچسبد. */
+@media (max-width: 700px) {
+  .srst--hero .srst__inner { padding-inline: var(--gutter); }
+  .srst--hero .srst__box,
+  .srst--hero .srst__out { width: 100%; }
+}
+
 .srst__lead {
   text-align: center;
   font-size: var(--text-sm);
@@ -711,4 +730,22 @@
   font-size: var(--text-xs);
   line-height: 1.8;
   color: var(--ink-faint);
+}
+
+/* ---------- گوشه‌ی کروتر و چیدمانِ بنتو ----------
+
+   هفت کارتِ هم‌اندازه در سه ستون، یک جدول است نه یک چیدمان. اولین
+   کارت دو ستون می‌گیرد تا ریتم بگیرد و چشم جایی برای شروع داشته
+   باشد. گوشه‌ها هم گردتر شدند تا با بقیه‌ی سطح‌های سایت بخوانند.
+--------------------------------------------------------------- */
+
+.catcard { border-radius: 28px; }
+.catcard__chips { border-radius: 18px; }
+
+@media (min-width: 981px) {
+  .catcard:first-child {
+    grid-column: span 2;
+  }
+  /* در کارتِ پهن، نام‌ها و متن کنار هم می‌نشینند نه زیر هم */
+  .catcard:first-child .catcard__lead { max-width: 46ch; }
 }
