@@ -8,7 +8,6 @@ import { Reveal } from '../components/motion/Reveal';
 import { CursorLight } from '../components/motion/CursorLight';
 import { ScrollTop } from '../components/shell/ScrollTop';
 import { LiveChat } from '../components/shell/LiveChat';
-import { GooFilter } from '../components/ui/GooFilter';
 import { CompareProvider, CompareBar } from '../components/shop/Compare';
 import { CartDrawer } from '../components/cart/CartDrawer';
 
@@ -68,8 +67,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CartDrawer />
           </CompareProvider>
           <LiveChat />
-          {/* فیلترِ چسبندگیِ حباب‌های دکمه — یک بار برای کل صفحه */}
-          <GooFilter />
           <Reveal />
           <CursorLight />
         </Providers>

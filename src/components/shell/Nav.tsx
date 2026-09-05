@@ -112,37 +112,48 @@ export function Nav() {
             بسته‌شدن روی خودِ ظرف است نه روی دکمه: اگر روی دکمه
             بود، لحظه‌ای که نشانگر وارد پنل می‌شد از دکمه خارج
             می‌شد و منو زیر دست کاربر می‌بست. */}
-        <nav
-          className="nav__links"
-          aria-label="محصولات"
-          onMouseEnter={() => setMega(true)}
-          onMouseLeave={() => setMega(false)}
-        >
+        {/* ⚠ هاور روی خودِ «دسته‌بندی محصولات» است، نه روی کل نوار.
+
+            قبلاً روی <nav> بود و نتیجه‌اش این می‌شد که هاور روی
+            «شماره مجازی» یا «باشگاه مشتریان» هم مگامنو را باز
+            می‌کرد — منویی که هیچ ربطی به آن گزینه نداشت.
+
+            دلیلِ اولیه‌ی گذاشتنش روی ظرف درست بود: اگر فقط روی
+            دکمه باشد، لحظه‌ای که نشانگر وارد پنل می‌شود از دکمه
+            خارج شده و منو زیر دست کاربر می‌بندد. راهش این است که
+            دکمه و پنل با هم در یک ظرفِ کوچک‌ترِ خودشان باشند. */}
+        <nav className="nav__links" aria-label="محصولات">
           {/* لینک است، نه دکمه.
 
               «همه‌ی محصولات» جدا بود و همین را می‌گفت؛ حالا خودِ
               «دسته‌بندی محصولات» به فروشگاه می‌رود و مگامنو با
               هاور باز می‌شود. یک نام، یک مقصد — دو ورودیِ هم‌معنی
               کنار هم، فقط انتخاب را سخت می‌کرد. */}
-          <Link
-            href="/shop"
-            className={`nav__mega-btn ${mega ? 'is-on' : ''}`}
-            aria-expanded={mega}
-            aria-haspopup="true"
+          <span
+            className="nav__megawrap"
+            onMouseEnter={() => setMega(true)}
+            onMouseLeave={() => setMega(false)}
           >
-            دسته‌بندی محصولات
-            <ChevronDown aria-hidden="true" />
-          </Link>
+            <Link
+              href="/shop"
+              className={`nav__mega-btn ${mega ? 'is-on' : ''}`}
+              aria-expanded={mega}
+              aria-haspopup="true"
+            >
+              دسته‌بندی محصولات
+              <ChevronDown aria-hidden="true" />
+            </Link>
+
+            {mega && (
+              <div className="nav__mega">
+                <MegaMenu onNavigate={() => setMega(false)} />
+              </div>
+            )}
+          </span>
 
           <Link href="/numbers">شماره مجازی</Link>
           <Link href="/blog">آموزش و مقاله</Link>
           <Link href="/club">باشگاه مشتریان</Link>
-
-          {mega && (
-            <div className="nav__mega">
-              <MegaMenu onNavigate={() => setMega(false)} />
-            </div>
-          )}
         </nav>
 
         <div className="nav__actions">

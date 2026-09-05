@@ -825,4 +825,12 @@
 
 @media (max-width: 900px) { .navtop { display: none; } }
 
+/* ظرفِ کوچکِ «دسته‌بندی محصولات» و پنلش.
 
+   position: static می‌ماند تا پنل همچنان نسبت به نوار جای بگیرد
+   نه نسبت به این ظرف — فقط ناحیه‌ی هاور را محدود می‌کند. */
+.nav__megawrap {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+}

@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import { Search, ShoppingBag } from 'lucide-react';
 import {
-  NUMBER_KINDS, NUMBER_SERVICES, SERVICE_GROUPS,
+  NUMBER_SERVICES, SERVICE_GROUPS,
   cheapestFor, offersFor, getCountry, offerToProduct,
   type NumberKind, type ServiceGroup,
 } from '../../data/numbers';
@@ -23,7 +23,16 @@ const fmt = (n: number) => n.toLocaleString('fa-IR');
  * کاربر بعد از انتخاب سرویس و کشور می‌فهمید بودجه‌اش نمی‌خورد.
  */
 export function NumbersBrowser() {
-  const [kind, setKind] = useState<NumberKind>(NUMBER_KINDS[0].id);
+  /* ⚠ فقط یک نوع شماره می‌فروشیم: دائمی.
+
+     پیش از این سه نوع در قدمِ اول انتخاب می‌شد — یک‌بارمصرف،
+     اجاره‌ای و دائمی — ولی کارفرما گفت فروشگاه فقط همین یکی را
+     دارد. قدمِ اولی که فقط یک جوابِ درست دارد، قدم نیست؛ فقط یک
+     کلیک اضافه پیش از کاری که کاربر آمده انجام دهد.
+
+     ثابت است نه حالت، چون چیزی برای عوض کردن نیست. اگر روزی نوع
+     دیگری اضافه شد، همین‌جا برمی‌گردد به حالت. */
+  const kind: NumberKind = 'permanent';
   const [group, setGroup] = useState<ServiceGroup | 'all'>('all');
   const [serviceId, setServiceId] = useState(NUMBER_SERVICES[0].id);
   const [q, setQ] = useState('');
@@ -44,7 +53,6 @@ export function NumbersBrowser() {
     [kind, serviceId],
   );
 
-  const activeKind = NUMBER_KINDS.find((k) => k.id === kind)!;
 
   return (
     <>
@@ -59,34 +67,10 @@ export function NumbersBrowser() {
       </header>
 
       <div className="wrap nums">
-        {/* ---------- ۱ نوع شماره ---------- */}
+        {/* ---------- ۱ سرویس ---------- */}
         <section className="nums__step">
           <h2 className="nums__h">
             <span className="nums__n num">۱</span>
-            نوع شماره
-          </h2>
-
-          <div className="nums__kinds">
-            {NUMBER_KINDS.map((k) => (
-              <button
-                key={k.id}
-                className={`nums__kind ${kind === k.id ? 'is-on' : ''}`}
-                onClick={() => setKind(k.id)}
-                aria-pressed={kind === k.id}
-              >
-                <b>{k.title}</b>
-                <span>{k.tagline}</span>
-              </button>
-            ))}
-          </div>
-
-          <p className="nums__hint">{activeKind.limit}</p>
-        </section>
-
-        {/* ---------- ۲ سرویس ---------- */}
-        <section className="nums__step">
-          <h2 className="nums__h">
-            <span className="nums__n num">۲</span>
             سرویس مقصد
           </h2>
 
@@ -146,13 +130,13 @@ export function NumbersBrowser() {
         {/* ---------- ۳ کشور ---------- */}
         <section className="nums__step">
           <h2 className="nums__h">
-            <span className="nums__n num">۳</span>
+            <span className="nums__n num">۲</span>
             کشور
           </h2>
 
           {offers.length === 0 ? (
             <p className="shop__empty">
-              برای این ترکیب موجودی نداریم. نوع شماره یا سرویس را عوض کن.
+              برای این سرویس فعلاً شماره‌ای نداریم. سرویس دیگری را امتحان کن.
             </p>
           ) : (
             <div className="nums__offers">
@@ -160,12 +144,15 @@ export function NumbersBrowser() {
                 const c = getCountry(o.countryCode);
                 return (
                   <div key={`${o.serviceId}-${o.countryCode}`} className="nums__offer">
+                    {/* پرچم اول می‌آید: کشور را از شکلش می‌شناسی،
+                        پیش از اینکه نامش را بخوانی. */}
                     <span className="nums__flag" aria-hidden="true">{c?.flag}</span>
-                    <div className="nums__offer-body">
-                      <b>{c?.name}</b>
-                      <span className="num">{fmt(o.stock)} شماره موجود</span>
-                    </div>
-                    <span className="nums__price num">{fmt(o.price)}</span>
+                    <b className="nums__country">{c?.name}</b>
+                    <span className="nums__op">{c?.operator}</span>
+                    <span className="nums__stock num">
+                      {o.stock === 0 ? 'ناموجود' : `${fmt(o.stock)} شماره`}
+                    </span>
+                    <span className="nums__price num">{fmt(o.price)} تومان</span>
                     {/* تا حالا این دکمه هیچ onClick نداشت — یعنی کل
                         صفحه‌ی شماره‌ی مجازی چیزی نمی‌فروخت. هر
                         پیشنهاد در لحظه‌ی افزودن به یک محصول تبدیل

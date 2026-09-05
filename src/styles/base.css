@@ -447,7 +447,7 @@ a { color: inherit; text-decoration: none; }
 
 .btn--primary { overflow: hidden; }
 
-/* حباب‌هایی که به هم می‌چسبند.
+/* شش حبابِ رنگیِ جدا، محو، که مستقل از هم می‌لغزند.
 
    ⚠ نکته‌ای که چند بار از قلم افتاد: چسبیدن کارِ blur نیست.
 
@@ -474,21 +474,23 @@ a { color: inherit; text-decoration: none; }
   opacity: 0.95;
   pointer-events: none;
   background-repeat: no-repeat;
-  filter: url(#phx-goo);
+  /* ⚠ فیلترِ چسبندگی برداشته شد.
+
+     یک بار حباب‌ها با فیلتر SVG به هم چسبانده شدند — تکنیکش
+     درست کار می‌کرد ولی نتیجه‌اش روی دکمه‌ی کوچک یک توده‌ی
+     یک‌دست می‌شد نه چند حباب. کارفرما درست گفت: هر رنگ باید
+     حبابِ جدای خودش باشد و محو. پس بلورِ ساده — لبه‌ی نرم،
+     حبابِ جدا. */
+  filter: blur(11px) saturate(1.35);
   transition: opacity 320ms var(--ease);
 }
 
-/* اگر فیلترِ SVG در دسترس نبود، دست‌کم محوِ ساده بماند */
-@supports not (filter: url(#phx-goo)) {
-  .btn--primary::before,
-  .btn--primary::after { filter: blur(7px); }
-}
 
 .btn--primary::before {
   background-image:
-    radial-gradient(circle closest-side, #ffb14e 0 60%, transparent 62%),
-    radial-gradient(circle closest-side, #ff4d9f 0 60%, transparent 62%),
-    radial-gradient(circle closest-side, #7a6bff 0 60%, transparent 62%);
+    radial-gradient(circle closest-side, #ffb14e 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #ff4d9f 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #7a6bff 0 38%, transparent 72%);
   background-size: 62% 62%, 52% 52%, 58% 58%;
   background-position: 18% 26%, 62% 20%, 40% 74%;
   animation: goo-a 11s cubic-bezier(.45, 0, .55, 1) infinite alternate;
@@ -496,9 +498,9 @@ a { color: inherit; text-decoration: none; }
 
 .btn--primary::after {
   background-image:
-    radial-gradient(circle closest-side, #ff8342 0 60%, transparent 62%),
-    radial-gradient(circle closest-side, #c94ff5 0 60%, transparent 62%),
-    radial-gradient(circle closest-side, #3ddcff 0 60%, transparent 62%);
+    radial-gradient(circle closest-side, #ff8342 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #c94ff5 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #3ddcff 0 38%, transparent 72%);
   background-size: 54% 54%, 48% 48%, 44% 44%;
   background-position: 74% 66%, 30% 62%, 56% 40%;
   animation: goo-b 15s cubic-bezier(.45, 0, .55, 1) infinite alternate;

@@ -136,10 +136,14 @@
    نوار خودش نمی‌لغزد مگر لازم شود. */
 .mega__cats {
   display: flex;
+  /* ⚠ می‌پیچند، نه اینکه افقی بلغزند.
+
+     نوارِ لغزان اسکرول‌بارش پنهان بود، پس دسته‌های آخر اصلاً دیده
+     نمی‌شدند و هیچ نشانه‌ای هم نمی‌داد که چیزی آن‌طرف هست. با هفت
+     دسته، پیچیدن یک ردیف ارتفاع می‌گیرد و همه پیدا می‌مانند. */
+  flex-wrap: wrap;
   gap: 4px;
   padding: var(--sp-3);
-  overflow-x: auto;
-  scrollbar-width: none;
   border-block-end: 1px solid var(--line);
   background: var(--wash);
 }
@@ -275,12 +279,16 @@
    nowrap روی هر دو لازم است: بدون آن، نام دسته‌ی بلند («شبکه‌های
    اجتماعی») متن را می‌شکند و فلش تنها به خط بعد می‌افتد. */
 .mega__all {
-  display: flex;
+  /* ⚠ inline-flex نه flex: دکمه به اندازه‌ی متنش باشد، نه تمامِ
+     عرضِ ستون. دکمه‌ی تمام‌عرض در انتهای یک فهرست، شبیه نوارِ
+     جداکننده می‌شود نه دکمه. */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   flex-wrap: nowrap;
   white-space: nowrap;
+  align-self: flex-end;
   margin-top: var(--sp-3);
   padding: 10px var(--sp-4);
   border-radius: var(--r-md);
