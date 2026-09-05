@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { Send, Sparkles, X } from 'lucide-react';
+import { MessageCircle, Send, X } from 'lucide-react';
 import { QUICK, answerFor, quickAnswer, type Answer } from '../../lib/chatAnswers';
 
 /**
@@ -106,7 +106,13 @@ export function LiveChat() {
             <span className="chatfab__spark chatfab__spark--sm" style={{ ['--i' as string]: 3, bottom: '-8px', insetInlineStart: '26%' }} aria-hidden="true" />
           </>
         )}
-        {open ? <X aria-hidden="true" /> : <Sparkles aria-hidden="true" />}
+        {/* نشانِ چت، نه جرقه.
+
+            آیکونِ قبلی Sparkles بود — یادگارِ دکمه‌ی «دستیار خرید»
+            که در چت ادغام شد. روی دکمه‌ای که گوشه‌ی صفحه شناور
+            است، جرقه هیچ نمی‌گوید؛ حبابِ گفتگو همان نشانی است که
+            کاربر برای پشتیبانی دنبالش می‌گردد. */}
+        {open ? <X aria-hidden="true" /> : <MessageCircle aria-hidden="true" />}
       </button>
 
       {open && (
