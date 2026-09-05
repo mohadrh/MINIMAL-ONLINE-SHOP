@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft, Smartphone, BookOpen, Medal, PackageSearch, Handshake, Columns2,
+  ArrowLeft, Flame, BookOpen, Medal, PackageSearch, Handshake, Columns2,
 } from 'lucide-react';
 
 /**
@@ -18,16 +18,16 @@ import {
  * فقط از فوتر پیدا می‌شدند، یعنی عملاً پیدا نمی‌شدند.
  */
 
-const EXTRAS = [
+const EXTRAS: { icon: React.ComponentType<{ className?: string }>; title: string; href: string; tube: string }[] = [
   /* مقایسه اول می‌آید: ابزاری است که تا حالا فقط روی خودِ
      کارتِ محصول دیده می‌شد، یعنی کسی که نمی‌دانست هست،
      پیدایش نمی‌کرد. */
-  { icon: Columns2, title: 'مقایسه‌ی محصولات', href: '/shop' },
-  { icon: Medal, title: 'باشگاه مشتریان', href: '/club' },
-  { icon: Smartphone, title: 'شماره مجازی', href: '/numbers' },
-  { icon: PackageSearch, title: 'پیگیری سفارش', href: '/track' },
-  { icon: BookOpen, title: 'آموزش و مقاله', href: '/blog' },
-  { icon: Handshake, title: 'نمایندگی و همکاری', href: '/reseller' },
+  { icon: Columns2, title: 'مقایسه‌ی محصولات', href: '/shop', tube: '#ffa63d' },
+  { icon: Medal, title: 'باشگاه مشتریان', href: '/club', tube: '#ff7a45' },
+  { icon: Flame, title: 'پرفروش‌ترین محصولات', href: '/shop?sort=hot', tube: '#ff4d9f' },
+  { icon: PackageSearch, title: 'پیگیری سفارش', href: '/track', tube: '#c94ff5' },
+  { icon: BookOpen, title: 'آموزش و مقاله', href: '/blog', tube: '#7a6bff' },
+  { icon: Handshake, title: 'نمایندگی و همکاری', href: '/reseller', tube: '#3ddcff' },
 ];
 
 export function PopularServices() {
@@ -38,7 +38,12 @@ export function PopularServices() {
           <h2 className="psv__extras-title">دیگر خدمات محبوب کاربران</h2>
           <div className="psv__row">
             {EXTRAS.map((e) => (
-              <Link key={e.href} href={e.href} className="psv__x">
+              <Link
+                key={e.href}
+                href={e.href}
+                className="psv__x"
+                style={{ ['--tube' as string]: e.tube }}
+              >
                 {/* آیکون بدونِ کادر — قاعده‌ی ثابتِ سایت */}
                 <e.icon aria-hidden="true" />
                 <b>{e.title}</b>

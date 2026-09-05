@@ -2,40 +2,26 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { HERO_SLIDES } from '../../data/heroSlides';
-import {
-  CATEGORIES, PRODUCTS, getDefaultVariant, getLowestPrice,
-  type CategorySlug,
-} from '../../data/catalog';
 import { asset } from '../../lib/asset';
 import { SlideArt } from './SlideArt';
-
-const fmt = (n: number) => n.toLocaleString('fa-IR');
-
-/* تب‌های ماشین‌حساب — پنج دسته‌ی کاتالوگ به‌علاوه‌ی شماره مجازی.
-   نمونه هشت تب دارد چون هشت خط خدمات دارد؛ ما شش داریم. */
-type Tab = CategorySlug | 'numbers';
-
-const TABS: { id: Tab; label: string }[] = [
-  ...CATEGORIES.map((c) => ({ id: c.slug as Tab, label: c.title })),
-  { id: 'numbers', label: 'شماره مجازی' },
-];
+import { SearchStage } from './SearchStage';
 
 /**
- * هیرو — بنر باریک روی جعبه‌ی محاسبه.
+ * هیرو — اسلایدر، و بلافاصله زیرش جست‌وجو.
  *
- * ساختارش عیناً از نمونه گرفته شده: یک اسلایدر کوتاه که ستون متنش
- * یک‌سومِ عرض است و تصویر دو‌سوم، و بلافاصله زیرش جعبه‌ای که نیمه‌اش
- * بیرون از بنر می‌افتد و کار واقعی کاربر را می‌کند.
+ * جعبه‌ی محاسبه‌ای که این‌جا بود برداشته شد. کارِ آن — انتخاب دسته،
+ * بعد سرویس، بعد پلن، از سه کشویی پشت سر هم — همان کاری است که
+ * جعبه‌ی جست‌وجو با یک بار تایپ انجام می‌دهد، و کاربری که اسمِ
+ * چیزی را می‌داند سه انتخاب کمتر می‌کند.
  *
  * چرا این چیدمان کار می‌کند: بنر تمام‌صفحه کاربر را مجبور می‌کند یک
- * بار اسکرول کند تا به اولین چیز مفید برسد. اینجا اولین چیز مفید
- * قبل از خط تا دیده می‌شود.
+ * بار اسکرول کند تا به اولین چیز مفید برسد. این‌جا اولین چیز مفید
+ * پیش از خط تا دیده می‌شود.
  */
 export function Hero() {
   const [i, setI] = useState(0);
-  const [tab, setTab] = useState<Tab>(TABS[0].id);
   const n = HERO_SLIDES.length;
 
   /* ---------- چرخش خودکار ----------
@@ -70,25 +56,9 @@ export function Hero() {
     return () => window.clearInterval(id);
   }, [paused, n]);
 
-  const inTab = useMemo(
-    () => (tab === 'numbers' ? [] : PRODUCTS.filter((p) => p.category === tab)),
-    [tab],
-  );
 
-  const [pick, setPick] = useState(() => {
-    const first = PRODUCTS.find((p) => p.category === TABS[0].id);
-    return first?.slug ?? '';
-  });
 
-  const product = inTab.find((p) => p.slug === pick) ?? inTab[0];
-  const variant = product ? getDefaultVariant(product) : null;
 
-  const changeTab = (id: Tab) => {
-    setTab(id);
-    if (id === 'numbers') return;
-    const first = PRODUCTS.find((p) => p.category === id);
-    setPick(first?.slug ?? '');
-  };
 
   return (
     <section className="hero">
@@ -216,90 +186,13 @@ export function Hero() {
         </div>
       </div>
 
-      {/* ---------- جعبه‌ی محاسبه ---------- */}
-      <div className="wrap">
-        <div className="calc">
-          <div className="calc__tabs" role="tablist" aria-label="نوع سرویس">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                role="tab"
-                aria-selected={tab === t.id}
-                className={`calc__tab ${tab === t.id ? 'is-on' : ''}`}
-                onClick={() => changeTab(t.id)}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
+      {/* جست‌وجو، درست زیرِ اسلایدها.
 
-          <div className="calc__body">
-            {tab === 'numbers' ? (
-              <div className="calc__note">
-                <p>
-                  شماره‌ی مجازی بیش از سی کشور، برای ساخت حساب و تأیید هویت
-                  در سرویس‌هایی که ایران را قبول نمی‌کنند.
-                </p>
-                <Link href="/numbers" className="btn btn--primary">
-                  انتخاب کشور و سرویس
-                </Link>
-              </div>
-            ) : (
-              <>
-                {/* هر انتخاب یک فلشِ رو به پایین دارد.
+          جایش این‌جاست نه یک سکشنِ جدا: کاربری که تازه رسیده و
+          اسمِ چیزی را می‌داند، نباید تا وسطِ صفحه اسکرول کند تا
+          جایی برای نوشتنش پیدا کند. */}
+      <SearchStage variant="hero" />
 
-                    مرورگر برای <select> فلشِ خودش را می‌کشد و ظاهرش
-                    در هر سیستم‌عامل فرق می‌کند. appearance: none
-                    برش می‌دارد و ما فلشِ خودمان را می‌گذاریم — هم
-                    یکدست می‌شود، هم می‌شود روی هاور حرکتش داد تا
-                    معلوم باشد گزینه‌های دیگری هم هست. */}
-                <div className="calc__field">
-                  <label htmlFor="calc-service">سرویس</label>
-                  <div className="calc__select">
-                    <select
-                      id="calc-service"
-                      value={pick}
-                      onChange={(e) => setPick(e.target.value)}
-                    >
-                      {inTab.map((p) => (
-                        <option key={p.slug} value={p.slug}>{p.title}</option>
-                      ))}
-                    </select>
-                    <ChevronDown aria-hidden="true" className="calc__caret" />
-                  </div>
-                </div>
-
-                <div className="calc__field">
-                  <label htmlFor="calc-plan">پلن</label>
-                  <div className="calc__select">
-                    <select id="calc-plan" defaultValue={variant?.id}>
-                      {product?.variants.map((v) => (
-                        <option key={v.id} value={v.id}>{v.label}</option>
-                      ))}
-                    </select>
-                    <ChevronDown aria-hidden="true" className="calc__caret" />
-                  </div>
-                </div>
-
-                <div className="calc__field calc__field--price">
-                  <label>قیمت</label>
-                  <div className="calc__price">
-                    <b className="num">{product ? fmt(getLowestPrice(product)) : '—'}</b>
-                    <span>تومان</span>
-                  </div>
-                </div>
-
-                <Link
-                  href={product ? `/product/${product.slug}` : '/shop'}
-                  className="btn btn--primary calc__go"
-                >
-                  ثبت سفارش
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
     </section>
   );
 }

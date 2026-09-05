@@ -11,16 +11,17 @@ import { ServiceMark } from '../numbers/ServiceMark';
 /**
  * جعبه‌ی جستجویی که خودش خودش را نشان می‌دهد.
  *
- * جای ویترینِ دسته‌بندی را گرفت. آن سکشن کارِ مگامنو را دوباره
- * می‌کرد — کارفرما گفت اگر منوی بالا دسته‌بندی کامل دارد، این
- * پایین اضافی به نظر می‌رسد — و به‌جایش این را خواست: جعبه‌ای که
- * خودش نمونه تایپ می‌کند، نتیجه‌ها زیرش می‌آیند، پاک می‌شود و
- * سراغ عبارت بعدی می‌رود.
+ * جایش داخلِ هیرو است، درست زیرِ اسلایدها.
  *
- * چرا این بهتر از فهرستِ دسته‌هاست: فهرست می‌گوید «چه دسته‌هایی
- * داریم»، این می‌گوید «چه چیزهایی داریم و چطور پیدایشان کنی». هر
- * چرخه یک محصول واقعی را با قیمت واقعی نشان می‌دهد، و در همان حال
- * یاد می‌دهد که این جعبه هست و کار می‌کند.
+ * ⚠ یک بار اشتباهی جای سکشنِ دسته‌بندی گذاشته شد و کارفرما فوری
+ * برش گرداند. آن سکشن باید سرِ جایش بماند؛ این جعبه جایگزینش
+ * نیست، کنارش است — کاربری که اسمِ چیزی را می‌داند نباید تا وسطِ
+ * صفحه اسکرول کند تا جایی برای نوشتنش پیدا کند.
+ *
+ * خودش نمونه تایپ می‌کند، نتیجه‌ها زیرش می‌آیند، پاک می‌شود و
+ * سراغ عبارت بعدی می‌رود. هر چرخه یک محصول واقعی با قیمت واقعی
+ * نشان می‌دهد و در همان حال یاد می‌دهد که این جعبه هست و کار
+ * می‌کند.
  *
  * ⚠ نمایش تا لحظه‌ای است که کاربر دست بزند.
  *
@@ -43,7 +44,20 @@ const HOLD_MS = 2100;
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
-export function SearchStage() {
+/* بهترین تخفیفِ محصول، از میانِ همه‌ی پلن‌ها.
+
+   فقط پلنِ پیش‌فرض را نگاه نمی‌کنیم: تخفیف معمولاً روی پلنِ
+   یک‌ساله است و اگر آن را نبینیم، محصولِ تخفیف‌دار بی‌نشان
+   می‌ماند. */
+function bestOff(p: { variants: { price: number; compareAt?: number }[] }) {
+  const offs = p.variants
+    .filter((v) => v.compareAt && v.compareAt > v.price)
+    .map((v) => Math.round((1 - v.price / v.compareAt!) * 100));
+  return offs.length ? Math.max(...offs) : 0;
+}
+
+export function SearchStage({ variant = 'section' }: { variant?: 'section' | 'hero' }) {
+  const inHero = variant === 'hero';
   const [q, setQ] = useState('');
   /** وقتی کاربر دست زد، نمایش برای همیشه تمام است */
   const [live, setLive] = useState(false);
@@ -108,15 +122,21 @@ export function SearchStage() {
   };
 
   return (
-    <section className="srst reveal">
+    <section className={`srst ${inHero ? 'srst--hero' : 'reveal'}`}>
       <div className="wrap srst__inner">
-        <div className="sec-head sec-head--mid">
-          <span className="sec-head__kicker">دنبال چه می‌گردی</span>
-          <h2>اسمش را بنویس، پیدایش می‌کنیم</h2>
-          <p className="sec-head__lead">
-            بیشتر از پنجاه سرویس داریم. لازم نیست دسته‌ها را بگردی — همین‌جا بنویس.
-          </p>
-        </div>
+        {/* داخلِ هیرو تیترِ بزرگ لازم نیست — بالایش همین حالا یک
+            تیترِ نئونی هست و دو تیتر پشت سر هم رقابت می‌کنند. */}
+        {inHero ? (
+          <p className="srst__lead">دنبال چه می‌گردی؟ اسمش را بنویس</p>
+        ) : (
+          <div className="sec-head sec-head--mid">
+            <span className="sec-head__kicker">دنبال چه می‌گردی</span>
+            <h2>اسمش را بنویس، پیدایش می‌کنیم</h2>
+            <p className="sec-head__lead">
+              بیشتر از پنجاه سرویس داریم. لازم نیست دسته‌ها را بگردی — همین‌جا بنویس.
+            </p>
+          </div>
+        )}
 
         <div className={`srst__box ${live ? 'is-live' : ''}`}>
           <Search aria-hidden="true" />
@@ -156,10 +176,23 @@ export function SearchStage() {
                   />
                   <span className="srst__txt">
                     <b>{p.title}</b>
-                    <small>{p.englishTitle}</small>
+                    {/* توضیحِ خودِ محصول، نه فقط نامِ انگلیسی‌اش.
+
+                        نامِ انگلیسی چیزی نمی‌گفت که از عنوان
+                        فارسی معلوم نباشد؛ این یک جمله می‌گوید
+                        محصول به چه درد می‌خورد. */}
+                    <small>{p.shortDescription}</small>
                   </span>
-                  <span className="srst__price num">
-                    از {fmt(getLowestPrice(p))}
+                  <span className="srst__meta">
+                    {bestOff(p) > 0 && (
+                      <em className="srst__off num">٪{fmt(bestOff(p))}‑</em>
+                    )}
+                    <span className="srst__price num">
+                      از {fmt(getLowestPrice(p))}
+                    </span>
+                    <i className="srst__plans num">
+                      {fmt(p.variants.length)} پلن
+                    </i>
                   </span>
                 </Link>
               ))}
@@ -176,7 +209,10 @@ export function SearchStage() {
                   </span>
                   <span className="srst__txt">
                     <b>شماره مجازی {s.name}</b>
-                    <small>برای ساخت حساب</small>
+                    <small>
+                      برای ساخت حساب {s.name} — کد تأیید را همان‌جا می‌گیری،
+                      بدون سیم‌کارت.
+                    </small>
                   </span>
                   <span className="srst__go">
                     دیدن

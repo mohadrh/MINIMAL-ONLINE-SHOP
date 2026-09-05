@@ -451,12 +451,20 @@ a { color: inherit; text-decoration: none; }
 .btn--primary::after {
   content: '';
   position: absolute;
-  inset: -55%;
+  /* ⚠ لایه نزدیکِ خودِ دکمه می‌ماند.
+
+     با ‎-55%‎ لایه سه برابرِ دکمه می‌شد و حباب‌ها آن‌قدر از هم دور
+     می‌افتادند که هر کدام یک لکه‌ی جدا به نظر می‌رسید. حالا
+     نزدیک‌اند و مثل چند حبابِ کنار هم در یک مایع دیده می‌شوند. */
+  inset: -22%;
   z-index: -1;
   /* پررنگ و همیشه در گردش — چیزی که از پشتِ شیشه دیده می‌شود */
-  opacity: 0.85;
+  /* پررنگ‌تر و حباب‌تر: بلورِ کمتر لبه‌ی لکه‌ها را نگه
+     می‌دارد پس حباب دیده می‌شود نه یک لكه‌ی پخش، و
+     اشباع رنگ را از پشتِ شیشه زنده نگه می‌دارد. */
+  opacity: 0.95;
   pointer-events: none;
-  filter: blur(13px);
+  filter: blur(5px) saturate(1.55);
   transition: opacity 320ms var(--ease), filter 320ms var(--ease);
 }
 
@@ -464,22 +472,38 @@ a { color: inherit; text-decoration: none; }
    شیشه و بلورِ رویشان خودشان ملایمشان می‌کنند. */
 .btn--primary::before {
   background:
-    radial-gradient(43% 43% at 20% 32%, #ffb14e 0%, transparent 60%),
-    radial-gradient(39% 39% at 70% 22%, #ff4d9f 0%, transparent 60%),
-    radial-gradient(41% 41% at 44% 78%, #7a6bff 0%, transparent 60%);
-  animation: bub-spin-a 9s linear infinite;
+    radial-gradient(22% 34% at 38% 40%, #ffb14e 0%, #ffb14e 62%, transparent 72%),
+    radial-gradient(19% 30% at 56% 33%, #ff4d9f 0%, #ff4d9f 62%, transparent 72%),
+    radial-gradient(21% 32% at 47% 62%, #7a6bff 0%, #7a6bff 62%, transparent 72%),
+    radial-gradient(16% 26% at 65% 58%, #ffd08a 0%, #ffd08a 62%, transparent 72%);
+  animation: bub-spin-a 13s cubic-bezier(.45, 0, .55, 1) infinite;
 }
 
 .btn--primary::after {
   background:
-    radial-gradient(37% 37% at 80% 68%, #3ddcff 0%, transparent 60%),
-    radial-gradient(41% 41% at 28% 72%, #ff8342 0%, transparent 60%),
-    radial-gradient(35% 35% at 62% 42%, #c94ff5 0%, transparent 60%);
-  animation: bub-spin-b 13s linear infinite reverse;
+    radial-gradient(18% 29% at 60% 52%, #3ddcff 0%, #3ddcff 62%, transparent 72%),
+    radial-gradient(21% 33% at 42% 55%, #ff8342 0%, #ff8342 62%, transparent 72%),
+    radial-gradient(17% 27% at 52% 38%, #c94ff5 0%, #c94ff5 62%, transparent 72%),
+    radial-gradient(15% 24% at 36% 36%, #ff9fd0 0%, #ff9fd0 62%, transparent 72%);
+  animation: bub-spin-b 19s cubic-bezier(.45, 0, .55, 1) infinite reverse;
 }
 
-@keyframes bub-spin-a { to { rotate: 360deg; } }
-@keyframes bub-spin-b { to { rotate: 360deg; } }
+/* مایع، نه چرخ‌دنده.
+
+   چرخشِ تنها با شتابِ خطی، مکانیکی دیده می‌شود: فاصله‌ی حباب‌ها
+   ثابت است و کل نقش با سرعت یکنواخت می‌گردد. با نفسِ مقیاس و
+   شتابِ نرم، حباب‌ها موقع چرخش کمی به هم نزدیک و دور می‌شوند و
+   حرکت شبیه چیزی می‌شود که در مایع شناور است. */
+@keyframes bub-spin-a {
+  0%   { rotate: 0deg;   scale: 1; }
+  50%  { rotate: 180deg; scale: 1.14; }
+  100% { rotate: 360deg; scale: 1; }
+}
+@keyframes bub-spin-b {
+  0%   { rotate: 0deg;   scale: 1.1; }
+  50%  { rotate: 180deg; scale: 0.92; }
+  100% { rotate: 360deg; scale: 1.1; }
+}
 
 /* روی هاور شیشه شفاف‌تر می‌شود و حباب‌ها تیزتر — انگار نزدیک‌تر
    آمده‌ای و از پشتِ شیشه بهتر می‌بینی. */
@@ -504,7 +528,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 .btn--primary:hover::before,
-.btn--primary:hover::after { opacity: 1; filter: blur(9px); }
+.btn--primary:hover::after { opacity: 1; filter: blur(4px) saturate(1.7); }
 
 @media (prefers-reduced-motion: reduce) {
   .btn--primary::before,

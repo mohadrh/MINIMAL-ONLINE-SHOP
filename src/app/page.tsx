@@ -1,7 +1,8 @@
 import { Hero } from '../components/home/Hero';
 import { HotDeals } from '../components/home/HotDeals';
 import { PopularServices } from '../components/home/PopularServices';
-import { SearchStage } from '../components/home/SearchStage';
+import { TrustStrip } from '../components/home/TrustStrip';
+import { CategoryShowcase } from '../components/home/CategoryShowcase';
 import { Highlights } from '../components/home/Highlights';
 import { AiPicker } from '../components/home/AiPicker';
 import { WhyPhoenix } from '../components/home/WhyPhoenix';
@@ -32,21 +33,32 @@ export default function HomePage() {
     <>
       <Hero />
 
+      {/* چهار جوابِ کوتاه، پیش از هر قیمتی.
+
+          سوال‌های اولِ کاربر — چقدر طول می‌کشد، چیزی که
+          می‌خواهم هست، پولم امن است، کسی جواب می‌دهد — همه
+          پیش از دیدن قیمت‌اند. اگر جوابشان پایین صفحه باشد،
+          کسی که به آن اطمینان نیاز داشته تا آن‌جا نرسیده. */}
+      <TrustStrip />
+
       {/* دسته‌بندی‌ها بلافاصله بعد از هیرو.
 
           کاربری که تازه رسیده، اول باید بفهمد این‌جا چه چیزهایی
           هست — نه اینکه یک ردیف محصولِ تصادفی ببیند. */}
-      {/* جعبه‌ی جستجو، جای ویترینِ دسته‌بندی.
+      {/* دسته‌بندی‌ها بلافاصله بعد از هیرو.
 
-          آن سکشن کارِ مگامنو را دوباره می‌کرد. این‌جا به‌جای
-          اینکه بگوییم «چه دسته‌هایی داریم»، نشان می‌دهیم «چه
-          چیزهایی داریم و چطور پیدایشان کنی» — و جعبه واقعی است،
-          نه نمایشی: با اولین کلیک، جستجوی خودت است. */}
-      <SearchStage />
-
-      <PopularServices />
+          کاربری که تازه رسیده، اول باید بفهمد این‌جا چه چیزهایی
+          هست — نه اینکه یک ردیف محصولِ تصادفی ببیند. */}
+      <CategoryShowcase />
 
       <HotDeals />
+
+      {/* خدماتِ غیرمحصولی، بعد از تخفیف‌ها.
+
+          پیش از این بالای تخفیف‌ها بود و بین دو سکشنِ فروش
+          می‌نشست؛ کسی که آمده خرید کند، وسطِ راه به «پیگیری
+          سفارش» نمی‌خورد. */}
+      <PopularServices />
 
       {/* دو بنر، جای دو ردیفِ محصول.
 
