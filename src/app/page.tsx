@@ -1,6 +1,7 @@
 import { Hero } from '../components/home/Hero';
 import { HotDeals } from '../components/home/HotDeals';
 import { CategoryShowcase } from '../components/home/CategoryShowcase';
+import { PopularServices } from '../components/home/PopularServices';
 import { Highlights } from '../components/home/Highlights';
 import { AiPicker } from '../components/home/AiPicker';
 import { WhyPhoenix } from '../components/home/WhyPhoenix';
@@ -36,6 +37,11 @@ export default function HomePage() {
           کاربری که تازه رسیده، اول باید بفهمد این‌جا چه چیزهایی
           هست — نه اینکه یک ردیف محصولِ تصادفی ببیند. */}
       <CategoryShowcase />
+
+      {/* دسته‌ها گفتند «چه دنیاهایی داریم»؛ این می‌گوید داخلِ
+          هر دنیا چه هست. کاربری که دنبالِ یک اسمِ مشخص است
+          با نامِ دسته پیدایش نمی‌کند. */}
+      <PopularServices />
 
       <HotDeals />
 

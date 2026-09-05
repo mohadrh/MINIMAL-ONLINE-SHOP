@@ -7,6 +7,8 @@
    خرید در سکشن‌های بعدی و صفحه‌ی محصول اتفاق می‌افتد.
    ============================================================ */
 
+import type { SlideArtSpec } from '../components/home/SlideArt';
+
 export type HeroKind = 'ai' | 'gaming' | 'creative' | 'social';
 
 export interface HeroSlideData {
@@ -37,7 +39,8 @@ export interface HeroSlideData {
    * حالا شناسه‌اند و کامپوننت خودش نشان را می‌کشد: برداری، تیز در
    * هر اندازه، و هماهنگ با تم.
    */
-  marks?: string[];
+  /** تصویرِ برداری — اگر باشد جای backdrop را می‌گیرد */
+  art?: SlideArtSpec;
   /** لایه ۳ — PNG/WebP شفاف. نبودش هیرو را نمی‌شکند */
   cutout?: string;
   /** کاراکتر قدبلند است یا نشان‌واره‌ی پهن — اندازه و موشن‌شان فرق دارد */
@@ -71,7 +74,16 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#e8862e',
     ctaLabel: 'دیدن پلن‌ها',
     href: '/product/claude-pro',
-    marks: ['claude', 'openai', 'gemini'],
+    art: {
+      card: '#6b21b6',
+      label: ['Premium', 'Account'],
+      tiles: [
+        { id: 'gemini', bg: '#ffffff', ink: '#4285f4' },
+        { id: 'claude', bg: '#d97757' },
+        { id: 'openai', bg: '#10a37f' },
+        { id: 'cursor', bg: '#17171a' },
+      ],
+    },
     platforms: ['Web', 'iOS', 'Android'],
   },
   {
@@ -94,7 +106,16 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#4a7cf7',
     ctaLabel: 'مقایسه‌ی پلن‌ها',
     href: '/ai',
-    marks: ['gemini', 'openai', 'midjourney'],
+    art: {
+      card: '#a52344',
+      label: ['AI', 'Subscriptions'],
+      tiles: [
+        { id: 'gemini', bg: '#4285f4' },
+        { id: 'openai', bg: '#10a37f' },
+        { id: 'midjourney', bg: '#17171a' },
+        { id: 'claude', bg: '#ffffff', ink: '#d97757' },
+      ],
+    },
     platforms: ['Web', 'Android', 'iOS'],
   },
   {
@@ -117,7 +138,16 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#ff9900',
     ctaLabel: 'دیدن گیفت کارت‌ها',
     href: '/giftcard',
-    marks: ['playstation', 'xbox', 'steam'],
+    art: {
+      card: '#b02fa8',
+      label: ['Gift', 'Cards'],
+      tiles: [
+        { id: 'xbox', bg: '#107c10' },
+        { id: 'playstation', bg: '#0b3f9e' },
+        { id: 'gift', bg: '#ffffff', ink: '#b02fa8' },
+        { id: 'steam', bg: '#17171a', ink: '#66c0f4' },
+      ],
+    },
     platforms: ['PS5', 'Xbox', 'PC', 'iOS'],
   },
   {
@@ -136,7 +166,6 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#6ea8c7',
     ctaLabel: 'مشاهده‌ی محصول',
     href: '/product/battlefield-6',
-    marks: ['playstation', 'xbox', 'steam'],
     platforms: ['PS5', 'Xbox', 'PC'],
   },
   {
@@ -159,7 +188,16 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#7c5cf0',
     ctaLabel: 'دیدن پلن فمیلی',
     href: '/product/gemini-pro',
-    marks: ['openai', 'claude', 'cursor'],
+    art: {
+      card: '#7c5cf0',
+      label: ['AI', 'Bundle'],
+      tiles: [
+        { id: 'claude', bg: '#ffffff', ink: '#d97757' },
+        { id: 'gemini', bg: '#4285f4' },
+        { id: 'cursor', bg: '#17171a' },
+        { id: 'openai', bg: '#10a37f' },
+      ],
+    },
     platforms: ['Web', 'Android', 'iOS'],
   },
   {
@@ -181,7 +219,6 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#7c93b8',
     ctaLabel: 'مشاهده‌ی محصول',
     href: '/product/call-of-duty-modern-warfare',
-    marks: ['playstation', 'xbox', 'steam'],
     platforms: ['PC', 'Steam', 'Battle.net'],
   },
   {
@@ -203,7 +240,16 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#00c4cc',
     ctaLabel: 'دیدن دسته',
     href: '/creative',
-    marks: ['canva', 'capcut', 'figma'],
+    art: {
+      card: '#a8781f',
+      label: ['Creative', 'Tools'],
+      tiles: [
+        { id: 'canva', bg: '#00c4cc' },
+        { id: 'figma', bg: '#a259ff' },
+        { id: 'capcut', bg: '#17171a' },
+        { id: 'tiktok', bg: '#22c55e' },
+      ],
+    },
     platforms: ['Web', 'Desktop', 'Mobile'],
   },
   {
@@ -226,7 +272,6 @@ export const HERO_SLIDES: HeroSlideData[] = [
     tint: '#d977b8',
     ctaLabel: 'دیدن اکانت‌های گیم',
     href: '/gaming',
-    marks: ['playstation', 'xbox'],
     platforms: ['PS5', 'Xbox'],
   },
 

@@ -275,7 +275,7 @@ const SUBSCRIPTIONS: Product[] = [
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
       { id: 'chatgpt-go-1m', label: 'Go — یک ماهه', price: 1766000, stock: null, isDefault: true, guide: { fit: 'برای شروع، و برای کسی که روزی چند بار می‌پرسد.', detail: 'ده برابرِ نسخه‌ی رایگان می‌توانی با GPT-5 حرف بزنی، تصویر بسازی و فایل آپلود کنی. حالت تفکر خودکار روشن است. اگر روزی چند مکالمه‌ی معمولی داری، همین کافی است و لازم نیست پول بیشتری بدهی.' } },
-      { id: 'chatgpt-plus-1m', label: 'Plus — یک ماهه', price: 4274000, stock: null, guide: { fit: 'برای استفاده‌ی روزمره‌ی جدی — کار، درس، کد.', detail: 'محدودیت خیلی کمتر: هر سه ساعت تا صد و شصت پیام با GPT-5، و دسترسی دستی به نسخه‌ی Thinking. در ساعت‌های شلوغ اولویت داری و به Agent Mode هم می‌رسی. بیشترِ کسانی که چت‌جی‌پی‌تی را ابزارِ کارشان کرده‌اند، همین را می‌گیرند.' } },
+      { id: 'chatgpt-plus-1m', label: 'Plus — یک ماهه', price: 4274000, compareAt: 5210000, stock: null, guide: { fit: 'برای استفاده‌ی روزمره‌ی جدی — کار، درس، کد.', detail: 'محدودیت خیلی کمتر: هر سه ساعت تا صد و شصت پیام با GPT-5، و دسترسی دستی به نسخه‌ی Thinking. در ساعت‌های شلوغ اولویت داری و به Agent Mode هم می‌رسی. بیشترِ کسانی که چت‌جی‌پی‌تی را ابزارِ کارشان کرده‌اند، همین را می‌گیرند.' } },
     ],
     media: { thumbnail: '/products/chatgpt-card.webp', cover: '/products/chatgpt-card.webp', accent: '#10a37f' },
     shortDescription: 'ارتقای مستقیم روی اکانت شخصی شما',
@@ -312,7 +312,7 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'در اسرع وقت، توسط سیستم',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'claude-pro-1m', label: 'Pro — یک ماهه', price: 4460000, stock: null, isDefault: true, guide: { fit: 'برای متن‌های بلند، تحلیل فایل و کدنویسی.', detail: 'محدودیت استفاده چند برابرِ نسخه‌ی رایگان، به‌علاوه‌ی پروژه‌ها و حافظه‌ی گفتگو. اگر کارت با متن‌های طولانی یا کدِ واقعی است، تفاوتش با رایگان را از همان روز اول می‌بینی.' } },
+      { id: 'claude-pro-1m', label: 'Pro — یک ماهه', price: 4460000, compareAt: 5250000, stock: null, isDefault: true, guide: { fit: 'برای متن‌های بلند، تحلیل فایل و کدنویسی.', detail: 'محدودیت استفاده چند برابرِ نسخه‌ی رایگان، به‌علاوه‌ی پروژه‌ها و حافظه‌ی گفتگو. اگر کارت با متن‌های طولانی یا کدِ واقعی است، تفاوتش با رایگان را از همان روز اول می‌بینی.' } },
     ],
     media: { thumbnail: '/products/claude-pro-card.webp', cover: '/products/claude-pro.webp', accent: '#e8862e' },
     shortDescription: 'اکانت شخصی، ارتقای مستقیم',

@@ -9,7 +9,7 @@ import {
   type CategorySlug,
 } from '../../data/catalog';
 import { asset } from '../../lib/asset';
-import { ServiceMark } from '../numbers/ServiceMark';
+import { SlideArt } from './SlideArt';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -161,33 +161,23 @@ export function Hero() {
               </div>
 
               <div className="hero__img">
-                <img
-                  src={asset(s.backdrop)}
-                  alt=""
-                  aria-hidden="true"
-                  loading={idx === 0 ? 'eager' : 'lazy'}
-                />
+                {/* ⚙ دو حالت: تصویرِ برداری یا عکس.
 
-                {/* نشانِ سرویس‌ها روی بنر.
+                    اسلایدهای اشتراک و گیفت کارت طرحِ کارت و کاشی
+                    دارند که حالا برداری کشیده می‌شود — پس نشانِ
+                    هر سرویس واقعی است و نه حرفِ اولِ نامش.
 
-                    تا حالا مربع‌های حرفی در خودِ PNG پخته شده
-                    بودند: برای عوض کردن یکی‌شان باید کلِ تصویر
-                    دوباره ساخته می‌شد، در حالت شب همان روشناییِ
-                    روز را داشتند، و روی صفحه‌ی رتینا نرم دیده
-                    می‌شدند. حالا SVG‌اند — تیز در هر اندازه و
-                    هماهنگ با تم. */}
-                {s.marks && s.marks.length > 0 && (
-                  <span className="hero__marks" aria-hidden="true">
-                    {s.marks.map((m, mi) => (
-                      <span
-                        key={m}
-                        className="hero__mark"
-                        style={{ ['--i' as string]: mi }}
-                      >
-                        <ServiceMark id={m} mark={m.slice(0, 1).toUpperCase()} />
-                      </span>
-                    ))}
-                  </span>
+                    اسلایدهای گیم عکسِ خودِ بازی را دارند؛ آن‌ها را
+                    نمی‌شود با شکل جایگزین کرد. */}
+                {s.art ? (
+                  <SlideArt spec={s.art} />
+                ) : (
+                  <img
+                    src={asset(s.backdrop)}
+                    alt=""
+                    aria-hidden="true"
+                    loading={idx === 0 ? 'eager' : 'lazy'}
+                  />
                 )}
               </div>
             </div>

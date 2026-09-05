@@ -1297,9 +1297,23 @@
 
 /* ---------- جدول مقایسه ---------- */
 
-.aip__compare { margin-top: var(--sp-16); }
+.aip__compare {
+  margin-top: var(--sp-16);
+  /* وسط‌چین — بلوک یک معرفی است نه ادامه‌ی فهرست، پس
+     ترازِ چپِ ستونِ کناری را دنبال نمی‌کند */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 .aip__compare-title { font-size: var(--text-lg); margin-bottom: var(--sp-2); }
-.aip__compare-lead { font-size: var(--text-sm); color: var(--ink-faint); margin-bottom: var(--sp-6); }
+.aip__compare-lead {
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+  margin-bottom: var(--sp-6);
+  /* طولِ خط محدود می‌ماند تا متنِ وسط‌چین خواندنی باشد */
+  max-width: 58ch;
+}
 
 /* جدول روی موبایل باید داخل خودش بلغزد، نه اینکه صفحه را افقی کند */
 .aip__table-wrap { overflow-x: auto; scrollbar-width: thin; }
@@ -2000,56 +2014,94 @@
 }
 
 
-/* ============================================================
-   نشانِ سرویس‌ها روی بنرِ هیرو
-   ============================================================
-
-   کاشی‌های شیشه‌ای که پایین-راستِ بنر می‌نشینند و با تأخیرِ پله‌ای
-   بالا می‌آیند. جای مربع‌های حرفیِ پخته‌شده در PNG را گرفتند.
-   ============================================================ */
-
+/* تصویرِ بنر مکانِ نسبی دارد تا لایه‌های داخلش جای بگیرند */
 .hero__img { position: relative; }
 
-.hero__marks {
+/* ============================================================
+   تصویرِ اسلایدر هیرو
+
+   جای چهار PNG را گرفت. همان چیدمان، ولی روی کاشی‌ها
+   نشانِ واقعی می‌نشیند نه حرفِ اولِ نام سرویس.
+
+   همه‌ی اندازه‌ها درصدی یا cqw اند، پس تصویر در هر عرضی
+   دقیقاً همان نسبت را نگه می‌دارد و روی صفحه‌ی رتینا هم
+   تیز می‌ماند.
+   ============================================================ */
+
+.slart {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1200 / 760;
+  container-type: inline-size;
+}
+
+.slart__card {
   position: absolute;
-  inset-block-end: 8%;
-  inset-inline-end: 6%;
+  inset-inline: auto;
+  left: 16%;
+  top: 28.68%;
+  width: 81.08%;
+  height: 61.45%;
+  border-radius: 2.7cqw;
+}
+
+/* متنِ محو روی کارت — لاتین است، پس در صفحه‌ی
+   راست‌به‌چپ باید جهتِ خودش را داشته باشد */
+.slart__label {
+  position: absolute;
+  right: 7.92%;
+  top: 28.68%;
+  height: 61.45%;
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.2cqw;
+  direction: ltr;
+  font-size: 6.5cqw;
+  font-weight: 500;
+  line-height: 1.14;
+  letter-spacing: 0.01em;
+  color: rgb(255 255 255 / 0.22);
+  white-space: nowrap;
   pointer-events: none;
 }
+.slart__label b { font-weight: 500; }
 
-.hero__mark {
+.slart__spark {
+  position: absolute;
+  width: var(--s);
+  height: var(--s);
+  background: #fff;
+  opacity: 0.9;
+  /* ستاره‌ی چهارپر */
+  clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+}
+
+.slart__tile {
+  position: absolute;
+  width: 12.17%;
+  aspect-ratio: 1;
+  border-radius: 2.6cqw;
   display: grid;
   place-items: center;
-  width: 46px; height: 46px;
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
+  /* یک کپیِ تیره‌ی جابه‌جاشده حسِ حجمِ تصویرِ اصلی را
+     تکرار می‌کند، بعد سایه‌ی نرم */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 8px 20px -12px rgba(0, 0, 0, 0.5);
-  animation: mark-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(var(--i) * 90ms + 260ms);
-}
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .hero__mark {
-    -webkit-backdrop-filter: blur(10px) saturate(1.4);
-    backdrop-filter: blur(10px) saturate(1.4);
-  }
-}
-.hero__mark svg { width: 24px; height: 24px; }
-
-@keyframes mark-in {
-  from { opacity: 0; transform: translateY(14px) scale(0.86); }
-  to   { opacity: 1; transform: none; }
+    -0.4cqw 0.85cqw 0 rgb(0 0 0 / 0.28),
+    0 1.1cqw 2.2cqw rgb(0 0 0 / 0.18);
 }
 
-@media (max-width: 700px) {
-  .hero__mark { width: 36px; height: 36px; border-radius: 11px; }
-  .hero__mark svg { width: 19px; height: 19px; }
-  .hero__marks { gap: 6px; inset-inline-end: 5%; }
+.slart__tile svg {
+  width: 52%;
+  height: 52%;
+  color: inherit;
 }
 
-@media (prefers-reduced-motion: reduce) { .hero__mark { animation: none; } }
+/* نشانِ بدونِ طرح — اگر روزی شناسه‌ای در ServiceMark
+   نباشد، حرفِ جایگزین هم باید درست دیده شود */
+.slart__tile > span {
+  font-size: 5cqw;
+  font-weight: 700;
+  line-height: 1;
+}
