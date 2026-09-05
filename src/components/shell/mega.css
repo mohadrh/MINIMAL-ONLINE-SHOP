@@ -288,7 +288,11 @@
   gap: 6px;
   flex-wrap: nowrap;
   white-space: nowrap;
-  align-self: flex-end;
+  /* ⚠ ظرفش گرید است نه فلکس، پس align-self محورِ عمودی را
+     می‌گیرد و کاری به عرض ندارد. چیزی که دکمه را جمع می‌کند
+     justify-self است. */
+  justify-self: end;
+  width: fit-content;
   margin-top: var(--sp-3);
   padding: 10px var(--sp-4);
   border-radius: var(--r-md);
