@@ -110,7 +110,16 @@ export function SearchStage({ variant = 'section' }: { variant?: 'section' | 'he
     return () => { cancelled = true; window.clearTimeout(timer); };
   }, [live]);
 
-  const hits = useMemo(() => searchAll(q, 4, 3), [q]);
+  /* درونِ هیرو کمتر نتیجه نشان می‌دهیم.
+
+     دراپ‌داون شناور است و روی سکشنِ بعدی می‌افتد؛ هر نتیجه‌ی
+     اضافه یعنی یک ردیف بیشتر از آن سکشن پوشیده می‌ماند. سه
+     نتیجه برای نشان دادنِ اینکه جست‌وجو کار می‌کند کافی است؛
+     فهرستِ کامل جایِ خودش در فروشگاه است. */
+  const hits = useMemo(
+    () => (inHero ? searchAll(q, 3, 1) : searchAll(q, 4, 3)),
+    [q, inHero],
+  );
   const has = hits.products.length > 0 || hits.numbers.length > 0;
   const short = q.trim().length < MIN_QUERY;
 

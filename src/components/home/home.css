@@ -2130,8 +2130,18 @@
      باز می‌کند. بنر نسبتِ ۱۶:۹ دارد، پس محدود کردنِ ارتفاع
      همان قدر لازم است که پادینگ. */
   .hero__slider { padding-block: var(--sp-8) var(--sp-14); }
-  .hero__dots { bottom: var(--sp-5); }
+  .hero__dots { bottom: calc(var(--sp-5) - 8px); }
   .hero__img { max-height: 250px; }
   .hero { padding-bottom: var(--sp-10); }
-  .hero__slide-inner { gap: var(--sp-8); }
+  /* دو ستونِ مساوی، نه ۵ به ۷.
+
+     با نسبتِ قبلی، ستونِ متن باریک می‌ماند و تصویر پهن،
+     پس وزنِ دو طرف برابر نبود و فاصله‌شان از لبه‌ها یکی به
+     نظر نمی‌رسید. فاصله‌ی بینِ دو ستون هم اندازه‌ی یک
+     گام کمتر شد تا زیاد باز نباشد. */
+  .hero__slide-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-10);
+    align-items: center;
+  }
 }
