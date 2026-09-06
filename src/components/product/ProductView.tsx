@@ -8,6 +8,7 @@ import {
 } from '../../data/catalog';
 import { asset } from '../../lib/asset';
 import { ProductSpecs } from './ProductSpecs';
+import { SideTabs } from './SideTabs';
 import { getArticlesForCategory } from '../../data/articles';
 import { ProductArt } from '../ui/ProductArt';
 import { useCart, useFlight } from '../../app/providers';
@@ -341,126 +342,105 @@ export function ProductView({ product: p }: { product: Product }) {
         </section>
       )}
 
-      {/* ---------- ۳ تصویر و متن ---------- */}
-      <section className="section reveal" id="about">
-        <div className="wrap mediatext">
-          <div className="mediatext__body">
-            <h2>{p.title} به چه کارت می‌آید؟</h2>
-            {/* شرح چندپاراگرافی است و با خط خالی جدا می‌شود.
-                یک پاراگرافِ بلند در فارسی، با این ارتفاع سطر، دیوارِ
-                متن می‌شود و کسی تا آخرش نمی‌رود. */}
-            <div className="pdp-desc">
-              {p.description.split('\n\n').map((para, i) => (
-                <p key={i} className={i === 0 ? 'sec-head__lead' : undefined}>
-                  {para.trim()}
-                </p>
-              ))}
-            </div>
+      {/* ---------- همه‌ی بخش‌های باقی‌مانده، در یک سکشن ----------
 
-            <ul className="points pdp-features">
-              {p.features.map((f) => (
-                <li key={f}>
-                  <span className="points__icon"><Check aria-hidden="true" /></span>
-                  <div><b>{f}</b></div>
-                </li>
-              ))}
-            </ul>
-          </div>
+           پیش از این شش سکشنِ جدا بودند و هر کدام سرتیتر و
+           پس‌زمینه و پادینگِ خودش را داشت؛ صفحه چند پرده اسکرول
+           می‌خواست تا تمام شود. حالا فهرست کنار می‌ماند و متن
+           کنارش عوض می‌شود. */}
+      <SideTabs
+        items={[
+          {
+            id: 'about',
+            title: 'درباره‌ی این سرویس',
+            node: (
+              <div className="mediatext">
+                <div className="mediatext__body">
+                  {/* شرح چندپاراگرافی است و با خط خالی جدا می‌شود.
+                      یک پاراگرافِ بلند در فارسی، با این ارتفاع سطر،
+                      دیوارِ متن می‌شود و کسی تا آخرش نمی‌رود. */}
+                  <div className="pdp-desc">
+                    {p.description.split('\n\n').map((para, i) => (
+                      <p key={i} className={i === 0 ? 'sec-head__lead' : undefined}>
+                        {para.trim()}
+                      </p>
+                    ))}
+                  </div>
 
-          <ProductArt
-            className="mediatext__art"
-            src={p.media.cover ?? p.media.thumbnail}
-            title={p.englishTitle}
-            brand={p.brand}
-          />
-        </div>
-      </section>
+                  <ul className="points pdp-features">
+                    {p.features.map((ft) => (
+                      <li key={ft}>
+                        <span className="points__icon"><Check aria-hidden="true" /></span>
+                        <div><b>{ft}</b></div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-      {/* راهنمای انتخاب پلن.
-
-          پیش از شرایط سفارش می‌آید چون ترتیبِ سوال‌های خریدار همین
-          است: اول «کدام را بگیرم»، بعد «بعدش چه می‌شود». */}
-      <section className="section section--tint reveal">
-        <div className="wrap">
-          <PlanGuide
-            p={p}
-            selected={variantId}
-            onPick={(id) => {
-              setVariantId(id);
-              document.getElementById('buy')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }}
-          />
-        </div>
-      </section>
-
-      
-      {/* ---------- مشخصات و آموزش فعال‌سازی ---------- */}
-      <ProductSpecs p={p} />
-
-      {/* ---------- ۴ نوار مزایا ---------- */}
-      <section className="section section--blue reveal" id="why">
-        <div className="wrap">
-          <div className="sec-head sec-head--center">
-            <span className="sec-head__kicker">چرا از ما</span>
-            <h2>مزیت خرید {p.title} از فونیکس شاپ</h2>
-          </div>
-
-          <div className="pdp-why">
-            {[
-              { icon: ShieldCheck, t: p.warrantyLabel, d: 'اگر وسط دوره مشکلی پیش بیاید، جایگزین می‌کنیم یا پول را برمی‌گردانیم.' },
-              { icon: Clock, t: p.deliveryEstimate, d: 'بیشتر سفارش‌ها بلافاصله بعد از پرداخت تحویل می‌شوند.' },
-              { icon: Sparkles, t: 'پرداخت ریالی', d: 'با کارت بانکی خودت. نه ارز لازم داری، نه حساب خارجی.' },
-            ].map(({ icon: Icon, t, d }) => (
-              <div key={t} className="pdp-why__item">
-                <span className="pdp-why__icon"><Icon aria-hidden="true" /></span>
-                <b>{t}</b>
-                <p>{d}</p>
+                <ProductArt
+                  className="mediatext__art"
+                  src={p.media.cover ?? p.media.thumbnail}
+                  title={p.englishTitle}
+                  brand={p.brand}
+                />
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      
-      {/* ---------- ۶ و ۷ فهرست مطالب و سوالات ---------- */}
-      {p.faq && p.faq.length > 0 && (
-        <section className="section section--tint reveal" id="faq">
-          <div className="wrap pdp-faq">
-            <aside className="pdp-toc" aria-label="فهرست مطالب">
-              <h3>فهرست مطالب</h3>
-              <ul>
-                <li><a href="#about">درباره‌ی این سرویس</a></li>
-                <li><a href="#specs">مشخصات</a></li>
-                <li><a href="#howto">بعد از خرید چه کار کنم؟</a></li>
-                <li><a href="#why">چرا از فونیکس شاپ</a></li>
-                {related.length > 0 && <li><a href="#related">سرویس‌های مشابه</a></li>}
-                <li><a href="#faq">سوالات متداول</a></li>
-              </ul>
-            </aside>
-
-            <div>
-              <div className="sec-head">
-                <h2>سوالات متداول</h2>
+            ),
+          },
+          {
+            id: 'guide',
+            title: 'کدام پلن را بگیرم؟',
+            node: (
+              <PlanGuide
+                p={p}
+                selected={variantId}
+                onPick={(id) => {
+                  setVariantId(id);
+                  document.getElementById('buy')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+              />
+            ),
+          },
+          { id: 'specs', title: 'مشخصات', node: <ProductSpecs p={p} bare part="specs" /> },
+          { id: 'howto', title: 'بعد از خرید چه کار کنم؟', node: <ProductSpecs p={p} bare part="howto" /> },
+          {
+            id: 'why',
+            title: 'چرا از فونیکس شاپ',
+            node: (
+              <div className="pdp-why">
+                {[
+                  { icon: ShieldCheck, t: p.warrantyLabel, d: 'اگر وسط دوره مشکلی پیش بیاید، جایگزین می‌کنیم یا پول را برمی‌گردانیم.' },
+                  { icon: Clock, t: p.deliveryEstimate, d: 'بیشتر سفارش‌ها بلافاصله بعد از پرداخت تحویل می‌شوند.' },
+                  { icon: Sparkles, t: 'پرداخت ریالی', d: 'با کارت بانکی خودت. نه ارز لازم داری، نه حساب خارجی.' },
+                ].map(({ icon: Icon, t, d }) => (
+                  <div key={t} className="pdp-why__item">
+                    <span className="pdp-why__icon"><Icon aria-hidden="true" /></span>
+                    <b>{t}</b>
+                    <p>{d}</p>
+                  </div>
+                ))}
               </div>
-              <Faq items={p.faq} />
-            </div>
-          </div>
-        </section>
-      )}
+            ),
+          },
+          ...(p.faq && p.faq.length > 0
+            ? [{ id: 'faq', title: 'سوالات متداول', node: <Faq items={p.faq} /> }]
+            : []),
+          {
+            id: 'rate',
+            title: 'امتیاز کاربران',
+            node: (
+              <div className="pdp-rate__row">
+                <span className="pdp-rate__num num">{p.rating.toLocaleString('fa-IR')}</span>
+                <span className="pdp-rate__text">
+                  میانگین امتیاز از{' '}
+                  <b className="num">{fmt(p.reviewsCount)}</b> نظر ثبت‌شده
+                </span>
+                <Link href="/shop" className="btn btn--ghost btn--sm">دیدن همه‌ی محصولات</Link>
+              </div>
+            ),
+          },
+        ]}
+      />
 
-      {/* ---------- ۸ امتیاز ---------- */}
-      <section className="section pdp-rate reveal">
-        <div className="wrap pdp-rate__row">
-          <span className="pdp-rate__num num">{p.rating.toLocaleString('fa-IR')}</span>
-          <span className="pdp-rate__text">
-            میانگین امتیاز از{' '}
-            <b className="num">{fmt(p.reviewsCount)}</b> نظر ثبت‌شده
-          </span>
-          <Link href="/shop" className="btn btn--ghost btn--sm">دیدن همه‌ی محصولات</Link>
-        </div>
-      </section>
-
-      
       {/* ---------- ۹ بستنِ صفحه ----------
 
            کسی که تا اینجا خوانده، تصمیمش را گرفته. اگر آخر صفحه

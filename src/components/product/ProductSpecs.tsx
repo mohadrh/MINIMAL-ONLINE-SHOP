@@ -84,7 +84,18 @@ const priceRange = (p: Product) => {
  * سوالش همیشه یکی است: «حالا با این چه کار کنم؟». جوابش باید در
  * همان صفحه‌ای باشد که خرید کرده، نه در بخش راهنما.
  */
-export function ProductSpecs({ p }: { p: Product }) {
+/**
+ * ⚠ حالا می‌تواند «برهنه» رندر شود.
+ *
+ * این کامپوننت دو سکشنِ کامل می‌ساخت با پس‌زمینه و پادینگِ خودشان.
+ * وقتی بخش‌های صفحه‌ی محصول در یک سکشنِ فهرست‌دار جمع شدند، آن
+ * پوسته اضافه شد: سکشن داخل سکشن، با دو برابر پادینگ.
+ *
+ * با bare فقط خودِ محتوا برمی‌گردد، و part می‌گوید کدام تکه.
+ */
+export function ProductSpecs({
+  p, bare = false, part = 'both',
+}: { p: Product; bare?: boolean; part?: 'specs' | 'howto' | 'both' }) {
   const stock = totalStock(p);
   const inStock = stock === null || stock > 0;
   const f = FULFILLMENT[p.fulfillment];
@@ -125,16 +136,29 @@ export function ProductSpecs({ p }: { p: Product }) {
     });
   }
 
+  /* در حالت برهنه، تیتر را ظرفِ بیرونی گذاشته و پوسته لازم نیست */
+  const Shell = ({ id, tint, children }: { id: string; tint?: boolean; children: React.ReactNode }) => (
+    bare
+      ? <div className="spec">{children}</div>
+      : (
+        <section className={`section${tint ? ' section--tint' : ''}`} id={id}>
+          <div className="wrap spec">{children}</div>
+        </section>
+      )
+  );
+
   return (
     <>
-      <section className="section" id="specs">
-        <div className="wrap spec">
+      {part !== 'howto' && (
+      <Shell id="specs">
+          {!bare && (
           <div className="sec-head">
             <h2>مشخصات {p.title}</h2>
             <p className="sec-head__lead">
               هر چیزی که قبل از خرید باید بدانی، در یک نگاه.
             </p>
           </div>
+          )}
 
           <dl className="spec__table">
             {rows.map((r, i) => (
@@ -164,18 +188,20 @@ export function ProductSpecs({ p }: { p: Product }) {
               {p.notes.map((n, i) => <li key={i}>{n}</li>)}
             </ul>
           )}
-        </div>
-      </section>
+      </Shell>
+      )}
 
       {/* ---------- آموزش فعال‌سازی ---------- */}
-      <section className="section section--tint" id="howto">
-        <div className="wrap spec">
+      {part !== 'specs' && (
+      <Shell id="howto" tint>
+          {!bare && (
           <div className="sec-head">
             <h2>بعد از خرید چه کار کنم؟</h2>
             <p className="sec-head__lead">
               چهار گام، از پرداخت تا لحظه‌ای که اشتراک روی حسابت فعال است.
             </p>
           </div>
+          )}
 
           <ol className="spec__steps">
             {f.steps.map((step, i) => (
@@ -185,8 +211,8 @@ export function ProductSpecs({ p }: { p: Product }) {
               </li>
             ))}
           </ol>
-        </div>
-      </section>
+      </Shell>
+      )}
     </>
   );
 }

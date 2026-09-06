@@ -2099,3 +2099,159 @@
   .gmod__tabs { flex-wrap: wrap; overflow-x: visible; }
   .gmod__tab { flex: 1 1 auto; text-align: center; }
 }
+
+/* ============================================================
+   یک سکشن با فهرست کنار
+
+   جای شش سکشنِ پشت سر هم. فهرست سمتِ شروع می‌چسبد و با اسکرول
+   خودش را به‌روز می‌کند؛ متن کنارش عوض می‌شود.
+   ============================================================ */
+
+.ptabs__grid {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  gap: var(--sp-8);
+  align-items: start;
+}
+
+.ptabs__index {
+  position: sticky;
+  /* ⚠ نوارِ بالا فقط ‎--nav-h‎ نیست.
+
+     ‎--nav-h‎ هفتادوشش پیکسل است ولی نوارِ چسبان با نوارِ تبلیغ
+     روی هم صد و شانزده می‌شوند؛ با همان عدد، فهرست بیست‌وچهار
+     پیکسل زیرِ نوار می‌رفت. اندازه‌اش روی صفحه گرفته شد. */
+  top: calc(var(--nav-h, 76px) + var(--sp-12));
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--paper);
+}
+[data-theme="dark"] .ptabs__index {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.ptabs__index-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+}
+.ptabs__index ul { display: grid; gap: 2px; list-style: none; }
+
+.ptabs__index button {
+  width: 100%;
+  text-align: start;
+  padding: 9px var(--sp-3);
+  border: 0;
+  border-radius: var(--r);
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.ptabs__index button:hover { background: var(--wash); color: var(--ink); }
+.ptabs__index button.is-on {
+  background: color-mix(in srgb, var(--brand) 15%, transparent);
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.ptabs__panes { display: grid; gap: var(--sp-10); }
+
+.ptabs__pane {
+  /* لنگرِ اسکرول زیرِ نوارِ چسبان نیفتد — همان حسابِ بالا */
+  scroll-margin-top: calc(var(--nav-h, 76px) + var(--sp-12));
+}
+.ptabs__pane-title {
+  font-size: var(--text-xl);
+  font-weight: 900;
+  margin-block-end: var(--sp-4);
+  padding-block-end: var(--sp-3);
+  border-block-end: 1px solid var(--line);
+}
+[data-theme="dark"] .ptabs__pane-title { border-block-end-color: rgba(255, 255, 255, 0.1); }
+
+/* درونِ پنل، بخش‌ها دیگر پادینگِ سکشن نمی‌خواهند */
+.ptabs__pane .spec { padding: 0; }
+.ptabs__pane .mediatext { margin: 0; }
+
+@media (max-width: 900px) {
+  .ptabs__grid { grid-template-columns: minmax(0, 1fr); gap: var(--sp-5); }
+  /* روی موبایل فهرست افقی می‌شود و بالای متن می‌ماند */
+  .ptabs__index {
+    position: sticky;
+    top: calc(var(--nav-h, 76px) + var(--sp-3));
+    z-index: 5;
+  }
+  .ptabs__index ul {
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 4px;
+  }
+  .ptabs__index ul::-webkit-scrollbar { display: none; }
+  .ptabs__index button { white-space: nowrap; }
+}
+
+/* ---------- کارت‌های مقاله ----------
+
+   کارفرما گفت کادرها و چیدمانش قشنگ نیست. سه مشکل داشت: ریلِ
+   افقی روی دسکتاپ بی‌دلیل بود (سه کارت که جا می‌شوند)، کارت‌ها
+   قدِ متفاوت می‌گرفتند چون متن‌ها هم‌اندازه نیستند، و برچسبِ
+   موضوع وسطِ متن شناور بود.
+--------------------------------------------------------------- */
+
+#reads .rail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-4);
+  overflow: visible;
+}
+@media (max-width: 900px) { #reads .rail { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { #reads .rail { grid-template-columns: minmax(0, 1fr); } }
+
+#reads .art {
+  display: grid;
+  align-content: start;
+  gap: var(--sp-2);
+  padding: var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--paper);
+  transition: border-color var(--dur) var(--ease), translate var(--dur) var(--ease);
+}
+[data-theme="dark"] #reads .art {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+#reads .art:hover {
+  translate: 0 -3px;
+  border-color: color-mix(in srgb, var(--accent, var(--brand)) 60%, transparent);
+}
+#reads .art__topic {
+  justify-self: start;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent, var(--brand)) 16%, transparent);
+  color: var(--accent, var(--brand));
+}
+#reads .art b { font-size: var(--text-base); line-height: 1.7; }
+#reads .art p {
+  font-size: var(--text-sm);
+  line-height: 1.9;
+  color: var(--ink-faint);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+#reads .art__meta { margin-block-start: auto; font-size: 11px; color: var(--ink-faint); }
