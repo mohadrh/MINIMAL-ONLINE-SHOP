@@ -7,7 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p 3100",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "sync": "node scripts/sync-woo.mjs",
+    "sync:build": "node scripts/sync-woo.mjs && next build"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

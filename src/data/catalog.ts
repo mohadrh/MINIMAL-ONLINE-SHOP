@@ -658,7 +658,35 @@ const SUBSCRIPTIONS: Product[] = [
 ];
 
 /** کاتالوگ کامل — اشتراک‌ها و بازی‌ها */
-export const PRODUCTS: Product[] = [...SUBSCRIPTIONS, ...GAMES, ...GIFT_CARDS];
+/* ============================================================
+   منبعِ محصولات
+
+   ⚠ داده‌ی دستی، پشتیبان است نه منبعِ اصلی.
+
+   وقتی ووکامرس وصل شود، `npm run sync` کاتالوگ را می‌خواند و در
+   generated/catalog.json می‌نویسد؛ از آن لحظه محصولات از آن‌جا
+   می‌آیند و این فایل دست‌نخورده می‌ماند.
+
+   چرا این‌طور و نه خواندنِ زنده در زمانِ اجرا: سایت خروجیِ ایستا
+   دارد و سرور ندارد، پس کلیدِ ووکامرس هیچ‌جا نباید در مرورگر
+   باشد. با همگام‌سازی در زمانِ بیلد، داده واقعی است و کلید فقط
+   روی ماشینِ بیلد می‌ماند.
+
+   اگر فایل خالی باشد — یعنی هنوز همگام نشده — همین داده‌ی دستی
+   کار می‌کند و سایت بالا می‌ماند. هیچ حالتی نیست که فروشگاه خالی
+   نشان داده شود.
+   ============================================================ */
+
+import GENERATED from './generated/catalog.json';
+
+const SYNCED = GENERATED.products as unknown as Product[];
+
+export const PRODUCTS: Product[] =
+  SYNCED.length > 0 ? SYNCED : [...SUBSCRIPTIONS, ...GAMES, ...GIFT_CARDS];
+
+/** از کجا آمده — برای نشان دادن در پنل و لاگِ بیلد */
+export const CATALOG_SOURCE = SYNCED.length > 0 ? GENERATED.source : 'local';
+export const CATALOG_SYNCED_AT = GENERATED.syncedAt;
 
 /* ---------------------------------------------------------------
    کمکی‌ها
