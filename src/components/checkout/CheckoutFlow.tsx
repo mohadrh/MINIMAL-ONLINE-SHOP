@@ -9,6 +9,9 @@ import {
 } from '../../lib/account';
 import { newOrderCode, saveOrder, scheduleFulfilment, type Order } from '../../lib/orders';
 import { Loader } from '../ui/Loader';
+import {
+  BRIDGE_READY, createOrder as createLiveOrder, storedToken,
+} from '../../lib/api/bridge';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -52,6 +55,7 @@ export function CheckoutFlow() {
   const [showPass, setShowPass] = useState(false);
   const [gateway, setGateway] = useState(GATEWAYS[0].id);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   /* ثبت نهاییِ سفارش — یک تعریف، دو مصرف‌کننده: تایمرِ تأیید و
      دکمه‌ی پشتیبانِ همان صفحه.
@@ -381,10 +385,54 @@ export function CheckoutFlow() {
               <button
                 type="button"
                 className="btn btn--primary co__pay"
-                disabled={!canPay}
-                onClick={() => {
+                disabled={!canPay || busy}
+                onClick={async () => {
                   saveAccount({ phone, name, password });
-                  setStep('gateway');
+
+                  /* بدون بک‌اند، همان مسیرِ شبیه‌سازی‌شده ادامه
+                     پیدا می‌کند تا فلو قابل امتحان بماند. */
+                  if (!BRIDGE_READY) {
+                    setStep('gateway');
+                    return;
+                  }
+
+                  /* ⚠ سفارشِ واقعی شناسه‌ی ووکامرس می‌خواهد.
+
+                     تا وقتی کاتالوگ همگام نشده، شناسه‌ها اسلاگِ
+                     محلی‌اند («claude-pro») نه عددِ ووکامرس. ثبت
+                     سفارش با آن‌ها سفارشِ خالی می‌سازد، پس صریح
+                     جلویش گرفته می‌شود. */
+                  const bad = lines.find((l) => !/^\d+$/.test(l.variant.id));
+                  if (bad) {
+                    setError('کاتالوگ هنوز با فروشگاه همگام نشده. با پشتیبانی تماس بگیر.');
+                    return;
+                  }
+
+                  if (!storedToken()) {
+                    setError('برای ثبت سفارش، اول شماره‌ات را با کد تأیید کن.');
+                    return;
+                  }
+
+                  setBusy(true);
+                  setError(null);
+                  try {
+                    const res = await createLiveOrder({
+                      phone,
+                      name,
+                      items: lines.map((l) => ({
+                        id: Number(l.variant.id),
+                        qty: l.quantity,
+                        inputs: l.inputs,
+                      })),
+                    });
+                    /* پرداخت روی خودِ ووکامرس انجام می‌شود، پس هر
+                       درگاهی که آن‌جا نصب باشد بدون تغییرِ کد کار
+                       می‌کند. */
+                    window.location.href = res.pay_url;
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : 'ثبت سفارش انجام نشد.');
+                    setBusy(false);
+                  }
                 }}
               >
                 <Lock aria-hidden="true" />
