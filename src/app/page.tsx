@@ -3,7 +3,6 @@ import { HotDeals } from '../components/home/HotDeals';
 import { PopularServices } from '../components/home/PopularServices';
 import { TrustStrip } from '../components/home/TrustStrip';
 import { CategoryShowcase } from '../components/home/CategoryShowcase';
-import { Highlights } from '../components/home/Highlights';
 import { AiPicker } from '../components/home/AiPicker';
 import { WhyPhoenix } from '../components/home/WhyPhoenix';
 import { Reviews } from '../components/home/Reviews';
@@ -45,10 +44,6 @@ export default function HomePage() {
 
           کاربری که تازه رسیده، اول باید بفهمد این‌جا چه چیزهایی
           هست — نه اینکه یک ردیف محصولِ تصادفی ببیند. */}
-      {/* دسته‌بندی‌ها بلافاصله بعد از هیرو.
-
-          کاربری که تازه رسیده، اول باید بفهمد این‌جا چه چیزهایی
-          هست — نه اینکه یک ردیف محصولِ تصادفی ببیند. */}
       <CategoryShowcase />
 
       <HotDeals />
@@ -59,15 +54,6 @@ export default function HomePage() {
           می‌نشست؛ کسی که آمده خرید کند، وسطِ راه به «پیگیری
           سفارش» نمی‌خورد. */}
       <PopularServices />
-
-      {/* دو بنر، جای دو ردیفِ محصول.
-
-          «پرفروش‌های هوش مصنوعی» و «پرفروش‌های گیم» هر کدام چهار
-          کارتِ کامل بودند و صفحه‌ی اصلی را به فهرستِ محصول تبدیل
-          می‌کردند — کاری که صفحه‌ی فروشگاه بهتر می‌کند و فیلتر هم
-          دارد. این دو با یک‌پنجمِ ارتفاع همان را می‌گویند و
-          مستقیم به همان فیلتر می‌روند. */}
-      <Highlights />
 
       <AiPicker />
 
