@@ -130,3 +130,32 @@ export async function createOrder(params: {
   }
   return post<OrderResult>('/order', { ...params, token });
 }
+
+/* ---------------------------------------------------------------
+   پیگیری
+--------------------------------------------------------------- */
+
+export interface TrackedOrder {
+  number: string;
+  status: string;
+  createdAt: number | null;
+  total: number;
+  delivered: boolean;
+  items: {
+    title: string;
+    quantity: number;
+    total: number;
+    /** کدهایی که تحویل داده شده — اگر هنوز تحویل نشده، خالی */
+    codes: string[];
+  }[];
+}
+
+/**
+ * سفارش را با شماره‌ی سفارش و موبایل می‌گیرد.
+ *
+ * ⚠ هر دو لازم‌اند. فقط با شماره‌ی سفارش، هر کسی می‌توانست
+ * شماره‌ها را یکی‌یکی امتحان کند و سفارش‌های دیگران را ببیند.
+ */
+export async function trackOrder(code: string, phone: string): Promise<TrackedOrder> {
+  return post<TrackedOrder>('/track', { code, phone });
+}

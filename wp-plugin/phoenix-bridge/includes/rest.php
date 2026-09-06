@@ -40,6 +40,13 @@ function phoenix_register_routes() {
         ),
     ));
 
+    /* ---------- پیگیری سفارش ---------- */
+    register_rest_route('phoenix/v1', '/track', array(
+        'methods'             => WP_REST_Server::CREATABLE,
+        'callback'            => 'phoenix_rest_track',
+        'permission_callback' => 'phoenix_rate_limit_orders',
+    ));
+
     /* ---------- ثبت سفارش ---------- */
     register_rest_route('phoenix/v1', '/order', array(
         'methods'             => WP_REST_Server::CREATABLE,
@@ -421,4 +428,68 @@ add_action('woocommerce_new_product', 'phoenix_flush_catalog_cache');
 add_action('woocommerce_delete_product', 'phoenix_flush_catalog_cache');
 function phoenix_flush_catalog_cache() {
     delete_transient('phoenix_catalog_cache');
+}
+
+/* ============================================================
+   پیگیری
+   ============================================================ */
+
+/**
+ * سفارش را با شماره‌ی سفارش و موبایل برمی‌گرداند.
+ *
+ * ⚠ هر دو لازم‌اند و این عمدی است.
+ *
+ * فقط با شماره‌ی سفارش، هر کسی می‌تواند شماره‌ها را یکی‌یکی
+ * امتحان کند و سفارش‌های دیگران را ببیند — اسم، تلفن، و کدی که
+ * تحویل داده شده. شماره‌ی موبایل همان چیزی است که فقط صاحب سفارش
+ * می‌داند.
+ *
+ * محدودیت نرخ هم دارد، وگرنه همان حدس‌زدن با ترکیب دوتایی ادامه
+ * پیدا می‌کند.
+ */
+function phoenix_rest_track(WP_REST_Request $request) {
+    $body   = $request->get_json_params();
+    $number = isset($body['code']) ? sanitize_text_field((string) $body['code']) : '';
+    $phone  = phoenix_normalize_phone(isset($body['phone']) ? (string) $body['phone'] : '');
+
+    if ($number === '' || $phone === '') {
+        return new WP_Error('phoenix_bad_track', 'شماره‌ی سفارش و موبایل لازم است.', array('status' => 400));
+    }
+
+    $order_id = (int) preg_replace('/[^0-9]/', '', $number);
+    $order    = $order_id ? wc_get_order($order_id) : false;
+
+    /* ⚠ پیام یکی است، چه سفارش نباشد چه شماره نخورد.
+
+       اگر دو پیام متفاوت بدهیم، مهاجم می‌فهمد کدام شماره‌ی سفارش
+       وجود دارد و فقط دنبال موبایلش می‌گردد. */
+    if (!$order || !hash_equals(phoenix_normalize_phone($order->get_billing_phone()), $phone)) {
+        return new WP_Error('phoenix_not_found', 'سفارشی با این مشخصات پیدا نشد.', array('status' => 404));
+    }
+
+    $items = array();
+    foreach ($order->get_items() as $item) {
+        $codes = array();
+        foreach ($item->get_meta_data() as $m) {
+            $d = $m->get_data();
+            if (isset($d['key']) && $d['key'] === 'کد تحویل') {
+                $codes[] = $d['value'];
+            }
+        }
+        $items[] = array(
+            'title'    => $item->get_name(),
+            'quantity' => $item->get_quantity(),
+            'total'    => (int) round((float) $item->get_total()),
+            'codes'    => $codes,
+        );
+    }
+
+    return rest_ensure_response(array(
+        'number'    => $order->get_order_number(),
+        'status'    => $order->get_status(),
+        'createdAt' => $order->get_date_created() ? $order->get_date_created()->getTimestamp() : null,
+        'total'     => (int) round((float) $order->get_total()),
+        'delivered' => (bool) $order->get_meta(PHOENIX_DELIVERED_META),
+        'items'     => $items,
+    ));
 }
