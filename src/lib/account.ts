@@ -1,3 +1,9 @@
+import {
+  BRIDGE_READY,
+  requestOtp as bridgeRequestOtp,
+  verifyOtp as bridgeVerifyOtp,
+} from './api/bridge';
+
 /* ============================================================
    حساب کاربری
 
@@ -167,7 +173,18 @@ function readOtp(): OtpState | null {
  * پیامک هم فلو قابل امتحان باشد. همین که سرویس وصل شد، مقدار
  * برگشتی حذف می‌شود و صفحه هم دیگر نشانش نمی‌دهد.
  */
-export function requestOtp(phone: string): { code: string; expiresAt: number } {
+export async function requestOtp(phone: string): Promise<{ code: string; expiresAt: number }> {
+  /* ⚠ اگر بک‌اند وصل باشد، کد از این‌جا ساخته نمی‌شود.
+
+     سرور می‌سازدش، پیامک می‌کند، و هش‌شده نگه می‌دارد. هیچ‌وقت
+     به مرورگر برنمی‌گردد — پس مقدار برگشتی خالی است و صفحه هم
+     چیزی نشان نمی‌دهد. همان چیزی که این کامنت از اول وعده داده
+     بود. */
+  if (BRIDGE_READY) {
+    const { ttl } = await bridgeRequestOtp(phone.trim());
+    return { code: '', expiresAt: Date.now() + ttl * 1000 };
+  }
+
   const code = String(Math.floor(100000 + Math.random() * 900000));
   const state: OtpState = {
     phone: phone.trim(),
@@ -185,7 +202,22 @@ export function requestOtp(phone: string): { code: string; expiresAt: number } {
 
 export type OtpResult = 'ok' | 'wrong' | 'expired' | 'too-many' | 'none';
 
-export function verifyOtp(phone: string, code: string): OtpResult {
+export async function verifyOtp(phone: string, code: string): Promise<OtpResult> {
+  if (BRIDGE_READY) {
+    try {
+      await bridgeVerifyOtp(phone.trim(), code.trim());
+      return 'ok';
+    } catch (e) {
+      /* پیام‌های سرور به همان حالت‌هایی نگاشته می‌شوند که رابط
+         کاربری از قبل می‌شناسد، تا صفحه دست نخورد. */
+      const st = e as { status?: number };
+      if (st.status === 410) return 'expired';
+      if (st.status === 429) return 'too-many';
+      if (st.status === 401) return 'wrong';
+      return 'none';
+    }
+  }
+
   const st = readOtp();
   if (!st || st.phone !== phone.trim()) return 'none';
   if (Date.now() > st.expiresAt) return 'expired';

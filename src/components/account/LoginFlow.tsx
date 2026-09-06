@@ -63,13 +63,27 @@ export function LoginFlow() {
   const okPhone = phoneOk(phone);
   const acc = getAccount();
 
-  const askCode = () => {
-    const { code: c, expiresAt } = requestOtp(phone);
-    setSent(c);
-    setLeft(Math.round((expiresAt - Date.now()) / 1000));
-    setCode('');
+  /* ⚠ حالا ناهمگام است چون ممکن است به سرور برود.
+
+     وقتی بک‌اند وصل باشد، کد از سرور می‌آید و به مرورگر
+     برنمی‌گردد؛ setSent خالی می‌ماند و صفحه هم چیزی نشان
+     نمی‌دهد. تا آن روز، شبیه‌سازی همان کد را برمی‌گرداند. */
+  const [busy, setBusy] = useState(false);
+
+  const askCode = async () => {
+    setBusy(true);
     setError(null);
-    setStage('code');
+    try {
+      const { code: c, expiresAt } = await requestOtp(phone);
+      setSent(c);
+      setLeft(Math.round((expiresAt - Date.now()) / 1000));
+      setCode('');
+      setStage('code');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'ارسال کد انجام نشد.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   if (stage === 'done') {
@@ -196,7 +210,7 @@ export function LoginFlow() {
               <button
                 type="button"
                 className="btn btn--primary login__go"
-                disabled={!okPhone}
+                disabled={!okPhone || busy}
                 onClick={askCode}
               >
                 فرستادن کد
@@ -231,7 +245,7 @@ export function LoginFlow() {
                   {left > 0 ? (
                     <span className="num">تا درخواست دوباره {left.toLocaleString('fa-IR')} ثانیه</span>
                   ) : (
-                    <button type="button" onClick={askCode}>کد تازه بفرست</button>
+                    <button type="button" onClick={askCode} disabled={busy}>کد تازه بفرست</button>
                   )}
                 </div>
 
@@ -240,11 +254,16 @@ export function LoginFlow() {
                 <button
                   type="button"
                   className="btn btn--primary login__go"
-                  disabled={!otpOk(code)}
-                  onClick={() => {
-                    const r = verifyOtp(phone, code);
-                    if (r === 'ok') { setStage('done'); return; }
-                    setError(ERRORS[r]);
+                  disabled={!otpOk(code) || busy}
+                  onClick={async () => {
+                    setBusy(true);
+                    try {
+                      const r = await verifyOtp(phone, code);
+                      if (r === 'ok') { setStage('done'); return; }
+                      setError(ERRORS[r]);
+                    } finally {
+                      setBusy(false);
+                    }
                   }}
                 >
                   ورود
