@@ -46,11 +46,20 @@ export function SideTabs({ items }: { items: TabItem[] }) {
 
        حساب کردنِ مستقیم این مشکل را ندارد: هر بار موقعیتِ همه‌ی
        پنل‌ها را می‌بینیم و آخرین پنلی که بالای خطِ مرجع شروع شده
-       برنده است. rAF جلوی اجرای چندباره در یک فریم را می‌گیرد. */
-    let frame = 0;
+       برنده است.
+
+       ⚠ و گلوگاهش با زمان بسته می‌شود نه با rAF.
+
+       نسخه‌ی اولِ همین حساب، pick را داخل requestAnimationFrame
+       می‌گذاشت. در سندی که مخفی است rAF اصلاً اجرا نمی‌شود — پس
+       در هر تبِ پس‌زمینه، و در هر ابزارِ سنجشی که صفحه را نمایش
+       نمی‌دهد، ردیابی بی‌صدا می‌مُرد. با مهرِ زمانی، رفتار همه‌جا
+       یکی است. خواندنِ موقعیتِ هفت عنصر ده بار در ثانیه هزینه‌ای
+       ندارد. */
+    let last = 0;
 
     const pick = () => {
-      frame = 0;
+      last = Date.now();
       /* خطِ مرجع یک‌سومِ بالای پنجره — نه خودِ لبه، چون آن‌وقت
          بخش تازه پیش از آنکه واقعاً دیده شود فعال می‌شود. */
       const line = window.innerHeight * 0.33;
@@ -75,7 +84,7 @@ export function SideTabs({ items }: { items: TabItem[] }) {
     };
 
     const onScroll = () => {
-      if (!frame) frame = window.requestAnimationFrame(pick);
+      if (Date.now() - last >= 90) pick();
     };
 
     pick();
@@ -84,7 +93,6 @@ export function SideTabs({ items }: { items: TabItem[] }) {
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
-      if (frame) window.cancelAnimationFrame(frame);
     };
   }, [items]);
 
