@@ -10,6 +10,7 @@ import { ScrollTop } from '../components/shell/ScrollTop';
 import { LiveChat } from '../components/shell/LiveChat';
 import { CompareProvider, CompareBar } from '../components/shop/Compare';
 import { CartDrawer } from '../components/cart/CartDrawer';
+import { LivePriceProvider } from '../lib/api/livePrices';
 
 export const metadata: Metadata = {
   title: 'فونیکس شاپ — اشتراک هوش مصنوعی، گیم و شماره مجازی',
@@ -55,6 +56,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>
+          {/* قیمت‌ها بعد از بارگذاری خودشان را تازه می‌کنند —
+              روی سایت ایستا، تنها راهِ نشان دادنِ عددِ درست. */}
+          <LivePriceProvider>
           <CompareProvider>
           <Nav />
           <main>{children}</main>
@@ -69,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <LiveChat />
           <Reveal />
           <CursorLight />
+          </LivePriceProvider>
         </Providers>
       </body>
     </html>

@@ -40,6 +40,13 @@ function phoenix_register_routes() {
         ),
     ));
 
+    /* ---------- قیمت و موجودی زنده ---------- */
+    register_rest_route('phoenix/v1', '/prices', array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => 'phoenix_rest_prices',
+        'permission_callback' => '__return_true',
+    ));
+
     /* ---------- پیگیری سفارش ---------- */
     register_rest_route('phoenix/v1', '/track', array(
         'methods'             => WP_REST_Server::CREATABLE,
@@ -492,4 +499,67 @@ function phoenix_rest_track(WP_REST_Request $request) {
         'delivered' => (bool) $order->get_meta(PHOENIX_DELIVERED_META),
         'items'     => $items,
     ));
+}
+
+/* ============================================================
+   قیمت و موجودی زنده
+   ============================================================ */
+
+/**
+ * فقط قیمت و موجودی — سبک، برای سایتِ ایستا.
+ *
+ * ⚠ مسئله‌ای که این حل می‌کند
+
+ * سایت خروجی ایستا دارد، پس قیمت‌ها لحظه‌ی بیلد در HTML پخته
+ * می‌شوند. اگر ادمین قیمتی را در پنل عوض کند و کسی بیلد نزند،
+ * بازدیدکننده عدد قدیمی می‌بیند. پول از دست نمی‌رود — سفارش قیمت
+ * را از ووکامرس می‌گیرد نه از مرورگر — ولی عددِ صفحه با فاکتور
+ * فرق می‌کند و همین اعتماد را می‌برد.
+ *
+ * با این اندپوینت، صفحه بعد از باز شدن قیمت‌ها را تازه می‌کند.
+ *
+ * چرا جدا از /catalog: آن یکی توضیحات و تصویر و همه‌چیز را
+ * می‌فرستد — برای هر بازدید سنگین است. این فقط سه عدد برای هر
+ * پلن است و چند کیلوبایت می‌شود.
+ */
+function phoenix_rest_prices(WP_REST_Request $request) {
+    $cached = get_transient('phoenix_prices_cache');
+    if ($cached !== false) {
+        return rest_ensure_response($cached);
+    }
+
+    $query = new WP_Query(array(
+        'post_type'      => array('product', 'product_variation'),
+        'post_status'    => 'publish',
+        'posts_per_page' => 500,
+        'no_found_rows'  => true,
+        'fields'         => 'ids',
+    ));
+
+    $out = array();
+    foreach ($query->posts as $pid) {
+        $p = wc_get_product($pid);
+        if (!$p) {
+            continue;
+        }
+        $out[(string) $pid] = array(
+            'price'     => (int) round((float) $p->get_price()),
+            'compareAt' => $p->is_on_sale() ? (int) round((float) $p->get_regular_price()) : null,
+            'stock'     => $p->is_in_stock()
+                ? ($p->managing_stock() ? $p->get_stock_quantity() : null)
+                : 0,
+        );
+    }
+
+    /* یک دقیقه — قیمت آن‌قدر عوض نمی‌شود که کمتر لازم باشد، و
+       این‌طور هر بازدید یک کوئری به دیتابیس نمی‌زند. */
+    set_transient('phoenix_prices_cache', $out, MINUTE_IN_SECONDS);
+    return rest_ensure_response($out);
+}
+
+add_action('woocommerce_update_product', 'phoenix_flush_prices_cache');
+add_action('woocommerce_variation_set_stock', 'phoenix_flush_prices_cache');
+add_action('woocommerce_product_set_stock', 'phoenix_flush_prices_cache');
+function phoenix_flush_prices_cache() {
+    delete_transient('phoenix_prices_cache');
 }

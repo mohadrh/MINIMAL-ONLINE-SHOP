@@ -20,6 +20,7 @@ import { tomanFromUsd } from '../../lib/rate';
 import { PlanGuide } from './PlanGuide';
 import { useCompare } from '../shop/Compare';
 import { Faq } from '../ui/Faq';
+import { useLivePrices } from '../../lib/api/livePrices';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -115,8 +116,15 @@ export function ProductView({ product: p }: { product: Product }) {
 
      محصولی که usd ندارد قیمتِ ثابتِ خودش را نگه می‌دارد. */
   const { rate, live } = useUsdRate();
+
+  /* ⚠ ترتیب اهمیت دارد: دلاری، بعد زنده، بعد ایستا.
+
+     محصولِ دلاری قیمتش را از نرخ روز می‌گیرد و ووکامرس آن را
+     نمی‌داند. بقیه اگر قیمت تازه‌ای از سرور رسیده باشد همان را
+     نشان می‌دهند، وگرنه عددِ پخته‌شده در بیلد. */
+  const livePrices = useLivePrices();
   const priceOf = (v: typeof variant) =>
-    (v.usd ? tomanFromUsd(v.usd, rate) : v.price);
+    (v.usd ? tomanFromUsd(v.usd, rate) : (livePrices[v.id]?.price ?? v.price));
   const price = priceOf(variant);
 
   const missing = p.requiredInputs.filter((i) => !inputs[i.key]?.trim());

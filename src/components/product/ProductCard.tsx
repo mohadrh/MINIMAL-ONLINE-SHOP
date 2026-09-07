@@ -10,6 +10,7 @@ import {
 import { ProductArt } from '../ui/ProductArt';
 import { useCompare } from '../shop/Compare';
 import { useCart, useFlight } from '../../app/providers';
+import { useLivePrices } from '../../lib/api/livePrices';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -75,6 +76,17 @@ export function ProductCard(
   const compare = useCompare();
 
   const v = getDefaultVariant(p);
+  /* قیمتِ زنده اگر رسیده باشد، وگرنه همان عددِ بیلد.
+
+     کمترین قیمت هم از روی همان نقشه حساب می‌شود نه از
+     getLowestPrice، وگرنه کارت عددِ کهنه و صفحه‌ی محصول عددِ تازه
+     نشان می‌دهند و همان تناقضی می‌شود که می‌خواستیم نباشد. */
+  const livePrices = useLivePrices();
+  const liveOf = (vr: { id: string; price: number }) =>
+    livePrices[vr.id]?.price ?? vr.price;
+  const lowest = Math.min(...p.variants.map(liveOf));
+  const liveWas = livePrices[v.id]?.compareAt ?? v.compareAt;
+
   const off =
     v.compareAt && v.compareAt > v.price
       ? Math.round((1 - v.price / v.compareAt) * 100)
@@ -304,9 +316,9 @@ export function ProductCard(
           {/* «تومان» به عدد چسبیده در یک خط، تا هیچ‌وقت تنها به
               خط بعد نیفتد. */}
           <span className="pcard__prices">
-            {v.compareAt && <s className="pcard__was num">{fmt(v.compareAt)} تومان</s>}
+            {liveWas && <s className="pcard__was num">{fmt(liveWas)} تومان</s>}
             <span className="pcard__nowrow">
-              <b className="pcard__now num">{fmt(getLowestPrice(p))}</b>
+              <b className="pcard__now num">{fmt(lowest)}</b>
               <span className="pcard__unit">تومان</span>
             </span>
           </span>
