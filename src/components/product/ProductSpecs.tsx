@@ -155,7 +155,7 @@ export function ProductSpecs({
           <div className="sec-head">
             <h2>مشخصات {p.title}</h2>
             <p className="sec-head__lead">
-              هر چیزی که قبل از خرید باید بدانی، در یک نگاه.
+              چیزهایی که بد نیست قبل از خرید بدانی.
             </p>
           </div>
           )}
@@ -198,7 +198,7 @@ export function ProductSpecs({
           <div className="sec-head">
             <h2>بعد از خرید چه کار کنم؟</h2>
             <p className="sec-head__lead">
-              چهار گام، از پرداخت تا لحظه‌ای که اشتراک روی حسابت فعال است.
+              از پرداخت تا وقتی اشتراک روی حسابت فعال شود.
             </p>
           </div>
           )}

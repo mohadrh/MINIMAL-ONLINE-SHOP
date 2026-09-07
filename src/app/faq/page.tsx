@@ -31,7 +31,7 @@ export default function FaqPage() {
         <div className="wrap">
           <h1>سوالات متداول</h1>
           <p className="sec-head__lead">
-            اگر جوابت اینجا نبود، از دستیار خرید بپرس یا تیکت بزن.
+            اگر جوابت اینجا نبود، از چت آنلاین بپرس یا تیکت بزن.
           </p>
         </div>
       </header>

@@ -35,7 +35,7 @@ export function AiPicker() {
           <span className="sec-head__kicker">راهنمای انتخاب</span>
           <h2>کدام هوش مصنوعی به کارت می‌آید؟</h2>
           <p className="sec-head__lead">
-            چهار مدل، چهار کاربرد متفاوت. اگر مطمئن نیستی کدام را بخری،
+            هر کدام برای کار متفاوتی ساخته شده. اگر مطمئن نیستی کدام را بخری،
             اول این را بخوان.
           </p>
         </div>
@@ -94,7 +94,7 @@ export function AiPicker() {
               </div>
 
               <div>
-                <h4 className="aip__h4">در یک نگاه</h4>
+                <h4 className="aip__h4">عددها</h4>
                 <dl className="aip__bench">
                   {model.benchmarks.map((b) => (
                     <div key={b.label} className={b.strong ? 'is-strong' : ''}>

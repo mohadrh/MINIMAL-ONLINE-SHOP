@@ -71,7 +71,7 @@ export function ClubView() {
       <section className="section">
         <div className="wrap">
           <div className="sec-head sec-head--mid">
-            <span className="sec-head__kicker">چهار پله</span>
+            <span className="sec-head__kicker">پله‌ها</span>
             <h2>هرچه بیشتر بخری، بیشتر برمی‌گردد</h2>
           </div>
 
@@ -169,7 +169,7 @@ export function ClubView() {
       <section className="section">
         <div className="wrap">
           <div className="sec-head sec-head--mid">
-            <span className="sec-head__kicker">چهار راه</span>
+            <span className="sec-head__kicker">امتیاز</span>
             <h2>امتیاز از کجا می‌آید؟</h2>
           </div>
 

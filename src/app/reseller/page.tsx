@@ -63,7 +63,7 @@ export default function ResellerPage() {
       <section className="section section--tint">
         <div className="wrap">
           <div className="sec-head sec-head--mid">
-            <span className="sec-head__kicker">سه پله</span>
+            <span className="sec-head__kicker">پله‌ها</span>
             <h2>تخفیف با حجم بیشتر می‌شود</h2>
           </div>
 

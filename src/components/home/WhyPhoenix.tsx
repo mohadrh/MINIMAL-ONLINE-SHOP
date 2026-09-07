@@ -116,7 +116,7 @@ export function WhyPhoenix() {
         <div className="tracked__stick">
           <div className="wrap">
             <div className="sec-head sec-head--mid">
-              <span className="sec-head__kicker">سه قدم</span>
+              <span className="sec-head__kicker">چطور کار می‌کند</span>
               <h2>خرید از فونیکس شاپ چطور است؟</h2>
               <p className="sec-head__lead">
                 بیشتر سرویس‌های بین‌المللی کارت ایرانی را قبول نمی‌کنند. کاری که ما
@@ -199,10 +199,10 @@ export function WhyPhoenix() {
         </div>
       </div>
 
-      {/* ---------- سه سوالی که واقعاً پرسیده می‌شود ---------- */}
+      {/* ---------- سوالاتی که واقعاً پرسیده می‌شوند ---------- */}
       <div className="wrap askd">
         <div className="sec-head">
-          <h2>سه سوالی که بیشتر از همه می‌پرسند</h2>
+          <h2>سوالات متداول</h2>
         </div>
 
         {ASKED.map((a) => (
