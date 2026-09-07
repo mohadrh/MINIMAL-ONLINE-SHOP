@@ -157,7 +157,7 @@ a { color: inherit; text-decoration: none; }
      کم‌رنگ است نه شیشه.
 
    ⚠ متن روی کهربایی تیره است نه سفید، و این با اندازه‌گیری تصمیم
-   گرفته شد: سفید روی #ffa63d نسبت ۲٫۹ می‌دهد که مردود است، ولی
+   گرفته شد: سفید روی #f9821e نسبت ۲٫۹ می‌دهد که مردود است، ولی
    #14151b روی همان ۹٫۳۵ می‌دهد — و وقتی شیشه‌ای می‌شود و با کاغذ
    ترکیب، به ۱۰ هم می‌رسد. اگر کهربایی را آن‌قدر تیره می‌کردیم که
    سفید رویش بخواند، قهوه‌ای می‌شد. */
@@ -488,10 +488,10 @@ a { color: inherit; text-decoration: none; }
 
 .btn--primary::before {
   background-image:
-    radial-gradient(circle closest-side, #ffb14e 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #ff4d9f 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #7a6bff 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #ffd08a 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #f9821e 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #ee2d7a 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #7c3aed 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #ffa06b 0 38%, transparent 72%),
     radial-gradient(circle closest-side, #6ee7c7 0 38%, transparent 72%);
   background-size: 58% 58%, 46% 46%, 52% 52%, 38% 38%, 34% 34%;
   background-position: 18% 26%, 62% 20%, 40% 74%, 80% 52%, 8% 62%;
@@ -500,10 +500,10 @@ a { color: inherit; text-decoration: none; }
 
 .btn--primary::after {
   background-image:
-    radial-gradient(circle closest-side, #ff8342 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #c94ff5 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #3ddcff 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #ff9fd0 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #f0483c 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #9333ea 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #c04ae8 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, #f4629b 0 38%, transparent 72%),
     radial-gradient(circle closest-side, #b0a4ff 0 38%, transparent 72%);
   background-size: 50% 50%, 44% 44%, 40% 40%, 34% 34%, 30% 30%;
   background-position: 74% 66%, 30% 62%, 56% 40%, 14% 34%, 88% 26%;

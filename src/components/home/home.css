@@ -1439,8 +1439,8 @@
 
 [data-theme='dark'] .hero__neon-word[data-tube='0'] { --neon: #f59440; --neon-ink: #fff6ec; }
 [data-theme='dark'] .hero__neon-word[data-tube='1'] { --neon: #8b3fd4; --neon-ink: #f5ecff; }
-[data-theme='dark'] .hero__neon-word[data-tube='2'] { --neon: #ff4d9f; --neon-ink: #ffecf4; }
-[data-theme='dark'] .hero__neon-word[data-tube='3'] { --neon: #3ddcff; --neon-ink: #e9fbff; }
+[data-theme='dark'] .hero__neon-word[data-tube='2'] { --neon: #ee2d7a; --neon-ink: #ffecf4; }
+[data-theme='dark'] .hero__neon-word[data-tube='3'] { --neon: #9333ea; --neon-ink: #e9fbff; }
 [data-theme='dark'] .hero__neon-word[data-tube='4'] { --neon: #4fe08a; --neon-ink: #ecfff4; }
 
 @keyframes heroNeonOn {
@@ -1574,7 +1574,7 @@
   stroke-dasharray: 1;
   stroke-dashoffset: calc(1 - var(--done, 0) / 3);
   transition: stroke-dashoffset 560ms cubic-bezier(0.22, 1, 0.36, 1);
-  filter: drop-shadow(0 0 5px color-mix(in srgb, #ff4d9f 40%, transparent));
+  filter: drop-shadow(0 0 5px color-mix(in srgb, #ee2d7a 40%, transparent));
 }
 
 .buypath__step {
@@ -1623,8 +1623,8 @@
    می‌گرفت؛ نورِ رنگی همان «انجام شد» را می‌گوید بدون اینکه چیزی
    را پاک کند. */
 .buypath__step:nth-child(1) { --tube: #f59440; }
-.buypath__step:nth-child(2) { --tube: #ff4d9f; }
-.buypath__step:nth-child(3) { --tube: #3ddcff; }
+.buypath__step:nth-child(2) { --tube: #ee2d7a; }
+.buypath__step:nth-child(3) { --tube: #9333ea; }
 
 /* گامِ فعلی — حلقه‌ی رنگی، هنوز خاموش */
 .is-now .buypath__node {

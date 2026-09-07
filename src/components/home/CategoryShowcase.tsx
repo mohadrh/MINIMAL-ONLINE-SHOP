@@ -38,13 +38,13 @@ const ICONS: Record<string, GlyphName> = {
 
 /* رنگ هر دسته از کمان ققنوس، نه از یک آبیِ مشترک */
 const TUBES: Record<string, string> = {
-  ai: '#ffa63d',
-  creative: '#ff7a45',
-  gaming: '#ff4d9f',
-  social: '#c94ff5',
-  education: '#7a6bff',
-  giftcard: '#ff9900',
-  numbers: '#3ddcff',
+  ai: '#f9821e',
+  creative: '#f0483c',
+  gaming: '#ee2d7a',
+  social: '#c04ae8',
+  education: '#7c3aed',
+  giftcard: '#ff9f1c',
+  numbers: '#9333ea',
 };
 
 /** حداکثر چند نام در هر کارت — بیشترش دیوارِ لینک می‌شود */
@@ -108,7 +108,7 @@ export function CategoryShowcase() {
             <div
               key={c.slug}
               className="catcard"
-              style={{ ['--tube' as string]: TUBES[c.slug] ?? '#ffa63d' }}
+              style={{ ['--tube' as string]: TUBES[c.slug] ?? '#f9821e' }}
             >
               {/* رنگِ دسته که از پایین بالا می‌آید */}
               <span className="catcard__flood" aria-hidden="true" />

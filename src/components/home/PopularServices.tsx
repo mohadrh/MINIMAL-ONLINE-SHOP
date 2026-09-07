@@ -22,12 +22,12 @@ const EXTRAS: { icon: React.ComponentType<{ className?: string }>; title: string
   /* مقایسه اول می‌آید: ابزاری است که تا حالا فقط روی خودِ
      کارتِ محصول دیده می‌شد، یعنی کسی که نمی‌دانست هست،
      پیدایش نمی‌کرد. */
-  { icon: Columns2, title: 'مقایسه‌ی محصولات', href: '/shop', tube: '#ffa63d' },
-  { icon: Medal, title: 'باشگاه مشتریان', href: '/club', tube: '#ff7a45' },
-  { icon: Flame, title: 'پرفروش‌ترین محصولات', href: '/shop?sort=hot', tube: '#ff4d9f' },
-  { icon: PackageSearch, title: 'پیگیری سفارش', href: '/track', tube: '#c94ff5' },
-  { icon: BookOpen, title: 'آموزش و مقاله', href: '/blog', tube: '#7a6bff' },
-  { icon: Handshake, title: 'نمایندگی و همکاری', href: '/reseller', tube: '#3ddcff' },
+  { icon: Columns2, title: 'مقایسه‌ی محصولات', href: '/shop', tube: '#f9821e' },
+  { icon: Medal, title: 'باشگاه مشتریان', href: '/club', tube: '#f0483c' },
+  { icon: Flame, title: 'پرفروش‌ترین محصولات', href: '/shop?sort=hot', tube: '#ee2d7a' },
+  { icon: PackageSearch, title: 'پیگیری سفارش', href: '/track', tube: '#c04ae8' },
+  { icon: BookOpen, title: 'چطور بهتر استفاده کنم', href: '/blog', tube: '#7c3aed' },
+  { icon: Handshake, title: 'نمایندگی و همکاری', href: '/reseller', tube: '#9333ea' },
 ];
 
 export function PopularServices() {

@@ -152,7 +152,7 @@ export function Nav() {
           </span>
 
           <Link href="/numbers">شماره مجازی</Link>
-          <Link href="/blog">آموزش و مقاله</Link>
+          <Link href="/blog">مقالات و آموزش‌ها</Link>
           <Link href="/club">باشگاه مشتریان</Link>
         </nav>
 

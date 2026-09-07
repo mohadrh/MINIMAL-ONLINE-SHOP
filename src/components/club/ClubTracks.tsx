@@ -45,13 +45,13 @@ const TRACKS = [
    پس‌زمینه با بقیه‌ی سایت یک زبان داشته باشد. */
 const PELLETS = [
   { t: 0, delay: 0,    dur: 18, c: '#f59440', r: 4 },
-  { t: 0, delay: 7,    dur: 18, c: '#ff4d9f', r: 3 },
-  { t: 1, delay: 2.5,  dur: 22, c: '#3ddcff', r: 4 },
-  { t: 1, delay: 12,   dur: 22, c: '#c94ff5', r: 3 },
+  { t: 0, delay: 7,    dur: 18, c: '#ee2d7a', r: 3 },
+  { t: 1, delay: 2.5,  dur: 22, c: '#9333ea', r: 4 },
+  { t: 1, delay: 12,   dur: 22, c: '#c04ae8', r: 3 },
   { t: 2, delay: 5,    dur: 26, c: '#f5b942', r: 4 },
   { t: 2, delay: 16,   dur: 26, c: '#4ade80', r: 3 },
-  { t: 3, delay: 1,    dur: 20, c: '#7a6bff', r: 4 },
-  { t: 3, delay: 10.5, dur: 20, c: '#ff7a45', r: 3 },
+  { t: 3, delay: 1,    dur: 20, c: '#7c3aed', r: 4 },
+  { t: 3, delay: 10.5, dur: 20, c: '#f0483c', r: 3 },
 ];
 
 /* گره‌ها — جایی که مسیرها می‌پیچند. نقطه‌هایی که آرام نفس می‌کشند

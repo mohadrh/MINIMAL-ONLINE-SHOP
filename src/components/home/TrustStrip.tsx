@@ -25,25 +25,25 @@ const ITEMS = [
     icon: Zap,
     title: 'خرید ساده و سریع',
     lead: 'چند کلیک تا تحویل، بدون ثبت‌نام طولانی',
-    tube: '#ffa63d',
+    tube: '#f9821e',
   },
   {
     icon: LayoutGrid,
     title: 'هرچه لازم داری، یک‌جا',
     lead: 'از اشتراک هوش مصنوعی تا گیفت کارت و شماره',
-    tube: '#ff4d9f',
+    tube: '#ee2d7a',
   },
   {
     icon: ShieldCheck,
     title: 'پرداخت امن',
     lead: 'درگاه ریالی داخلی، با کارت بانکی خودت',
-    tube: '#c94ff5',
+    tube: '#c04ae8',
   },
   {
     icon: Headphones,
     title: 'پشتیبانی که جواب می‌دهد',
     lead: 'چت آنلاین، و تیکت با شماره‌ی سفارش',
-    tube: '#7a6bff',
+    tube: '#7c3aed',
   },
 ];
 

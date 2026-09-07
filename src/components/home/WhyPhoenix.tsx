@@ -148,8 +148,8 @@ export function WhyPhoenix() {
                 <defs>
                   <linearGradient id="trackGrad" x1="1" y1="0" x2="0" y2="0">
                     <stop offset="0%" stopColor="#f59440" />
-                    <stop offset="50%" stopColor="#ff4d9f" />
-                    <stop offset="100%" stopColor="#3ddcff" />
+                    <stop offset="50%" stopColor="#ee2d7a" />
+                    <stop offset="100%" stopColor="#9333ea" />
                   </linearGradient>
                 </defs>
                 <path className="buypath__wire-bed" d={WIRE} pathLength={1} vectorEffect="non-scaling-stroke" />
