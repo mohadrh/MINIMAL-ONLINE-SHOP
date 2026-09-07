@@ -14,7 +14,7 @@ export function Reviews() {
       <div className="wrap">
         <div className="sec-head sec-head--center">
           <span className="sec-head__kicker">تجربه‌ی خریداران</span>
-          <h2>مشتری‌ها چه می‌گویند</h2>
+          <h2>نظرات مشتریان ما</h2>
         </div>
 
         <div className="rail grid--3 reviews">

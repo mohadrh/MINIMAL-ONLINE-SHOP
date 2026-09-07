@@ -660,6 +660,7 @@
 .js-reveal .reveal .art,
 .js-reveal .reveal .review,
 .js-reveal .reveal .stats__item,
+.js-reveal .reveal .trst__item,
 .js-reveal .reveal .qa__other {
   opacity: 0;
   transform: translateY(14px);
@@ -671,6 +672,7 @@
 .js-reveal .reveal.is-in .art,
 .js-reveal .reveal.is-in .review,
 .js-reveal .reveal.is-in .stats__item,
+.js-reveal .reveal.is-in .trst__item,
 .js-reveal .reveal.is-in .qa__other {
   opacity: 1;
   transform: none;
@@ -2174,5 +2176,46 @@
     grid-template-columns: 1fr 1fr;
     gap: var(--sp-10);
     align-items: center;
+  }
+}
+
+/* ============================================================
+   اصلاح‌های موبایلِ سکشن‌ها
+   ============================================================ */
+
+@media (max-width: 640px) {
+  /* ---------- هیرو ----------
+
+     پادینگِ بالای اسلایدر پنجاه‌وشش پیکسل بود و روی موبایل یک
+     نوارِ خالی بینِ منو و بنر می‌ساخت. روی دسکتاپ آن فاصله لازم
+     است چون بنر پهن‌تر و متن کنارش است؛ روی موبایل بنر تمامِ عرض
+     را می‌گیرد و همان فاصله فقط ارتفاع هدر می‌دهد. */
+  .hero__slider { padding-block-start: var(--sp-5); }
+
+  /* ---------- تخفیف‌های امروز ----------
+
+     سرتیتر و دکمه‌های ناوبری کنار هم بودند و روی عرضِ باریک،
+     تیتر به راست می‌چسبید در حالی که دکمه‌ها زیرش می‌افتادند.
+     وسط‌چین هر دو را روی یک محور می‌آورد. */
+  .deals__head {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--sp-4);
+  }
+  .deals__kicker { justify-content: center; }
+
+  /* ---------- نظرات ----------
+
+     کارت‌ها بی‌دلیل بلند بودند: پادینگِ دسکتاپ به‌علاوه‌ی ارتفاعِ
+     سطرِ دو، متنِ کوتاه را هم شش خط نشان می‌داد. */
+  .review { padding: var(--sp-4); }
+  .review p {
+    font-size: var(--text-sm);
+    line-height: 1.85;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }

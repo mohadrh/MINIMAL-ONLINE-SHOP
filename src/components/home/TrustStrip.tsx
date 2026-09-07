@@ -51,8 +51,14 @@ export function TrustStrip() {
   return (
     <section className="trst reveal">
       <div className="wrap trst__row">
-        {ITEMS.map((it) => (
-          <div key={it.title} className="trst__item" style={{ ['--tube' as string]: it.tube }}>
+        {ITEMS.map((it, i) => (
+          /* --i پله‌ی تأخیر را می‌سازد؛ CSS خودش ضربدر شصت
+             میلی‌ثانیه می‌کند، مثل بقیه‌ی سکشن‌ها. */
+          <div
+            key={it.title}
+            className="trst__item"
+            style={{ ['--tube' as string]: it.tube, ['--i' as string]: i }}
+          >
             {/* آیکون بدونِ کادر — قاعده‌ی ثابتِ سایت */}
             <it.icon aria-hidden="true" />
             <div>

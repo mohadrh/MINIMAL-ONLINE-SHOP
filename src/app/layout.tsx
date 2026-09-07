@@ -13,6 +13,15 @@ import { CartDrawer } from '../components/cart/CartDrawer';
 import { LivePriceProvider } from '../lib/api/livePrices';
 
 export const metadata: Metadata = {
+  /* آیکونِ تب و آیکونِ صفحه‌ی خانه‌ی موبایل، از نشانِ ققنوس. */
+  icons: {
+    icon: [
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/apple-icon.png',
+  },
+
   title: 'فونیکس شاپ — اشتراک هوش مصنوعی، گیم و شماره مجازی',
   description:
     'اشتراک‌هایی که از ایران نمی‌شود خرید، با کارت بانکی خودت. روی حساب شخصی خودت فعال می‌شوند و رمزت را نمی‌خواهیم.',

@@ -29,7 +29,20 @@
 }
 
 @media (max-width: 900px) { .ft__grid { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 560px) { .ft__grid { grid-template-columns: 1fr; gap: var(--sp-8); } }
+/* ⚠ روی موبایل هم دو ستون می‌ماند، نه یک ستون.
+
+   با یک ستون، چهار گروهِ لینک زیر هم می‌افتادند و فوتر بی‌دلیل
+   بلند می‌شد — کاربر باید چند پرده اسکرول می‌کرد تا به تهِ صفحه
+   برسد. لینک‌ها کوتاه‌اند و دو ستون راحت جا می‌شوند. */
+@media (max-width: 560px) {
+  .ft__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-6) var(--sp-4);
+  }
+  /* ستونِ نشان و توضیح تمامِ عرض را می‌گیرد چون متنش بلندتر است */
+  .ft__grid > :first-child { grid-column: 1 / -1; }
+  .ft__col a { padding-block: 7px; font-size: var(--text-xs); }
+}
 
 .ft__logo {
   display: inline-flex;
