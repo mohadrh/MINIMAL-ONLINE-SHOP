@@ -165,39 +165,49 @@ a { color: inherit; text-decoration: none; }
 
    ⚠ زمینه‌ی کهربایی برداشته شد — دکمه در حالت عادی نارنجیِ یک‌دست
    نیست، شیشه‌ای است که رنگ‌ها از پشتش می‌گذرند. */
+/* ⚠ دکمه‌ی اصلی آرام است، نه رنگارنگ.
+
+   کارفرما گفت سایت پر از دکمه‌ی رنگاوارنگ شده و درست می‌گفت:
+   حباب‌های چرخانِ رنگی روی هر دکمه‌ی اصلی بودند و در کل سایت
+   سی‌وهفت جا تکرار می‌شدند. رنگی که همه‌جا باشد دیگر تاکید نیست،
+   نویز است.
+
+   حالا دکمه‌ی اصلی یک نارنجیِ یکدست است از رنگِ بالِ لوگو. حباب‌ها
+   نرفته‌اند — رفته‌اند روی .btn--hero که در هر صفحه فقط یکی است.
+   همان شخصیت، در جای درست.
+
+   ⚠ متن تیره است نه سفید. سفید روی این نارنجی نسبت ۳٫۰ می‌دهد و
+   مردود است؛ ‎#1a1020‎ نسبت ۵٫۷۶ می‌دهد. اندازه‌گیری شد. */
 .btn--primary {
   position: relative;
   isolation: isolate;
-  background: color-mix(in srgb, var(--paper) 55%, transparent);
-  border-color: color-mix(in srgb, var(--brand) 42%, transparent);
-  color: var(--ink);
+  background: linear-gradient(
+    158deg,
+    color-mix(in srgb, #fff 12%, var(--brand)) 0%,
+    var(--brand) 52%,
+    var(--brand-hover) 100%
+  );
+  border-color: transparent;
+  color: var(--brand-ink);
   font-weight: 700;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 8px 22px -16px rgba(15, 17, 32, 0.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 8px 20px -14px color-mix(in srgb, var(--brand) 85%, transparent);
+  transition:
+    filter var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    translate var(--dur) var(--ease);
 }
-[data-theme='dark'] .btn--primary {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(255, 255, 255, 0.16);
-  color: #f2f5fb;
-}
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .btn--primary {
-    -webkit-backdrop-filter: blur(12px) saturate(1.4);
-    backdrop-filter: blur(12px) saturate(1.4);
-  }
-}
+
 .btn--primary:hover {
-  background:
-    linear-gradient(160deg,
-      color-mix(in srgb, #fff 18%, var(--brand)) 0%,
-      var(--brand-hover) 60%,
-      var(--brand-hover) 100%);
-  border-color: var(--brand-hover);
+  filter: brightness(1.06);
+  translate: 0 -1px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 10px 26px -14px color-mix(in srgb, var(--brand) 95%, transparent);
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 12px 26px -14px color-mix(in srgb, var(--brand) 90%, transparent);
 }
+
+.btn--primary:active { translate: 0 0; filter: brightness(0.97); }
 .btn--primary svg { color: inherit; }
 
 /* دکمه‌ی ثانویه هم شیشه است، ولی بنفشِ خیلی کم‌رنگ */
@@ -445,7 +455,7 @@ a { color: inherit; text-decoration: none; }
      بالای هشت می‌ماند — چه کهربایی باشد چه شیشه.
    ============================================================ */
 
-.btn--primary { overflow: hidden; }
+.btn--hero { overflow: hidden; }
 
 /* ده حبابِ رنگیِ جدا، محو، که مستقل از هم می‌لغزند.
 
@@ -465,8 +475,8 @@ a { color: inherit; text-decoration: none; }
    یک لایه‌ی background جداست و background-position هر لایه به
    مقصدِ خودش می‌رود. چرخشِ کلِ لایه این را نمی‌داد، چون فاصله‌ی
    حباب‌ها ثابت می‌ماند. */
-.btn--primary::before,
-.btn--primary::after {
+.btn--hero::before,
+.btn--hero::after {
   content: '';
   position: absolute;
   inset: -30%;
@@ -486,7 +496,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 
-.btn--primary::before {
+.btn--hero::before {
   background-image:
     radial-gradient(circle closest-side, #f9821e 0 38%, transparent 72%),
     radial-gradient(circle closest-side, #ee2d7a 0 38%, transparent 72%),
@@ -498,7 +508,7 @@ a { color: inherit; text-decoration: none; }
   animation: goo-a 11s cubic-bezier(.45, 0, .55, 1) infinite alternate;
 }
 
-.btn--primary::after {
+.btn--hero::after {
   background-image:
     radial-gradient(circle closest-side, #f0483c 0 38%, transparent 72%),
     radial-gradient(circle closest-side, #9333ea 0 38%, transparent 72%),
@@ -541,14 +551,13 @@ a { color: inherit; text-decoration: none; }
   color: #f4f7fd;
 }
 
-.btn--primary:hover::before,
-.btn--primary:hover::after { opacity: 1; }
+.btn--hero:hover::before,
+.btn--hero:hover::after { opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn--primary::before,
-  .btn--primary::after { animation: none; }
+  .btn--hero::before,
+  .btn--hero::after { animation: none; }
 }
 
-/* کلاسِ آزمایشیِ قبلی دیگر چیزی اضافه نمی‌کند — همان رفتار حالا
-   روی همه‌ی دکمه‌های اصلی است. */
+/* کلاسِ آزمایشیِ قدیمی؛ حالا حباب‌ها روی ‎.btn--hero‎ هستند. */
 .btn--aurora { /* عمداً خالی */ }

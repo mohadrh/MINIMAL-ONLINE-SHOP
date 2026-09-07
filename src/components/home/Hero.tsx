@@ -124,7 +124,13 @@ export function Hero() {
                   ))}
                 </h2>
                 <p>{s.description}</p>
-                <Link href={s.href} className="btn btn--primary">
+                {/* تنها دکمه‌ای که حباب‌های رنگی دارد.
+
+                    کارفرما گفت سایت پر از دکمه‌ی رنگاوارنگ شده و
+                    درست بود: همان افکت روی سی‌وهفت دکمه تکرار
+                    می‌شد. حالا فقط این‌جاست، که در هر صفحه یکی
+                    بیشتر نیست. */}
+                <Link href={s.href} className="btn btn--primary btn--hero">
                   {s.ctaLabel}
                   <ArrowLeft aria-hidden="true" />
                 </Link>
