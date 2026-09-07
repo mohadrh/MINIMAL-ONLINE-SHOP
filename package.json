@@ -9,7 +9,9 @@
     "start": "next start -p 3100",
     "lint": "tsc --noEmit",
     "sync": "node scripts/sync-woo.mjs",
-    "sync:build": "node scripts/sync-woo.mjs && next build"
+    "sync:build": "node scripts/sync-woo.mjs && next build",
+    "build:host": "node scripts/build-host.mjs",
+    "push": "node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/push-woo.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
