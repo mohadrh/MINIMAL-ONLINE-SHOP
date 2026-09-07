@@ -759,19 +759,25 @@
 }
 @media (max-width: 900px) { .trst__row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 480px) {
-  /* ⚠ روی موبایل وسط‌چین می‌شوند.
+  /* ⚠ خودِ گروه وسطِ صفحه می‌نشیند، ولی متن راست‌چین می‌ماند.
 
-     در یک ستونِ باریک، آیکونِ کنارِ متن با متنِ چپ‌چین یک ستونِ
-     ناهموار می‌سازد: هر آیتم از جای متفاوتی شروع می‌شود چون
-     طولِ متن‌ها فرق دارد. وسط‌چین همه را روی یک محور می‌آورد. */
-  .trst__row { grid-template-columns: minmax(0, 1fr); gap: var(--sp-5); }
-  .trst__item {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--sp-2);
+     یک بار متن را هم وسط‌چین کردم و کارفرما گفت منظورش این نبود.
+     تفاوتش مهم است: متنِ فارسی از راست خوانده می‌شود و وسط‌چین
+     کردنش هر سطر را از جای متفاوتی شروع می‌کند. آنچه باید وسط
+     بیاید بلوکِ چهارتایی است، نه خطوطِ داخلش.
+
+     پس هر آیتم به اندازه‌ی محتوایش عرض می‌گیرد و در ستون وسط
+     می‌نشیند؛ داخلش آیکون و متن سرِ جای همیشگی‌شان می‌مانند. */
+  .trst__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-5);
+    justify-items: center;
   }
-  .trst__item > svg { margin-block-start: 0; }
+  .trst__item {
+    width: max-content;
+    max-width: 100%;
+    text-align: start;
+  }
 }
 
 .trst__item {
