@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, Columns2 } from 'lucide-react';
+import { ArrowLeft, Check, Columns2 , ChevronDown } from 'lucide-react';
 import { AI_MODELS } from '../../data/aiModels';
 import { getProductBySlug, getLowestPrice } from '../../data/catalog';
 
@@ -24,6 +24,7 @@ const fmt = (n: number) => n.toLocaleString('fa-IR');
  * قیمتش هم نشان داده نمی‌شود.
  */
 export function AiPicker() {
+  const [openDesc, setOpenDesc] = useState(false);
   const [id, setId] = useState(AI_MODELS[0].id);
   const model = AI_MODELS.find((m) => m.id === id) ?? AI_MODELS[0];
   const product = getProductBySlug(model.slug);
@@ -78,7 +79,24 @@ export function AiPicker() {
               )}
             </div>
 
-            <p className="aip__desc">{model.description}</p>
+            {/* ⚠ روی موبایل فقط ابتدای توضیح دیده می‌شود.
+
+                کارت مدل روی موبایل بلند بود و کاربر برای رسیدن به
+                فهرستِ کاربردها باید از یک پاراگرافِ کامل رد می‌شد.
+                روی دسکتاپ جا هست و کوتاه کردن فقط یک کلیکِ اضافه
+                می‌شود — پس فقط موبایل. */}
+            <p className={`aip__desc ${openDesc ? 'is-open' : ''}`}>
+              {model.description}
+            </p>
+            <button
+              type="button"
+              className="aip__more"
+              aria-expanded={openDesc}
+              onClick={() => setOpenDesc((v) => !v)}
+            >
+              {openDesc ? 'بستن' : 'مشاهده ادامه'}
+              <ChevronDown aria-hidden="true" />
+            </button>
 
             <div className="aip__cols">
               <div>
