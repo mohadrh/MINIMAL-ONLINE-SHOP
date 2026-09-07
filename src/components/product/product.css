@@ -420,7 +420,12 @@
    مسیر راهنما
    ============================================================ */
 
-.crumb { padding-block: var(--sp-6); border-bottom: 1px solid var(--line-soft); }
+/* ⚠ نوارِ جداگانه‌ی مسیر برداشته شد.
+
+   پادینگِ بالا و پایین به‌علاوه‌ی خطِ جداکننده یعنی یک نوارِ سفیدِ
+   خالی بینِ منو و محصول، فقط برای سه کلمه. حالا مسیر بالای ستونِ
+   محصول است و همان فضا به خودِ محصول رسیده. */
+.crumb__row { padding-block: var(--sp-4) 0; }
 .crumb__row {
   display: flex; align-items: center; gap: var(--sp-2);
   font-size: var(--text-xs); color: var(--ink-faint);

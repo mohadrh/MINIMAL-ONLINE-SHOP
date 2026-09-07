@@ -143,19 +143,22 @@ export function ProductView({ product: p }: { product: Product }) {
 
   return (
     <>
-      {/* ---------- ۱ مسیر راهنما ---------- */}
-      <nav className="crumb" aria-label="مسیر">
-        <div className="wrap crumb__row">
+      {/* ---------- هیرو + جعبه‌ی سفارش ---------- */}
+      <section className="pdp-hero" style={{ ['--accent' as string]: p.media.accent }}>
+        {/* ⚠ مسیر راهنما داخلِ هیروست، نه سکشنِ جدا.
+
+            پیش از این نوارِ خودش را داشت با خطِ جداکننده و پادینگِ
+            بالا و پایین — یعنی یک نوارِ سفیدِ خالی بینِ منو و
+            محصول، فقط برای سه کلمه. حالا بالای همان ستونِ محصول
+            می‌نشیند و آن فضا آزاد می‌شود. */}
+        <nav className="wrap crumb__row" aria-label="مسیر">
           <Link href="/">خانه</Link>
           <ChevronLeft aria-hidden="true" />
           {category && <Link href={`/${category.slug}`}>{category.title}</Link>}
           <ChevronLeft aria-hidden="true" />
           <span aria-current="page">{p.title}</span>
-        </div>
-      </nav>
+        </nav>
 
-      {/* ---------- ۲ هیرو + جعبه‌ی سفارش ---------- */}
-      <section className="pdp-hero" style={{ ['--accent' as string]: p.media.accent }}>
         <div className="wrap pdp-hero__grid">
           {/* تصویر و کنش‌هایش یک ستون‌اند */}
           <div className="pdp-hero__media">

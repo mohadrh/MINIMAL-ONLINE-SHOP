@@ -81,12 +81,66 @@
   grid-template-columns: 1fr;
   max-height: min(32rem, calc(100vh - 8rem));
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--r-xl);
+
+  /* ---------- شیشه‌ی مایع ----------
+
+     سه لایه، و هر سه لازم:
+
+     ۱ پس‌زمینه‌ی نیمه‌شفاف — تا چیزی که پشتش است کمی پیدا باشد
+     ۲ backdrop-filter با blur و saturate — همان چیزی که «شیشه»
+       می‌سازد؛ بدون saturate رنگ‌های پشتش مرده و خاکستری می‌شوند
+     ۳ خطِ روشن در بالا و لبه‌ی تیره در پایین — ضخامتِ شیشه را
+       نشان می‌دهد. بدونِ این لایه، پنل فقط یک مستطیلِ کدر است
+       نه شیشه.
+
+     ⚠ پس‌زمینه‌ی مات هم هست، پیش از قاعده‌ی @supports. مرورگری که
+     backdrop-filter ندارد نباید پنلِ نیمه‌شفافِ ناخوانا ببیند. */
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  border-radius: 26px;
   background: var(--paper);
   box-shadow:
     0 2px 6px -2px rgba(15, 17, 32, 0.08),
     0 32px 70px -34px rgba(15, 17, 32, 0.4);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .mega {
+    background: color-mix(in srgb, var(--paper) 72%, transparent);
+    -webkit-backdrop-filter: blur(26px) saturate(1.7);
+    backdrop-filter: blur(26px) saturate(1.7);
+    box-shadow:
+      /* لبه‌ی روشنِ بالا: نورِ افتاده روی سطحِ شیشه */
+      inset 0 1px 0 rgba(255, 255, 255, 0.75),
+      /* لبه‌ی محوِ پایین: ضخامت */
+      inset 0 -1px 0 rgba(15, 17, 32, 0.06),
+      0 2px 6px -2px rgba(15, 17, 32, 0.08),
+      0 36px 80px -34px rgba(15, 17, 32, 0.45);
+  }
+
+  [data-theme="dark"] .mega {
+    background: color-mix(in srgb, #161922 68%, transparent);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 36px 80px -30px rgba(0, 0, 0, 0.7);
+  }
+
+  /* نوارِ دسته‌ها هم شیشه‌ای می‌ماند، وگرنه یک نوارِ مات روی
+     پنلِ شفاف می‌نشیند و تضاد بدی می‌سازد */
+  .mega__cats {
+    background: color-mix(in srgb, var(--wash) 55%, transparent);
+    border-block-end-color: color-mix(in srgb, var(--line) 60%, transparent);
+  }
+  [data-theme="dark"] .mega__cats {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+/* گوشه‌های داخلی هم گرد می‌شوند، وگرنه نوارِ بالا از قابِ گردِ
+   پنل می‌زند بیرون و گوشه‌ها تیز دیده می‌شوند */
+.mega__cats {
+  border-start-start-radius: 25px;
+  border-start-end-radius: 25px;
 }
 
 /* ⚠ بدون این، ستون‌ها اصلاً نمی‌لغزند.
@@ -136,13 +190,18 @@
    نوار خودش نمی‌لغزد مگر لازم شود. */
 .mega__cats {
   display: flex;
-  /* ⚠ می‌پیچند، نه اینکه افقی بلغزند.
+  /* ⚠ یک ردیف، بدون پیچیدن و بدون لغزیدن.
 
-     نوارِ لغزان اسکرول‌بارش پنهان بود، پس دسته‌های آخر اصلاً دیده
-     نمی‌شدند و هیچ نشانه‌ای هم نمی‌داد که چیزی آن‌طرف هست. با هفت
-     دسته، پیچیدن یک ردیف ارتفاع می‌گیرد و همه پیدا می‌مانند. */
-  flex-wrap: wrap;
-  gap: 4px;
+     سه حالت را امتحان کردیم و این سومی است. نوارِ لغزان بد بود
+     چون اسکرول‌بارش پنهان است و دسته‌های آخر اصلاً دیده نمی‌شدند.
+     پیچیدن بهتر بود ولی دو ردیف می‌شد و منو را بلند می‌کرد.
+
+     اندازه گرفته شد: هفت دسته روی هم ۱۱۳۸ پیکسل بودند و جای
+     موجود ۹۰۲. تفاوت از شمارشِ محصول می‌آمد که کنارِ هر نام بود.
+     آن عدد در خودِ صفحه‌ی دسته و در کارت‌های صفحه‌ی اصلی هست، پس
+     این‌جا حذفش چیزی را از دست نمی‌دهد و همه در یک خط می‌نشینند. */
+  flex-wrap: nowrap;
+  gap: 2px;
   padding: var(--sp-3);
   border-block-end: 1px solid var(--line);
   background: var(--wash);
@@ -156,9 +215,11 @@
 .mega__cat {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  flex: 0 0 auto;
-  padding: 8px 13px;
+  gap: 6px;
+  /* می‌تواند کمی جمع شود اگر لازم شد، ولی زیر اندازه‌ی متنش نه */
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 8px 10px;
   border: 0;
   border-radius: var(--r-md);
   background: none;
@@ -185,7 +246,9 @@
 
 .mega__cat-txt { display: flex; align-items: baseline; gap: 5px; white-space: nowrap; }
 .mega__cat-txt b { font-size: var(--text-sm); font-weight: 600; }
-.mega__cat-txt small { font-size: 10px; color: var(--ink-faint); }
+/* ⚠ شمارشِ محصول این‌جا نشان داده نمی‌شود — جا نمی‌شد.
+   همان عدد در صفحه‌ی دسته و کارت‌های صفحه‌ی اصلی هست. */
+.mega__cat-txt small { display: none; }
 
 /* ---------- ستون دو: شش محصول ---------- */
 
