@@ -498,6 +498,99 @@
 .chatfab.is-open { inset-block-end: calc(26rem + var(--sp-8)); width: 42px; height: 42px; }
 .chatfab.is-open svg { width: 18px; height: 18px; }
 
+/* ============================================================
+   مدارِ رنگی — حالتِ بازِ دکمه‌ی چت
+
+   کارفرما نشانِ سیریِ آیفون را نمونه داد: چند لکه‌ی رنگیِ محو که
+   آرام دورِ هم می‌چرخند، با هسته‌ای روشن در وسط.
+
+   ⚠ لکه‌ها با mix-blend-mode: screen روی هم می‌نشینند، نه با
+   شفافیت.
+
+   با شفافیت، رنگ‌ها همدیگر را کدر می‌کنند و نتیجه خاکستریِ گِلی
+   می‌شود. screen جمعِ نوری است: جایی که بنفش و سرخابی هم را
+   می‌پوشانند روشن‌تر می‌شود، نه تیره‌تر — همان کاری که نور
+   می‌کند. برای همین پس‌زمینه هم باید تیره باشد، وگرنه screen
+   روی سفید چیزی نشان نمی‌دهد.
+
+   رنگ‌ها از پالتِ خودِ ققنوس‌اند، نه از نمونه‌ی اپل.
+   ============================================================ */
+
+.chatfab__orb {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s var(--ease);
+}
+
+.chatfab.is-open {
+  background: #0a0714;
+  overflow: hidden;
+  box-shadow:
+    0 8px 26px -8px rgba(120, 35, 208, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+.chatfab.is-open:hover { background: #0a0714; }
+.chatfab.is-open .chatfab__orb { opacity: 1; }
+
+.chatfab__blob {
+  position: absolute;
+  width: 132%;
+  height: 132%;
+  border-radius: 50%;
+  filter: blur(5px);
+  mix-blend-mode: screen;
+}
+
+.chatfab__blob--a {
+  background: radial-gradient(circle, var(--accent-pink) 0%, rgb(216 47 118 / 0) 62%);
+  animation: orbA 3.6s ease-in-out infinite;
+}
+.chatfab__blob--b {
+  background: radial-gradient(circle, var(--blue) 0%, rgb(124 58 237 / 0) 62%);
+  animation: orbB 4.9s ease-in-out infinite;
+}
+.chatfab__blob--c {
+  background: radial-gradient(circle, var(--accent-warm) 0%, rgb(242 98 46 / 0) 56%);
+  animation: orbC 6.1s ease-in-out infinite;
+}
+
+/* سه دوره‌ی نابرابر (۳٫۶ و ۴٫۹ و ۶٫۱ ثانیه) عمدی است: با دوره‌ی
+   یکسان هر سه لکه هم‌زمان به نقطه‌ی اول برمی‌گشتند و چرخش
+   تکراری به نظر می‌رسید. */
+@keyframes orbA {
+  0%, 100% { transform: translate(-34%, -22%) scale(1); }
+  50%      { transform: translate(4%, 14%) scale(1.24); }
+}
+@keyframes orbB {
+  0%, 100% { transform: translate(8%, -16%) scale(1.16); }
+  50%      { transform: translate(-26%, 12%) scale(0.94); }
+}
+@keyframes orbC {
+  0%, 100% { transform: translate(-10%, 18%) scale(1.02); }
+  50%      { transform: translate(14%, -14%) scale(1.3); }
+}
+
+/* هسته‌ی روشن — همان چیزی که به مدار حسِ عمق می‌دهد */
+.chatfab__core {
+  position: absolute;
+  inset: 27%;
+  border-radius: 50%;
+  background: #fff;
+  filter: blur(5px);
+  opacity: 0.5;
+  animation: orbCore 2.6s ease-in-out infinite;
+}
+
+@keyframes orbCore {
+  0%, 100% { transform: scale(0.86); opacity: 0.38; }
+  50%      { transform: scale(1.14); opacity: 0.62; }
+}
+
 /* حلقه‌ی نبض — از خود دکمه بیرون می‌زند و محو می‌شود.
 
    با یک شبه‌المان نیست بلکه یک span واقعی است، چون ::before جای
@@ -525,6 +618,9 @@
 @media (prefers-reduced-motion: reduce) {
   .chatfab__pulse { animation: none; opacity: 0; }
   .chatfab:hover { scale: 1; }
+  /* مدار می‌ماند ولی نمی‌چرخد — رنگش هست، حرکتش نه */
+  .chatfab__blob,
+  .chatfab__core { animation: none; }
 }
 
 /* ---------- پنل ---------- */

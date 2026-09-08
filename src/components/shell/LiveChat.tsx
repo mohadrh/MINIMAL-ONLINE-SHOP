@@ -97,6 +97,20 @@ export function LiveChat() {
       >
         {/* جرقه‌ها از دکمه‌ی دستیارِ حذف‌شده آمده‌اند — همان افکت،
             حالا روی تنها دکمه‌ای که مانده. */}
+        {/* ⚠ مدار فقط وقتی چت باز است.
+
+            کارفرما خواست دکمه در حالت عادی همینی بماند که هست و
+            «وقتی رویش کلیک می‌شود» مثل نشانِ سیریِ آیفون بشود. پس
+            این لایه همیشه در DOM هست ولی شفافیتش صفر است و با
+            is-open روشن می‌شود — اگر با شرط رندر می‌شد، هر بار از
+            نو ساخته می‌شد و انیمیشن از وسط می‌پرید. */}
+        <span className="chatfab__orb" aria-hidden="true">
+          <span className="chatfab__blob chatfab__blob--a" />
+          <span className="chatfab__blob chatfab__blob--b" />
+          <span className="chatfab__blob chatfab__blob--c" />
+          <span className="chatfab__core" />
+        </span>
+
         {!open && (
           <>
             <span className="chatfab__pulse" aria-hidden="true" />
