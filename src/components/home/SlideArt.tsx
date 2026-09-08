@@ -60,6 +60,16 @@ export interface SlideArtSpec {
      */
     logo?: string;
   }[];
+  /**
+   * یک نشانِ بزرگ وسطِ کارت، به‌جای خوشه‌ی چهارتایی.
+   *
+   * ⚠ برای اسلایدی که یک محصولِ مشخص را می‌فروشد.
+   *
+   * چیدمانِ خوشه‌ای برای «چند سرویس» ساخته شده. با یک کاشی،
+   * همان چیدمان یک مربعِ تنها در گوشه‌ی چپ می‌گذارد و بقیه‌ی
+   * کارت خالی می‌ماند.
+   */
+  solo?: boolean;
 }
 
 /* جای چهار کاشی، بر حسب درصدِ عرض و ارتفاعِ تصویر (۱۲۰۰×۷۶۰).
@@ -122,7 +132,7 @@ export function SlideArt({ spec }: { spec: SlideArtSpec }) {
 
   return (
     <div
-      className="slart"
+      className={`slart ${spec.solo ? 'slart--solo' : ''}`}
       aria-hidden="true"
       ref={box}
       onMouseMove={onMove}

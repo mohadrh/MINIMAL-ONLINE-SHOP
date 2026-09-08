@@ -2501,3 +2501,27 @@
   .slart__tile > *,
   .hero__cutout { animation: none; }
 }
+
+/* ⚠ نشانِ تنها، وسطِ کارت.
+
+   چیدمانِ خوشه‌ای برای «چند سرویس» ساخته شده و مختصاتش از روی
+   تصویرِ اصلی درآمده. با یک کاشی، همان مختصات یک مربعِ تنها در
+   گوشه‌ی چپ می‌گذارد و سه‌چهارمِ کارت خالی می‌ماند.
+
+   این‌جا کاشی بزرگ می‌شود و می‌رود روی نیمه‌ی چپِ کارت — کنارِ
+   متنِ محو، نه در گوشه. */
+.slart--solo .slart__tile {
+  --x: 6%;
+  --y: 24%;
+  width: 30%;
+  border-radius: 3.4cqw;
+  box-shadow:
+    -0.6cqw 1.2cqw 0 rgb(0 0 0 / 0.3),
+    0 1.8cqw 3.4cqw rgb(0 0 0 / 0.22);
+}
+.slart--solo .slart__tile img { width: 62%; height: 62%; }
+.slart--solo .slart__tile svg { width: 56%; height: 56%; }
+
+@container (max-width: 420px) {
+  .slart--solo .slart__tile { --x: 8%; --y: 26%; width: 34%; }
+}
