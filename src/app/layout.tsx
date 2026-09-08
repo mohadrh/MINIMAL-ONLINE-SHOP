@@ -62,6 +62,52 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }catch(e){}})();`,
           }}
         />
+
+        {/* ⚠ نگهبانِ چانکِ گم‌شده.
+
+            سایت خروجیِ ایستا دارد و نامِ فایل‌های جاوااسکریپت با
+            هر بیلد عوض می‌شود. اگر کسی صفحه را باز گذاشته باشد و
+            بینش نسخه‌ی تازه منتشر شود، صفحه‌ی کهنه‌ی توی مرورگرش
+            چانکی را می‌خواهد که دیگر وجود ندارد — و نکست همان
+            «Application error: a client-side exception» را نشان
+            می‌دهد.
+
+            روی هاستِ خودمان ‎.htaccess‎ جلویش را می‌گیرد: HTML صفر
+            ثانیه کش می‌شود و دارایی‌ها یک سال. ولی روی گیت‌هاب‌پیجز
+            هدر دستِ ما نیست.
+
+            پس این‌جا: اگر بارگذاریِ یک چانک شکست خورد، یک بار —
+            فقط یک بار — صفحه دوباره بارگذاری می‌شود تا HTMLِ تازه
+            با نام‌های درست بیاید.
+
+            ⚠ نشانه در sessionStorage است نه در متغیر.
+
+            بارگذاریِ دوباره همه‌ی متغیرها را پاک می‌کند، پس با
+            متغیر حلقه‌ی بی‌پایان می‌شد: ۴۰۴ ← ریلود ← ۴۰۴ ← …
+            sessionStorage از ریلود جان سالم به در می‌برد و بعد از
+            یک بار دست نگه می‌دارد؛ اگر مشکل چیز دیگری باشد، کاربر
+            خطا را می‌بیند نه صفحه‌ای که مدام می‌پرد. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+              var KEY='phoenix.chunkReload';
+              addEventListener('error',function(e){
+                var el=e.target;
+                if(!el||!el.tagName)return;
+                var src=el.src||el.href||'';
+                if(src.indexOf('/_next/static/')===-1)return;
+                try{
+                  if(sessionStorage.getItem(KEY))return;
+                  sessionStorage.setItem(KEY,'1');
+                }catch(_){return;}
+                location.reload();
+              },true);
+              addEventListener('load',function(){
+                try{sessionStorage.removeItem(KEY);}catch(_){}
+              });
+            })();`,
+          }}
+        />
       </head>
       <body>
         <Providers>
