@@ -2570,3 +2570,57 @@
 
   .pdp-total { display: none; }
 }
+
+/* ============================================================
+   فشرده‌سازیِ پرده‌ی اولِ دسکتاپ
+
+   ⚠ پلن‌ها باید بدونِ اسکرول دیده شوند.
+
+   اندازه‌گیری در ۱۲۸۰×۸۰۰: ستونِ خرید از ۲۴۹ شروع می‌شد و
+   فهرستِ پلن‌ها در ۸۷۱ تمام — یعنی هفتاد پیکسل بیرونِ پرده.
+   کاربر عدد و دکمه را می‌دید ولی نمی‌دانست چند پلن هست.
+
+   بیشترِ صرفه‌جویی از ردیفِ نرخ می‌آید: سه سطرِ روی‌هم بود
+   (۱۲۹ پیکسل) و همان سه عدد در یک ردیفِ افقی پنجاه پیکسل جا
+   می‌شوند. بقیه‌اش از پادینگ و فاصله‌های سخاوتمندانه.
+   ============================================================ */
+
+@media (min-width: 901px) {
+  .pdp-hero { padding-block: var(--sp-10) var(--sp-14); }
+  .pdp-hero__lead { margin-bottom: var(--sp-3); }
+  .pdp-hero__badges { margin-bottom: var(--sp-4); }
+
+  /* ردیفِ نرخ افقی می‌شود: سه ستونِ مساوی به‌جای سه سطر */
+  .pdp-fx {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sp-3);
+    margin-block: 0 var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+  }
+  .pdp-fx > div {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  /* «مبلغ نهایی» خطِ جداکننده‌اش را از بالا به کنار می‌برد */
+  .pdp-fx__total {
+    border-block-start: 0;
+    border-inline-start: 1px solid var(--line);
+    padding-block-start: 0;
+    padding-inline-start: var(--sp-3);
+  }
+  [data-theme='dark'] .pdp-fx__total { border-inline-start-color: rgba(255, 255, 255, 0.1); }
+
+  .pdp-buy { margin-bottom: var(--sp-4); }
+  .pdp-plans { gap: var(--sp-2); }
+}
+
+/* ⚠ مبلغِ دلاری ته سمتِ چپِ ردیف.
+
+   ردیفِ پلن flex است و بدونِ این، برچسب و قیمت کنارِ هم
+   می‌چسبند و بقیه‌ی عرض خالی می‌ماند. با margin خودکار، برچسب
+   سمتِ راست (شروعِ خط در فارسی) و مبلغ ته سمتِ چپ می‌ایستد —
+   چشم برای مقایسه‌ی چند پلن یک ستونِ عددیِ مرتب پیدا می‌کند. */
+.pdp-plan__label { margin-inline-end: auto; }
+.pdp-plan__price { margin-inline-start: auto; }
+.pdp-plan__price--usd { font-weight: 900; font-size: var(--text-base); color: var(--ink); }
