@@ -2,43 +2,47 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, Info } from 'lucide-react';
-import { AI_TOOLS, AI_PURPOSES, type AiPurpose, type AiTool } from '../../data/aiLatest';
+import { ArrowLeft, ChevronRight, ChevronLeft, Send } from 'lucide-react';
+import { AI_TOOLS, type AiTool } from '../../data/aiLatest';
+import { AI_NEWS, NEWS_CHANNEL } from '../../data/aiNews';
 import { AiToolDialog } from './AiToolDialog';
 import { PRODUCTS, getLowestPrice } from '../../data/catalog';
 import { ServiceMark } from '../numbers/ServiceMark';
 import { asset } from '../../lib/asset';
 
 /**
- * تازه‌های هوش مصنوعی.
+ * تازه‌های هوش مصنوعی — هفتاد به سی.
  *
- * ⚠ این سکشن با «کدام هوش مصنوعی به کارت می‌آید» یکی نیست.
+ * ⚠ این یک سکشن است، نه دو تا.
  *
- * آن یکی سه مدلِ بزرگ را کنار هم می‌گذارد و ریز مقایسه می‌کند —
- * برای کسی که می‌داند دنبال چیست و بین دو گزینه مانده. این‌جا
- * برعکس است: کسی که هنوز نمی‌داند «هوش مصنوعی» یعنی چند دسته
- * ابزارِ کاملاً متفاوت.
+ * اول دو سکشنِ جدا بود: یکی شبکه‌ی ابزارها با سه دکمه‌ی دسته، و
+ * یکی ریلِ اخبار. کنارِ هم هر دو یک کار می‌کردند — «این‌ها
+ * هستند» — و صفحه دو بار همان حرف را می‌زد.
  *
- * پس اول کار می‌آید، بعد برند. سه دکمه‌ی بالای سکشن دسته‌ها را
- * عوض می‌کنند: می‌خواهی بنویسی، تصویر بسازی، یا کد بزنی. تا وقتی
- * کاربر نداند کدام دسته کارِ اوست، نامِ ده سرویس فقط سردرگمش
- * می‌کند.
+ * حالا یکی است: ریلی از کارت‌های کوچک که می‌لغزند، و کنارش
+ * دعوت به کانال. کارت فقط می‌گوید چه هست و به چه درد می‌خورد؛
+ * هرچه بیشتر بخواهی، با زدنِ «جزئیات» در پنجره باز می‌شود.
  *
- * ⚠ قیمت از کاتالوگ می‌آید، نه از این فایل.
+ * ⚠ خبرها هم داخلِ همین ریل می‌آیند، نه در سکشنِ دیگر.
  *
- * ابزاری که هنوز نمی‌فروشیم اسلاگ ندارد و به‌جای قیمت «به‌زودی»
- * می‌گیرد و دکمه‌اش به تماس می‌رود. عددِ حدسی روی کارت یعنی
- * مشتری روی قیمتی سفارش می‌دهد که ما پشتش نیستیم.
+ * تا وقتی خبری ثبت نشده، ریل ابزارها را نشان می‌دهد. خبر که
+ * اضافه شود جلوی ابزارها می‌نشیند — تازه‌ترین چیز باید اول
+ * دیده شود.
  */
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
 export function AiLatest() {
-  const [tab, setTab] = React.useState<AiPurpose>('chat');
   const [open, setOpen] = React.useState<AiTool | null>(null);
+  const rail = React.useRef<HTMLDivElement>(null);
 
-  const shown = AI_TOOLS.filter((t) => t.purpose === tab);
-  const active = AI_PURPOSES.find((p) => p.key === tab);
+  const nudge = (dir: 1 | -1) => {
+    const el = rail.current;
+    if (!el) return;
+    const card = el.querySelector<HTMLElement>('.ailt');
+    const step = card ? card.offsetWidth + 20 : el.clientWidth * 0.8;
+    el.scrollBy({ left: dir * step });
+  };
 
   return (
     <section className="ailx reveal">
@@ -47,53 +51,44 @@ export function AiLatest() {
           <div>
             <h2>تازه‌های هوش مصنوعی</h2>
             <p className="ailx__lead">
-              هر کدام کارِ متفاوتی می‌کنند. اول بگو دنبال چه هستی، بعد
-              انتخاب کن.
+              مدل‌های تازه و کاری که هرکدام راه می‌اندازند.
             </p>
           </div>
-          <Link href="/ai" className="ailx__all">
-            همه‌ی اشتراک‌ها
-            <ArrowLeft aria-hidden="true" />
-          </Link>
+          <div className="ailx__tools">
+            <Link href="/ai" className="ailx__all">
+              مشاهده همه
+              <ArrowLeft aria-hidden="true" />
+            </Link>
+            <div className="ailx__nav">
+              <button type="button" onClick={() => nudge(-1)} aria-label="قبلی">
+                <ChevronRight aria-hidden="true" />
+              </button>
+              <button type="button" onClick={() => nudge(1)} aria-label="بعدی">
+                <ChevronLeft aria-hidden="true" />
+              </button>
+            </div>
+          </div>
         </header>
 
-        {/* سه کار، نه سه برند */}
-        <div className="ailx__tabs" role="tablist" aria-label="دسته‌بندی بر اساس کاربرد">
-          {AI_PURPOSES.map((p) => (
-            <button
-              key={p.key}
-              type="button"
-              role="tab"
-              aria-selected={p.key === tab}
-              className={`ailx__tab ${p.key === tab ? 'is-on' : ''}`}
-              onClick={() => setTab(p.key)}
-            >
-              <b>{p.label}</b>
-              <span>{p.hint}</span>
-            </button>
-          ))}
-        </div>
+        <div className="ailx__split">
+          {/* ---------- هفتاد: ریلِ کارت‌ها ---------- */}
+          <div className="ailx__rail" ref={rail}>
+            {AI_TOOLS.map((t) => {
+              const product = t.slug
+                ? PRODUCTS.find((p) => p.slug === t.slug)
+                : undefined;
+              /* خبرِ همین ابزار، اگر ثبت شده باشد */
+              const news = AI_NEWS.find((n) => n.tool === t.id);
 
-        <p className="sr-only" aria-live="polite">
-          {active ? `${shown.length} ابزار در دسته‌ی ${active.label}` : ''}
-        </p>
-
-        <div className="ailx__grid">
-          {shown.map((t) => {
-            const product = t.slug
-              ? PRODUCTS.find((p) => p.slug === t.slug)
-              : undefined;
-            const price = product ? getLowestPrice(product) : 0;
-
-            return (
-              <article
-                key={t.id}
-                className="ailt"
-                style={{ ['--tube' as string]: t.tint }}
-              >
-                {/* نوارِ رنگیِ برند — تنها جایی که رنگِ سرویس
-                    می‌آید، تا کارت‌ها با هم نجنگند */}
-                <div className="ailt__band">
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  className="ailt"
+                  style={{ ['--tube' as string]: t.tint }}
+                  onClick={() => setOpen(t)}
+                  aria-label={`جزئیات ${t.title}`}
+                >
                   <span className="ailt__logo">
                     {t.logo ? (
                       <img src={asset(`/brand/logos/${t.logo}`)} alt="" />
@@ -101,58 +96,54 @@ export function AiLatest() {
                       <ServiceMark id={t.id} mark={t.englishTitle.slice(0, 1)} />
                     )}
                   </span>
-                  {t.fresh && <span className="ailt__fresh">تازه</span>}
-                </div>
 
-                <div className="ailt__body">
-                  <h3>
-                    {t.title}
-                    <span className="ailt__en">{t.englishTitle}</span>
-                  </h3>
-                  <p className="ailt__lead">{t.lead}</p>
+                  <span className="ailt__body">
+                    <span className="ailt__top">
+                      <b>{t.title}</b>
+                      {t.fresh && <span className="ailt__fresh">تازه</span>}
+                    </span>
+                    <span className="ailt__lead">
+                      {news ? news.title : t.lead}
+                    </span>
+                    <span className="ailt__foot">
+                      {product ? (
+                        <span className="ailt__price">
+                          از <b className="num">{fmt(getLowestPrice(product))}</b> تومان
+                        </span>
+                      ) : (
+                        <span className="ailt__soon">به‌زودی</span>
+                      )}
+                      <span className="ailt__more">جزئیات</span>
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
 
-                  <ul className="ailt__does">
-                    {t.does.map((d) => (
-                      <li key={d}>
-                        <Check aria-hidden="true" />
-                        {d}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            {/* کارتِ آخر: راهِ ادامه، همان‌جا که خواندن تمام می‌شود */}
+            <Link href="/ai" className="ailt ailt--all">
+              <span>مشاهده همه</span>
+              <ArrowLeft aria-hidden="true" />
+            </Link>
+          </div>
 
-                <footer className="ailt__foot">
-                  <button
-                    type="button"
-                    className="ailt__more"
-                    onClick={() => setOpen(t)}
-                  >
-                    <Info aria-hidden="true" />
-                    جزئیات و خبرها
-                  </button>
-                  {product ? (
-                    <>
-                      <span className="ailt__price">
-                        <span>از</span>
-                        <b className="num">{fmt(price)}</b>
-                        <span>تومان</span>
-                      </span>
-                      <Link href={`/product/${t.slug}`} className="btn btn--primary btn--sm">
-                        دیدن پلن‌ها
-                      </Link>
-                    </>
-                  ) : (
-                    <>
-                      <span className="ailt__soon">به‌زودی</span>
-                      <Link href="/contact" className="btn btn--ghost btn--sm">
-                        خبرم کن
-                      </Link>
-                    </>
-                  )}
-                </footer>
-              </article>
-            );
-          })}
+          {/* ---------- سی: بنرِ کانال ---------- */}
+          <aside className="ailx__promo">
+            <span className="ailx__promo-ico" aria-hidden="true">
+              <Send />
+            </span>
+            <b>کانال تلگرام فونیکس</b>
+            <p>تخفیف‌ها و خبرِ مدل‌های تازه اول آن‌جا می‌آید، بعد روی سایت.</p>
+            <a
+              className="btn btn--primary"
+              href={NEWS_CHANNEL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              عضو شدن در کانال
+            </a>
+            <span className="ailx__promo-at">@Ph0enix_Shop</span>
+          </aside>
         </div>
       </div>
 

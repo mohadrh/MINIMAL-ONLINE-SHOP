@@ -5,7 +5,6 @@ import { TrustStrip } from '../components/home/TrustStrip';
 import { CategoryShowcase } from '../components/home/CategoryShowcase';
 import { AiPicker } from '../components/home/AiPicker';
 import { AiLatest } from '../components/home/AiLatest';
-import { AiNews } from '../components/home/AiNews';
 import { WhyPhoenix } from '../components/home/WhyPhoenix';
 import { Reviews } from '../components/home/Reviews';
 import { Articles } from '../components/home/Articles';
@@ -67,9 +66,6 @@ export default function HomePage() {
           متفاوت است، بعد از دیدنِ مقایسه تازه می‌فهمد چه
           نمی‌داند. */}
       <AiLatest />
-
-      {/* اخبار بعد از معرفی — اول بدان چه هست، بعد بشنو چه تازه شده */}
-      <AiNews />
 
       {/* آموزش پیش از «سه قدم».
 
