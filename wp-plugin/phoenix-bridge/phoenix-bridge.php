@@ -356,6 +356,7 @@ function phoenix_save_variation($variation_id, $loop) {
 require_once plugin_dir_path(__FILE__) . 'includes/rest.php';
 require_once plugin_dir_path(__FILE__) . 'includes/auth.php';
 require_once plugin_dir_path(__FILE__) . 'includes/orders.php';
+require_once plugin_dir_path(__FILE__) . 'includes/rate.php';
 
 /**
  * ⚠ افزونه بدون ووکامرس فعال نمی‌شود.

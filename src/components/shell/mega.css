@@ -509,3 +509,14 @@
   .nav__mega-btn.is-on svg { rotate: none; }
   .mega__star:hover .mega__star-art img { scale: 1; }
 }
+
+/* ⚠ نشان کوچک‌تر از تصویرِ کارت می‌نشیند.
+
+   تصویرِ کارت لبه‌تالبه پر است و ۸۰٪ درست است. نشان حاشیه‌ی
+   خالیِ خودش را دارد و در همان ۸۰٪ به دیواره می‌چسبد و شلوغ به
+   نظر می‌رسد؛ با ۵۸٪ در قاب می‌نشیند، نه گم می‌شود نه سرریز. */
+.mega__box-art.is-logo {
+  background: color-mix(in srgb, var(--accent, var(--blue)) 8%, var(--paper));
+  border: 1px solid var(--line-soft);
+}
+.mega__box-art.is-logo img { width: 58%; height: 58%; }

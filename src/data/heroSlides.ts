@@ -61,7 +61,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
     badge: 'جدید',
     titleLead: 'هوش مصنوعیِ',
     titleAccent: 'تولید محتوا',
-    englishTitle: 'Midjourney · Firefly · Higgsfield',
+    englishTitle: 'Midjourney · Higgsfield · Leonardo · Nano Banana',
     kicker: 'تصویر، ویدیو و متن — با یک توضیح',
     description:
       'صحنه را توصیف می‌کنی و تصویر یا ویدیو تحویل می‌گیری. برای کسی که کارش تولید محتواست و نمی‌خواهد هر بار دنبال عکاس و تدوینگر بگردد.',
@@ -79,9 +79,9 @@ export const HERO_SLIDES: HeroSlideData[] = [
       label: ['Creative', 'AI'],
       tiles: [
         { id: 'midjourney', bg: '#ffffff', logo: 'midjourney.svg' },
-        { id: 'firefly', bg: '#ffffff', logo: 'firefly.svg' },
         { id: 'higgsfield', bg: '#ffffff', logo: 'higgsfield.svg' },
-        { id: 'claude', bg: '#ffffff', logo: 'claude-burst.svg' },
+        { id: 'nano-banana', bg: '#ffffff', logo: 'nano-banana.svg' },
+        { id: 'firefly', bg: '#ffffff', logo: 'firefly.svg' },
       ],
     },
     platforms: ['Web', 'iOS', 'Android'],

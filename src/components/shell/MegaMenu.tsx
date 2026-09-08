@@ -144,9 +144,15 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
               style={{ ['--accent' as string]: p.media.accent }}
               onClick={onNavigate}
             >
+              {/* ⚠ در قابِ چهل‌پیکسلی، نشان بهتر از تصویرِ کارت است.
+
+                  تصویرِ کارت برای قابِ بزرگ ساخته شده؛ این‌جا
+                  کوچک که می‌شود، لکه‌ای می‌ماند که هیچ نمی‌گوید.
+                  نشان در همین اندازه هم شناخته می‌شود — همان
+                  چیزی که کاربر با آن سرویس را می‌شناسد. */}
               <ProductArt
-                className="mega__box-art"
-                src={p.media.thumbnail}
+                className={`mega__box-art ${p.media.logo ? 'is-logo' : ''}`}
+                src={p.media.logo ?? p.media.thumbnail}
                 title={p.englishTitle}
                 brand={p.brand}
               />
@@ -174,8 +180,8 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
               {more.map((p) => (
                 <span key={p.slug} className="mega__box">
                   <ProductArt
-                    className="mega__box-art"
-                    src={p.media.thumbnail}
+                    className={`mega__box-art ${p.media.logo ? 'is-logo' : ''}`}
+                    src={p.media.logo ?? p.media.thumbnail}
                     title={p.englishTitle}
                     brand={p.brand}
                   />

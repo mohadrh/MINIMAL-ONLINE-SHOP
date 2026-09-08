@@ -2260,3 +2260,88 @@
   overflow: hidden;
 }
 #reads .art__meta { margin-block-start: auto; font-size: 11px; color: var(--ink-faint); }
+
+/* ============================================================
+   پلن‌های دلاری
+
+   قیمتِ پایه دلار است و تومان محاسبه می‌شود. نرخ روی صفحه
+   دیده می‌شود چون خریدارِ این بازار می‌داند محصول دلاری است و
+   می‌خواهد بداند با چه نرخی حساب شده — نشان دادنش همان چیزی
+   است که چانه‌زنی را تمام می‌کند.
+   ============================================================ */
+
+.usdp { display: grid; gap: var(--sp-4); }
+
+.usdp__rate {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--wash);
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+}
+.usdp__rate b { color: var(--ink); font-weight: 900; }
+.usdp__rate button {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 0; background: none; cursor: pointer;
+  font-size: var(--text-xs); color: var(--blue);
+}
+.usdp__rate svg { width: 13px; height: 13px; }
+.usdp__rate svg.is-spin { animation: usdpSpin 0.9s linear infinite; }
+@keyframes usdpSpin { to { transform: rotate(360deg); } }
+
+.usdp__plans { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+
+.usdp__plan {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  text-align: start;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.usdp__plan:hover { border-color: var(--blue-line); }
+.usdp__plan.is-on { border-color: var(--brand); background: var(--blue-wash); }
+
+.usdp__plan-name { display: grid; gap: 2px; min-width: 0; }
+.usdp__plan-name b { font-size: var(--text-sm); }
+.usdp__plan-name span { font-size: var(--text-xs); color: var(--ink-faint); }
+
+.usdp__plan-price { display: grid; gap: 2px; text-align: end; white-space: nowrap; }
+.usdp__usd { font-size: var(--text-xs); color: var(--ink-faint); direction: ltr; }
+.usdp__toman { font-size: var(--text-sm); font-weight: 900; }
+
+.usdp__calc {
+  padding: var(--sp-4);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md);
+}
+.usdp__calc label { display: block; font-size: var(--text-xs); color: var(--ink-faint); margin-bottom: var(--sp-3); }
+.usdp__row { display: flex; align-items: center; gap: var(--sp-3); }
+
+.usdp__field {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper);
+}
+.usdp__field input {
+  width: 5.5ch; border: 0; background: none; outline: none;
+  font: inherit; font-weight: 700; color: var(--ink); direction: ltr; text-align: center;
+}
+.usdp__field span { font-size: var(--text-xs); color: var(--ink-faint); }
+.usdp__eq { color: var(--ink-faint); }
+.usdp__out { font-size: var(--text-base); font-weight: 900; color: var(--ink); }
+.usdp__hint { font-size: var(--text-xs); color: var(--ink-faint); margin: var(--sp-3) 0 0; }
+
+@media (max-width: 480px) {
+  .usdp__plan { flex-direction: column; align-items: stretch; gap: var(--sp-2); }
+  .usdp__plan-price { text-align: start; display: flex; align-items: baseline; gap: var(--sp-2); }
+}
