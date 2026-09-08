@@ -4,6 +4,7 @@ import { PopularServices } from '../components/home/PopularServices';
 import { TrustStrip } from '../components/home/TrustStrip';
 import { CategoryShowcase } from '../components/home/CategoryShowcase';
 import { AiPicker } from '../components/home/AiPicker';
+import { AiLatest } from '../components/home/AiLatest';
 import { WhyPhoenix } from '../components/home/WhyPhoenix';
 import { Reviews } from '../components/home/Reviews';
 import { Articles } from '../components/home/Articles';
@@ -56,6 +57,15 @@ export default function HomePage() {
       <PopularServices />
 
       <AiPicker />
+
+      {/* ⚠ بعد از AiPicker می‌آید نه قبلش.
+
+          آن یکی سه مدل را ریز مقایسه می‌کند — برای کسی که
+          می‌داند دنبال چیست. این‌جا دسته‌بندیِ کاربردی است، و
+          کسی که هنوز نمی‌داند «هوش مصنوعی» چند نوع ابزارِ
+          متفاوت است، بعد از دیدنِ مقایسه تازه می‌فهمد چه
+          نمی‌داند. */}
+      <AiLatest />
 
       {/* آموزش پیش از «سه قدم».
 

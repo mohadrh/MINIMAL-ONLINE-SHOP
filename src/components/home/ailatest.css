@@ -1,0 +1,172 @@
+/* ============================================================
+   تازه‌های هوش مصنوعی
+
+   کارت‌ها رنگِ برند را فقط در یک نوارِ باریکِ بالا می‌گیرند و
+   بقیه‌شان خنثی می‌ماند. دلیلش را کارفرما گفته بود: «سایت خیلی
+   دکمه رنگاوارنگه». نُه کارت که هرکدام کاملاً به رنگِ برندِ خودش
+   باشد، همان اتفاق در مقیاسِ بزرگ‌تر است.
+   ============================================================ */
+
+.ailx { padding-block: var(--sp-14); background: var(--tint); }
+
+.ailx__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-7);
+}
+.ailx__head h2 { font-size: var(--text-2xl); margin-bottom: var(--sp-2); }
+.ailx__lead { font-size: var(--text-sm); color: var(--ink-faint); max-width: 46ch; }
+
+.ailx__all {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  font-size: var(--text-sm); color: var(--blue); white-space: nowrap;
+}
+.ailx__all svg { width: 15px; height: 15px; }
+
+/* ---------- سه دکمه‌ی کاربرد ---------- */
+
+.ailx__tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-7);
+}
+
+.ailx__tab {
+  display: grid;
+  gap: 2px;
+  padding: var(--sp-4) var(--sp-5);
+  text-align: start;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--paper);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.ailx__tab b { font-size: var(--text-sm); color: var(--ink); font-weight: 700; }
+.ailx__tab span { font-size: var(--text-xs); color: var(--ink-faint); }
+.ailx__tab:hover { border-color: var(--blue-line); }
+.ailx__tab.is-on { border-color: var(--brand); background: var(--blue-wash); }
+.ailx__tab.is-on b { color: var(--brand); }
+
+/* ---------- کارت ابزار ---------- */
+
+.ailx__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: var(--sp-5);
+}
+
+.ailt {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--paper);
+  overflow: hidden;
+  transition: border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.ailt:hover { border-color: color-mix(in srgb, var(--tube) 45%, var(--line)); }
+
+/* نوارِ برند. رنگ از ‎--tube‎ می‌آید ولی رقیق — پس‌زمینه‌ی
+   کم‌رنگ، نه بلوکِ پُر. */
+.ailt__band {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-5);
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--tube) 16%, transparent),
+      color-mix(in srgb, var(--tube) 4%, transparent));
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.ailt__logo {
+  width: 46px; height: 46px;
+  display: grid; place-items: center;
+  border-radius: var(--r-md);
+  background: var(--paper);
+  box-shadow: 0 2px 10px -4px rgb(0 0 0 / 0.22);
+}
+.ailt__logo img { width: 70%; height: 70%; object-fit: contain; }
+.ailt__logo svg { width: 60%; height: 60%; color: var(--tube); }
+
+.ailt__fresh {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  padding: 3px var(--sp-3);
+  border-radius: 999px;
+  background: var(--paper);
+  color: color-mix(in srgb, var(--tube) 78%, var(--ink));
+  border: 1px solid color-mix(in srgb, var(--tube) 30%, var(--line));
+}
+
+.ailt__body { padding: var(--sp-5); flex: 1; }
+
+.ailt__body h3 {
+  display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap;
+  font-size: var(--text-base); margin-bottom: var(--sp-2);
+}
+.ailt__en {
+  direction: ltr;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--ink-faint);
+}
+
+.ailt__lead {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  margin-bottom: var(--sp-4);
+}
+
+.ailt__does { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+.ailt__does li {
+  display: flex; align-items: flex-start; gap: var(--sp-2);
+  font-size: var(--text-xs); color: var(--ink-soft);
+}
+.ailt__does svg {
+  width: 13px; height: 13px; flex-shrink: 0; margin-top: 3px;
+  color: color-mix(in srgb, var(--tube) 70%, var(--ink));
+}
+
+.ailt__foot {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-3); flex-wrap: wrap;
+  padding: var(--sp-4) var(--sp-5);
+  border-top: 1px solid var(--line-soft);
+}
+
+.ailt__price {
+  display: flex; align-items: baseline; gap: 4px;
+  font-size: var(--text-xs); color: var(--ink-faint);
+  white-space: nowrap;
+}
+.ailt__price b { font-size: var(--text-base); font-weight: 900; color: var(--ink); }
+
+/* ⚠ «به‌زودی» جای قیمت می‌نشیند، نه کنارش.
+
+   ابزاری که هنوز نمی‌فروشیم قیمت ندارد و عددِ حدسی نمی‌گیرد.
+   خالی گذاشتنِ این گوشه هم جواب نمی‌داد — کارت ناقص به نظر
+   می‌رسید. */
+.ailt__soon {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+[data-theme='dark'] .ailt { background: var(--tint); }
+[data-theme='dark'] .ailt__logo { background: #fff; }
+[data-theme='dark'] .ailx__tab { background: var(--tint); }
+
+@media (max-width: 720px) {
+  .ailx { padding-block: var(--sp-10); }
+  .ailx__head { flex-direction: column; align-items: stretch; gap: var(--sp-3); }
+  /* سه دکمه در عرضِ کم زیر هم، وگرنه متنِ راهنما تا می‌خورد */
+  .ailx__tabs { grid-template-columns: minmax(0, 1fr); gap: var(--sp-2); }
+  .ailx__tab { padding: var(--sp-3) var(--sp-4); }
+}

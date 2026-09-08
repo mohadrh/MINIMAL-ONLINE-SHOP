@@ -32,6 +32,7 @@
 @import '../components/shell/footer.css' layer(components);
 @import '../components/home/home.css' layer(components);
 @import '../components/home/showcase.css' layer(components);
+@import '../components/home/ailatest.css' layer(components);
 @import '../components/product/product.css' layer(components);
 /* ⚠ shop.css تا امروز ایمپورت نمی‌شد — فایل بود و بارگذاری
    نمی‌شد. بعد از product می‌آید تا قاعده‌های فروشگاه بر همان‌ها
