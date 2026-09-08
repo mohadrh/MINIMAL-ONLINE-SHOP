@@ -94,8 +94,40 @@ const SPARKS = [
 ];
 
 export function SlideArt({ spec }: { spec: SlideArtSpec }) {
+  const box = React.useRef<HTMLDivElement>(null);
+
+  /* ⚠ موقعیتِ موس روی خودِ عنصر نوشته می‌شود، نه در state.
+
+     با state، هر حرکتِ موس یک رندرِ ری‌اکت می‌شد — ده‌ها بار در
+     ثانیه، برای چیزی که فقط دو عدد در CSS است. نوشتنِ مستقیمِ
+     متغیر از رندر عبور می‌کند و مرورگر خودش بقیه‌اش را
+     می‌کند. */
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = box.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    /* از مرکز، در بازه‌ی منفی‌یک تا یک، ضربدر دامنه‌ی حرکت */
+    const x = ((e.clientX - r.left) / r.width - 0.5) * 2;
+    const y = ((e.clientY - r.top) / r.height - 0.5) * 2;
+    el.style.setProperty('--mx', (x * 7).toFixed(2));
+    el.style.setProperty('--my', (y * 7).toFixed(2));
+  };
+
+  const onLeave = () => {
+    const el = box.current;
+    if (!el) return;
+    el.style.setProperty('--mx', '0');
+    el.style.setProperty('--my', '0');
+  };
+
   return (
-    <div className="slart" aria-hidden="true">
+    <div
+      className="slart"
+      aria-hidden="true"
+      ref={box}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+    >
       {/* کارت */}
       <span className="slart__card" style={{ background: spec.card }} />
 
@@ -126,6 +158,9 @@ export function SlideArt({ spec }: { spec: SlideArtSpec }) {
             ['--dy' as string]: `${SLOTS[i].top}%`,
             background: t.bg,
             color: t.ink ?? '#fff',
+            /* گامِ شناور بودن — بدونش هر چهار کاشی هم‌زمان
+               بالا و پایین می‌روند و مثل یک تخته می‌شوند */
+            ['--i' as string]: i,
           }}
         >
           {t.logo ? (

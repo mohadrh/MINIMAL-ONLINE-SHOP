@@ -85,6 +85,16 @@ export function ProductCard(
   const liveOf = (vr: { id: string; price: number }) =>
     livePrices[vr.id]?.price ?? vr.price;
   const lowest = Math.min(...p.variants.map(liveOf));
+  /* ⚠ کارت رنج می‌دهد، نه یک عدد.
+
+     کمترین قیمتِ تنها گمراه‌کننده است: کاربر «۲۰۰٬۰۰۰» را
+     می‌بیند، روی محصول می‌زند و پلنی که واقعاً می‌خواهد
+     ۱٬۲۰۰٬۰۰۰ است. رنج همان‌جا می‌گوید تا کجا می‌رود.
+
+     وقتی همه‌ی پلن‌ها یک قیمت دارند رنج معنا ندارد و همان یک
+     عدد می‌ماند. */
+  const highest = Math.max(...p.variants.map(liveOf));
+  const ranged = highest > lowest;
   const liveWas = livePrices[v.id]?.compareAt ?? v.compareAt;
 
   const off =
@@ -318,7 +328,14 @@ export function ProductCard(
           <span className="pcard__prices">
             {liveWas && <s className="pcard__was num">{fmt(liveWas)} تومان</s>}
             <span className="pcard__nowrow">
+              {ranged && <span className="pcard__from">از</span>}
               <b className="pcard__now num">{fmt(lowest)}</b>
+              {ranged && (
+                <>
+                  <span className="pcard__to">تا</span>
+                  <b className="pcard__now num">{fmt(highest)}</b>
+                </>
+              )}
               <span className="pcard__unit">تومان</span>
             </span>
           </span>

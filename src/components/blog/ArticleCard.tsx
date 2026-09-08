@@ -23,6 +23,13 @@ export function ArticleCard({ a, i }: { a: Article; i?: number }) {
       className="art"
       style={{ ['--art-accent' as string]: a.accent, ['--i' as string]: i ?? 0 }}
     >
+      {/* ⚠ برچسبِ موضوع روی کاور نشسته، نه زیرش.
+
+          پیش از این کارت چهار سطرِ پشت‌سرهم بود: کاور، برچسب،
+          تیتر، خلاصه، زمان. پنج چیز در یک قاب، و هیچ‌کدام
+          مهم‌تر از بقیه به نظر نمی‌رسید. برچسب که روی کاور
+          می‌رود، متن سه سطر می‌شود و تیتر جای اولش را
+          می‌گیرد. */}
       {a.cover && (
         <span className="art__cover">
           <img
@@ -32,13 +39,13 @@ export function ArticleCard({ a, i }: { a: Article; i?: number }) {
             loading="lazy"
             data-wide={a.coverWide ? '1' : undefined}
           />
+          <span className="art__topic">{a.topicLabel}</span>
         </span>
       )}
-      <span className="pill art__topic">{a.topicLabel}</span>
-      <h3>{a.title}</h3>
-      <p className="small muted">{a.excerpt}</p>
-      <span className="xsmall muted art__meta num">
-        {fmt(a.readMinutes)} دقیقه مطالعه
+      <span className="art__txt">
+        <h3>{a.title}</h3>
+        <p className="art__excerpt">{a.excerpt}</p>
+        <span className="art__meta num">{fmt(a.readMinutes)} دقیقه مطالعه</span>
       </span>
     </Link>
   );

@@ -30,9 +30,16 @@ import { asset } from '../../lib/asset';
 export function AiNews() {
   const rail = React.useRef<HTMLDivElement>(null);
 
-  /* ⚠ سکشن تا نبودنِ خبر اصلاً نمی‌آید.
-     قابِ خالی با «خبری ثبت نشده» فقط جا می‌گیرد. */
-  if (AI_NEWS.length === 0) return null;
+  /* ⚠ سکشن بدونِ خبر هم می‌آید، ولی ریلش فرق می‌کند.
+
+     نسخه‌ی اول تا نبودنِ خبر اصلاً رندر نمی‌شد و نتیجه‌اش این
+     بود که بنرِ کانال هم دیده نمی‌شد — در حالی که آن بنر به
+     خبر وابسته نیست و کارش دعوت به کانال است.
+
+     پس ساختار می‌ماند و فقط سمتِ پهن عوض می‌شود: تا وقتی خبری
+     ثبت نشده، یک کارت می‌گوید تازه‌ترین‌ها کجاست. متنِ ساختگی
+     نمی‌سازیم — چیزی که نداریم را ادعا نمی‌کنیم. */
+  const empty = AI_NEWS.length === 0;
 
   const nudge = (dir: 1 | -1) => {
     const el = rail.current;
@@ -52,7 +59,7 @@ export function AiNews() {
             <h2>اخبار هوش مصنوعی</h2>
             <p>تازه‌ترین مدل‌ها و قابلیت‌هایی که به کارت می‌آیند.</p>
           </div>
-          <div className="ainw__nav">
+          <div className="ainw__nav" hidden={AI_NEWS.length === 0}>
             <button type="button" onClick={() => nudge(-1)} aria-label="خبر قبلی">
               <ChevronRight aria-hidden="true" />
             </button>
@@ -64,7 +71,13 @@ export function AiNews() {
 
         <div className="ainw__split">
           {/* ---------- هفتاد: ریلِ خبرها ---------- */}
-          <div className="ainw__rail" ref={rail}>
+          <div className={`ainw__rail ${empty ? 'is-empty' : ''}`} ref={rail}>
+            {empty && (
+              <p className="ainw__none">
+                خبرِ تازه‌ای این‌جا ثبت نشده. مدل‌های جدید و قابلیت‌هایشان
+                اول در کانال می‌آید.
+              </p>
+            )}
             {AI_NEWS.map((n) => {
               const tool = AI_TOOLS.find((t) => t.id === n.tool);
               return (

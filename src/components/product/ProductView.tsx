@@ -240,8 +240,27 @@ export function ProductView({ product: p }: { product: Product }) {
                   onClick={() => setVariantId(v.id)}
                 >
                   <span className="pdp-plan__label">{v.label}</span>
-                  <span className="pdp-plan__price num">{fmt(priceOf(v))}</span>
-                  {v.compareAt && <s className="pdp-plan__was num">{fmt(v.compareAt)}</s>}
+                  {/* ⚠ ردیفِ پلن دلار است، نه تومان.
+
+                      قیمتِ پایه‌ی این محصولات دلاری است و تومانش
+                      با نرخِ روز عوض می‌شود. اگر ردیفِ پلن‌ها
+                      تومانی باشد، کاربر دو عددِ متفاوت را کنارِ
+                      هم می‌بیند که هر دو تومان‌اند و نمی‌فهمد
+                      کدام ملاک است.
+
+                      حالا تقسیمِ کار روشن است: پلن‌ها می‌گویند
+                      «چقدر دلار»، و کنارِ دکمه‌ی خرید می‌گوید
+                      «یعنی چقدر تومان». */}
+                  {v.usd ? (
+                    <span className="pdp-plan__price pdp-plan__price--usd num">
+                      ${v.usd.toLocaleString('fa-IR')}
+                    </span>
+                  ) : (
+                    <span className="pdp-plan__price num">{fmt(priceOf(v))}</span>
+                  )}
+                  {v.compareAt && !v.usd && (
+                    <s className="pdp-plan__was num">{fmt(v.compareAt)}</s>
+                  )}
                 </button>
               ))}
             </div>

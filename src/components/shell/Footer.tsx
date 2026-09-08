@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { MessageCircle, Send } from 'lucide-react';
+import { Instagram, MessageCircle, Send, Twitter } from 'lucide-react';
 import { CATEGORIES } from '../../data/catalog';
 import { asset } from '../../lib/asset';
 
@@ -40,15 +40,13 @@ export function Footer() {
             اشتراک‌هایی که از ایران نمی‌شود خرید، با کارت بانکی خودت. روی حساب
             شخصی خودت فعال می‌شوند و رمزت را هیچ‌وقت نمی‌خواهیم.
           </p>
-          {/* ⚠ فقط نشانی‌هایی که واقعاً وجود دارند.
+          {/* ⚠ اینستاگرام و ایکس عمداً به «#» می‌روند.
 
-             هر چهارتا href="#" بودند — یعنی کاربر روی نشانِ تلگرام
-             می‌زد و هیچ اتفاقی نمی‌افتاد. لینکِ مرده بدتر از نبودنِ
-             لینک است: اولی اعتماد را خرج می‌کند، دومی فقط چیزی را
-             نشان نمی‌دهد.
+             قاعده‌ی کلی این است که لینکِ مرده بدتر از نبودنِ لینک
+             است — اولی اعتماد را خرج می‌کند. این‌جا استثنا شد چون
+             کارفرما گفت نشانش باشد و نشانی‌اش را بعداً می‌دهد.
 
-             اینستاگرام هنوز صفحه‌ای ندارد. روزی که ساخته شد، همین‌جا
-             یک <a> با نشانِ Instagram اضافه می‌شود و تمام. */}
+             وقتی رسید، فقط همین دو href عوض می‌شوند. */}
           <div className="ft__social">
             <a
               href="https://t.me/Ph0enix_Shop"
@@ -58,6 +56,8 @@ export function Footer() {
             >
               <Send />
             </a>
+            <a href="#" aria-label="اینستاگرام"><Instagram /></a>
+            <a href="#" aria-label="ایکس"><Twitter /></a>
             <Link href="/contact" aria-label="پشتیبانی"><MessageCircle /></Link>
           </div>
         </div>
