@@ -45,7 +45,11 @@ export interface SlideArtSpec {
     bg: string;
     ink?: string;
     /**
-     * نامِ فایلِ نشانِ رسمی در ‎public/brand/logos‎، بدون پسوند.
+     * نامِ فایلِ نشانِ رسمی در ‎public/brand/logos‎، **با** پسوند.
+     *
+     * پسوند نوشته می‌شود چون بعضی نشان‌ها SVG اند و بعضی PNG —
+     * آن‌هایی که کارفرما به‌صورت تصویر فرستاده. حدس زدنِ پسوند
+     * یعنی یک روز یکی‌شان بی‌صدا ۴۰۴ می‌شود.
      *
      * ⚠ با ‎ink‎ جمع نمی‌شود.
      *
@@ -125,7 +129,7 @@ export function SlideArt({ spec }: { spec: SlideArtSpec }) {
           }}
         >
           {t.logo ? (
-            <img src={asset(`/brand/logos/${t.logo}.svg`)} alt="" />
+            <img src={asset(`/brand/logos/${t.logo}`)} alt="" />
           ) : (
             <ServiceMark id={t.id} mark={t.id.slice(0, 1).toUpperCase()} />
           )}
