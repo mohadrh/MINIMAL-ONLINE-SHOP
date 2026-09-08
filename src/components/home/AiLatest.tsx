@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check } from 'lucide-react';
-import { AI_TOOLS, AI_PURPOSES, type AiPurpose } from '../../data/aiLatest';
+import { ArrowLeft, Check, Info } from 'lucide-react';
+import { AI_TOOLS, AI_PURPOSES, type AiPurpose, type AiTool } from '../../data/aiLatest';
+import { AiToolDialog } from './AiToolDialog';
 import { PRODUCTS, getLowestPrice } from '../../data/catalog';
 import { ServiceMark } from '../numbers/ServiceMark';
 import { asset } from '../../lib/asset';
@@ -34,6 +35,7 @@ const fmt = (n: number) => n.toLocaleString('fa-IR');
 
 export function AiLatest() {
   const [tab, setTab] = React.useState<AiPurpose>('chat');
+  const [open, setOpen] = React.useState<AiTool | null>(null);
 
   const shown = AI_TOOLS.filter((t) => t.purpose === tab);
   const active = AI_PURPOSES.find((p) => p.key === tab);
@@ -120,6 +122,14 @@ export function AiLatest() {
                 </div>
 
                 <footer className="ailt__foot">
+                  <button
+                    type="button"
+                    className="ailt__more"
+                    onClick={() => setOpen(t)}
+                  >
+                    <Info aria-hidden="true" />
+                    جزئیات و خبرها
+                  </button>
                   {product ? (
                     <>
                       <span className="ailt__price">
@@ -145,6 +155,8 @@ export function AiLatest() {
           })}
         </div>
       </div>
+
+      {open && <AiToolDialog tool={open} onClose={() => setOpen(null)} />}
     </section>
   );
 }

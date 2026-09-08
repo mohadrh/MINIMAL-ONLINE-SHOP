@@ -170,3 +170,181 @@
   .ailx__tabs { grid-template-columns: minmax(0, 1fr); gap: var(--sp-2); }
   .ailx__tab { padding: var(--sp-3) var(--sp-4); }
 }
+
+/* ============================================================
+   پنجره‌ی جزئیاتِ ابزار
+
+   ⚠ به‌جای بردن کاربر به صفحه‌ی دیگر، پنجره باز می‌شود.
+
+   این سکشن جای انتخاب است نه خرید. کسی که بین چهار ابزار مانده،
+   اگر با هر کلیک از صفحه بیرون برود برای مقایسه باید مدام
+   برگردد. پنجره او را همان‌جا نگه می‌دارد.
+   ============================================================ */
+
+.aidlg {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-5);
+  background: rgb(12 6 22 / 0.55);
+  backdrop-filter: blur(4px);
+  animation: aidlgIn 0.2s var(--ease);
+}
+
+@keyframes aidlgIn { from { opacity: 0; } }
+
+.aidlg__box {
+  width: min(100%, 620px);
+  max-height: min(86vh, 760px);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-xl);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  box-shadow: 0 30px 80px -30px rgb(12 6 22 / 0.6);
+  overflow: hidden;
+  animation: aidlgUp 0.24s var(--ease);
+}
+
+@keyframes aidlgUp { from { transform: translateY(14px); opacity: 0; } }
+
+.aidlg__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  border-bottom: 1px solid var(--line-soft);
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--tube) 14%, transparent),
+      color-mix(in srgb, var(--tube) 3%, transparent));
+}
+.aidlg__head > div { flex: 1; min-width: 0; }
+.aidlg__head h2 { font-size: var(--text-lg); margin: 0 0 2px; }
+.aidlg__head p { font-size: var(--text-xs); color: var(--ink-faint); margin: 0; }
+.aidlg__en { direction: ltr; display: inline-block; }
+.aidlg__dot { margin-inline: 6px; }
+
+.aidlg__logo {
+  width: 48px; height: 48px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: var(--r-md);
+  background: var(--paper);
+  box-shadow: 0 2px 10px -4px rgb(0 0 0 / 0.22);
+}
+.aidlg__logo img { width: 70%; height: 70%; object-fit: contain; }
+.aidlg__logo svg { width: 60%; height: 60%; color: var(--tube); }
+
+.aidlg__x {
+  width: 34px; height: 34px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+.aidlg__x:hover { color: var(--ink); border-color: var(--ink-faint); }
+.aidlg__x svg { width: 16px; height: 16px; }
+
+.aidlg__body { padding: var(--sp-5); overflow-y: auto; flex: 1; }
+.aidlg__lead { font-size: var(--text-sm); color: var(--ink-soft); margin-bottom: var(--sp-6); }
+
+.aidlg__sec { margin-bottom: var(--sp-6); }
+.aidlg__sec:last-child { margin-bottom: 0; }
+.aidlg__sec h3 {
+  font-size: var(--text-xs); color: var(--ink-faint);
+  margin-bottom: var(--sp-3); font-weight: 700;
+}
+
+.aidlg__models { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+.aidlg__models li {
+  display: flex; align-items: baseline; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  background: var(--wash);
+}
+.aidlg__models b { font-size: var(--text-sm); white-space: nowrap; }
+.aidlg__models span { font-size: var(--text-xs); color: var(--ink-faint); }
+
+.aidlg__uses { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-4); }
+.aidlg__uses li { display: flex; gap: var(--sp-3); }
+.aidlg__uses svg {
+  width: 15px; height: 15px; flex-shrink: 0; margin-top: 3px;
+  color: color-mix(in srgb, var(--tube) 70%, var(--ink));
+}
+.aidlg__uses b { display: block; font-size: var(--text-sm); margin-bottom: 2px; }
+.aidlg__uses p { font-size: var(--text-xs); color: var(--ink-soft); margin: 0; }
+
+/* ---------- خبر ---------- */
+
+.aidlg__news {
+  padding: var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--wash);
+}
+.aidlg__news-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-3); margin-bottom: var(--sp-3);
+}
+.aidlg__news-head h3 { margin: 0; }
+
+.aidlg__nav { display: flex; align-items: center; gap: var(--sp-2); }
+.aidlg__nav span { font-size: var(--text-xs); color: var(--ink-faint); }
+.aidlg__nav button {
+  width: 28px; height: 28px;
+  display: grid; place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.aidlg__nav button:hover { border-color: var(--brand); color: var(--brand); }
+.aidlg__nav svg { width: 15px; height: 15px; }
+
+.aidlg__shot {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-3);
+}
+.aidlg__news-title { display: block; font-size: var(--text-sm); margin-bottom: 2px; }
+.aidlg__date { display: block; font-size: var(--text-xs); color: var(--ink-faint); margin-bottom: var(--sp-2); }
+.aidlg__news-body { font-size: var(--text-xs); color: var(--ink-soft); margin: 0 0 var(--sp-3); }
+
+.aidlg__link {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  font-size: var(--text-xs); color: var(--blue);
+}
+.aidlg__link svg { width: 13px; height: 13px; }
+
+.aidlg__foot {
+  display: flex; gap: var(--sp-3); flex-wrap: wrap;
+  padding: var(--sp-4) var(--sp-5);
+  border-top: 1px solid var(--line-soft);
+}
+
+/* کارت کلیک‌پذیر می‌شود */
+.ailt__more {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  font-size: var(--text-xs); color: var(--blue);
+  background: none; border: 0; padding: 0; cursor: pointer;
+}
+.ailt__more svg { width: 13px; height: 13px; }
+
+@media (max-width: 560px) {
+  .aidlg { padding: 0; place-items: end stretch; }
+  .aidlg__box { max-height: 92vh; border-radius: var(--r-xl) var(--r-xl) 0 0; }
+  .aidlg__foot { flex-direction: column; }
+  .aidlg__foot .btn { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aidlg, .aidlg__box { animation: none; }
+}
