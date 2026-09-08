@@ -47,9 +47,12 @@ const CARDS = [
   ['higgsfield-card', 'Higgsfield', '#7d9c12', 'higgsfield.svg', 'Subscription'],
   ['firefly-card', 'Adobe Firefly', '#b8001c', 'firefly.svg', 'Subscription'],
   ['grok-card', 'Grok', '#1a1a1a', 'grok.svg', 'Subscription'],
-  ['nano-banana-card', 'Nano Banana', '#b89c00', 'nano-banana.svg', 'Subscription'],
-  ['leonardo-card', 'Leonardo', '#6d3fd4', null, 'Subscription'],
+  ['nano-banana-card', 'Nano Banana', '#b89c00', 'nano-banana.png', 'Subscription'],
+  ['leonardo-card', 'Leonardo', '#6d3fd4', 'leonardo.png', 'Subscription'],
   ['copilot-card', 'GitHub Copilot', '#5b34ad', 'copilot.svg', 'Subscription'],
+  ['cursor-pro-card', 'Cursor Pro', '#2b2b30', 'cursor.png', 'Subscription'],
+  ['duolingo-super-card', 'Duolingo Super', '#3fa302', 'duolingo.svg', 'Premium'],
+  ['telegram-premium-card', 'Telegram Premium', '#1f8fc4', 'telegram.svg', 'Premium'],
 ];
 
 /** تیره‌کردنِ رنگ برای انتهای گرادیانت */
@@ -65,8 +68,11 @@ function darken(hex, amount) {
 function logoUri(file) {
   const p = resolve(LOGOS, file);
   if (!existsSync(p)) return null;
-  const raw = readFileSync(p, 'utf8');
-  return `data:image/svg+xml;base64,${Buffer.from(raw, 'utf8').toString('base64')}`;
+  /* PNG و SVG هر دو می‌آیند: بعضی نشان‌ها را کارفرما به‌صورت
+     تصویر فرستاده و بازکشیدنشان دقیق درنمی‌آید. */
+  const raw = readFileSync(p);
+  const mime = file.endsWith('.png') ? 'image/png' : 'image/svg+xml';
+  return `data:${mime};base64,${raw.toString('base64')}`;
 }
 
 let made = 0;

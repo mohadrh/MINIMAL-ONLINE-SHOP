@@ -80,7 +80,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
       tiles: [
         { id: 'midjourney', bg: '#ffffff', logo: 'midjourney.svg' },
         { id: 'higgsfield', bg: '#ffffff', logo: 'higgsfield.svg' },
-        { id: 'nano-banana', bg: '#ffffff', logo: 'nano-banana.svg' },
+        { id: 'nano-banana', bg: '#ffffff', logo: 'nano-banana.png' },
         { id: 'firefly', bg: '#ffffff', logo: 'firefly.svg' },
       ],
     },
@@ -194,7 +194,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
       tiles: [
         { id: 'claude', bg: '#ffffff', logo: 'claude-burst.svg' },
         { id: 'gemini', bg: '#ffffff', logo: 'gemini.svg' },
-        { id: 'cursor', bg: '#17171a' },
+        { id: 'cursor', bg: '#ffffff', logo: 'cursor.png' },
         { id: 'openai', bg: '#ffffff', logo: 'openai.svg' },
       ],
     },
@@ -299,7 +299,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
       tiles: [
         { id: 'spotify', bg: '#ffffff', logo: 'spotify.svg' },
         { id: 'youtube', bg: '#ffffff', logo: 'youtube.png' },
-        { id: 'telegram', bg: '#229ed9' },
+        { id: 'telegram', bg: '#ffffff', logo: 'telegram.svg' },
         { id: 'discord', bg: '#ffffff', logo: 'discord.svg' },
       ],
     },
@@ -360,7 +360,7 @@ export const HERO_SLIDES: HeroSlideData[] = [
       label: ['Virtual', 'Numbers'],
       tiles: [
         { id: 'whatsapp', bg: '#25d366' },
-        { id: 'telegram', bg: '#229ed9' },
+        { id: 'telegram', bg: '#ffffff', logo: 'telegram.svg' },
         { id: 'openai', bg: '#ffffff', logo: 'openai.svg' },
         { id: 'x', bg: '#17171a' },
       ],

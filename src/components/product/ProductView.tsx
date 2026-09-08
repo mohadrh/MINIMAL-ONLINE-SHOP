@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getAccount } from '../../lib/account';
 import { ArrowLeft, ChevronLeft, Check, Clock, Columns2, ShieldCheck, Sparkles } from 'lucide-react';
 import {
   CATEGORIES, PRODUCTS, getProductsByCategory, type Product, type Variant,
@@ -127,7 +128,27 @@ export function ProductView({ product: p }: { product: Product }) {
     (v.usd ? tomanFromUsd(v.usd, rate) : (livePrices[v.id]?.price ?? v.price));
   const price = priceOf(variant);
 
-  const missing = p.requiredInputs.filter((i) => !inputs[i.key]?.trim());
+  /* ⚠ ورودی‌های لازم فقط از کاربرِ واردشده پرسیده می‌شوند.
+
+     تا حالا هرکسی که وارد صفحه‌ی محصول می‌شد، پیش از هر کاری با
+     یک کادرِ ایمیل روبه‌رو بود و دکمه‌ی «افزودن به سبد» قفل
+     می‌ماند. این یعنی گرفتنِ ایمیل پیش از آنکه کاربر تصمیم گرفته
+     باشد بخرد — و کسی که هنوز دارد نگاه می‌کند، جای پر کردنِ فرم
+     صفحه را می‌بندد.
+
+     حالا ترتیب برعکس است: اول محصول در سبد می‌نشیند، بعد سرِ
+     تسویه — جایی که تصمیم گرفته شده — اطلاعات پرسیده می‌شود.
+
+     کاربرِ واردشده استثناست: او همان‌جا ایمیلش را می‌بیند و اگر
+     خواست عوضش می‌کند، چون برایش یک کادرِ از‌پیش‌پر است نه یک
+     مانع. */
+  const [signedIn, setSignedIn] = React.useState(false);
+  React.useEffect(() => { setSignedIn(getAccount() !== null); }, []);
+
+  const askInputs = signedIn && p.requiredInputs.length > 0;
+  const missing = askInputs
+    ? p.requiredInputs.filter((i) => !inputs[i.key]?.trim())
+    : [];
   const canAdd = missing.length === 0;
 
   const onAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -236,7 +257,7 @@ export function ProductView({ product: p }: { product: Product }) {
             </div>
 
             {/* ورودی‌های لازم — ایمیل، آیدی بازی و مانند این‌ها */}
-            {p.requiredInputs.length > 0 && (
+            {askInputs && (
               <div className="pdp-inputs">
                 {p.requiredInputs.map((i) => (
                   <label key={i.key} className="pdp-input">
@@ -253,6 +274,19 @@ export function ProductView({ product: p }: { product: Product }) {
                   </label>
                 ))}
               </div>
+            )}
+
+            {/* کاربرِ واردنشده به‌جای فرم یک جمله می‌بیند.
+
+                نگفتنش هم بد بود: محصولی که ایمیل لازم دارد باید
+                همین‌جا معلوم کند، وگرنه سرِ تسویه غافلگیری
+                می‌شود. */}
+            {!signedIn && p.requiredInputs.length > 0 && (
+              <p className="pdp-later">
+                {p.requiredInputs.some((i) => i.type === 'email')
+                  ? 'ایمیلِ فعال‌سازی را سرِ تسویه می‌پرسیم.'
+                  : 'اطلاعاتِ لازم را سرِ تسویه می‌پرسیم.'}
+              </p>
             )}
 
             {/* ردیفِ نرخ — فقط وقتی محصول دلاری است.

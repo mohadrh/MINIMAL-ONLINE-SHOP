@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { AlertCircle, Check, Eye, EyeOff, Lock, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../app/providers';
 import {
-  nameOk, phoneOk, saveAccount,
+  nameOk, phoneOk, emailOk, saveAccount,
 } from '../../lib/account';
 import { newOrderCode, saveOrder, scheduleFulfilment, type Order } from '../../lib/orders';
 import { Loader } from '../ui/Loader';
@@ -49,6 +49,28 @@ export function CheckoutFlow() {
   const [code, setCode] = useState<string | null>(null);
 
   const [step, setStep] = useState<Step>('form');
+
+  /* ⚠ ورودی‌هایی که در صفحه‌ی محصول پرسیده نشدند.
+
+     صفحه‌ی محصول فقط از کاربرِ واردشده ایمیل می‌خواهد؛ بقیه بدونِ
+     پر کردنِ فرم محصول را در سبد می‌گذارند. پس این‌جا — جایی که
+     تصمیم گرفته شده — هرچه جا مانده پرسیده می‌شود.
+
+     کلید ترکیبِ خطِ سبد و نامِ ورودی است، چون یک نفر ممکن است دو
+     اشتراک بخرد و بخواهد هرکدام روی ایمیلِ دیگری فعال شود. */
+  const [extra, setExtra] = useState<Record<string, string>>({});
+  const need = useMemo(
+    () => lines.flatMap((l) =>
+      l.product.requiredInputs
+        .filter((i) => !l.inputs[i.key]?.trim())
+        .map((i) => ({ line: l, input: i, key: `${l.key}:${i.key}` }))),
+    [lines],
+  );
+  const needOk = need.every(({ key, input }) => {
+    const v = (extra[key] ?? '').trim();
+    if (!v) return false;
+    return input.type !== 'email' || emailOk(v);
+  });
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -80,7 +102,7 @@ export function CheckoutFlow() {
         variantLabel: l.variant.label,
         quantity: l.quantity,
         price: l.variant.price,
-        inputs: l.inputs,
+        inputs: withExtra(l),
         deliveryEstimate: l.product.deliveryEstimate,
       })),
     };
@@ -118,7 +140,19 @@ export function CheckoutFlow() {
   const okPhone = phoneOk(phone);
   const okName = nameOk(name);
   const okPass = password.length >= 6;
-  const canPay = okPhone && okName && okPass;
+  /* ورودی‌های جامانده هم شرطِ پرداخت‌اند: بدونشان معلوم نیست
+     اشتراک را روی کدام حساب فعال کنیم. */
+  /** ورودی‌های خط، به‌علاوه‌ی آن‌چه سرِ تسویه پر شد */
+  const withExtra = (l: (typeof lines)[number]) => {
+    const out = { ...l.inputs };
+    for (const i of l.product.requiredInputs) {
+      const v = extra[`${l.key}:${i.key}`];
+      if (v?.trim()) out[i.key] = v.trim();
+    }
+    return out;
+  };
+
+  const canPay = okPhone && okName && okPass && needOk;
 
   if (count === 0 && step !== 'done') {
     return (
@@ -263,8 +297,8 @@ export function CheckoutFlow() {
             <section className="co__card">
               <h2>اطلاعات تحویل</h2>
               <p className="co__lead">
-                دو فیلد، و تمام. کد پیگیری به موبایلت پیامک می‌شود؛ ایمیلی که
-                اشتراک روی آن فعال می‌شود را قبلاً در صفحه‌ی خودِ محصول داده‌ای.
+                کد پیگیری به موبایلت پیامک می‌شود. اگر قبلاً حساب داشته‌ای،
+                با همین شماره واردت می‌کنیم.
               </p>
 
               <div className="co__fields">
@@ -338,6 +372,44 @@ export function CheckoutFlow() {
                 با همین شماره و رمز بعداً وارد می‌شوی. اگر رمزت را فراموش کردی،
                 از <Link href="/login">صفحه‌ی ورود</Link> با کد پیامکی وارد شو.
               </p>
+
+              {/* ⚠ ورودی‌های لازم، این‌جا نه در صفحه‌ی محصول.
+
+                  کسی که هنوز دارد نگاه می‌کند نباید با کادرِ ایمیل
+                  روبه‌رو شود؛ کسی که تا این‌جا آمده تصمیمش را
+                  گرفته و پر کردنش برایش هزینه نیست. */}
+              {need.length > 0 && (
+                <div className="co__need">
+                  <span className="co__review-h">برای فعال‌سازی لازم است</span>
+                  <div className="co__fields">
+                    {need.map(({ line, input, key }) => {
+                      const v = extra[key] ?? '';
+                      const bad = v.length > 0 && input.type === 'email' && !emailOk(v);
+                      return (
+                        <label key={key} className="pdp-input">
+                          <span>
+                            {input.label}
+                            {lines.length > 1 && (
+                              <em className="co__need-of"> — {line.product.title}</em>
+                            )}
+                          </span>
+                          <input
+                            type={input.type === 'email' ? 'email' : input.type === 'number' ? 'number' : 'text'}
+                            autoComplete={input.type === 'email' ? 'email' : undefined}
+                            dir={input.type === 'text' ? undefined : 'ltr'}
+                            placeholder={input.example}
+                            value={v}
+                            onChange={(e) => setExtra((o) => ({ ...o, [key]: e.target.value }))}
+                            aria-invalid={bad}
+                          />
+                          {bad && <em className="co__err">ایمیل درست نیست.</em>}
+                          {!bad && input.hint && <small>{input.hint}</small>}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* ---------- بازبینی، همین‌جا ----------
 
@@ -422,7 +494,7 @@ export function CheckoutFlow() {
                       items: lines.map((l) => ({
                         id: Number(l.variant.id),
                         qty: l.quantity,
-                        inputs: l.inputs,
+                        inputs: withExtra(l),
                       })),
                     });
                     /* پرداخت روی خودِ ووکامرس انجام می‌شود، پس هر

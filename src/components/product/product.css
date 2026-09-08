@@ -2345,3 +2345,15 @@
   .usdp__plan { flex-direction: column; align-items: stretch; gap: var(--sp-2); }
   .usdp__plan-price { text-align: start; display: flex; align-items: baseline; gap: var(--sp-2); }
 }
+
+/* جمله‌ی جایگزینِ فرم برای کاربرِ واردنشده.
+
+   محصولی که ایمیل لازم دارد باید همین‌جا معلوم کند، وگرنه سرِ
+   تسویه غافلگیری می‌شود. */
+.pdp-later {
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md);
+}

@@ -227,6 +227,7 @@ export const AI_TOOLS: AiTool[] = [
     purpose: 'visual',
     lead: 'برای کارِ تکراری ساخته شده: یک سبک را قفل می‌کنی و ده‌ها تصویر با همان حال‌وهوا می‌گیری.',
     does: ['تصویر با سبکِ ثابت', 'مدلِ اختصاصیِ خودت', 'ویرایش داخل بوم'],
+    logo: 'leonardo.png',
     tint: '#7c3aed',
     fresh: true,
     uses: [
@@ -243,7 +244,7 @@ export const AI_TOOLS: AiTool[] = [
     purpose: 'visual',
     lead: 'ویرایشگرِ تصویرِ جمنای؛ با یک جمله عکس را عوض می‌کنی، بی‌آنکه بقیه‌اش به هم بریزد.',
     does: ['ویرایش با یک جمله', 'حفظ چهره در چند تصویر', 'ترکیب چند عکس'],
-    logo: 'nano-banana.svg',
+    logo: 'nano-banana.png',
     tint: '#f5d920',
     fresh: true,
     uses: [

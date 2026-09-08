@@ -369,3 +369,17 @@
   .cop__node.is-current .cop__dot::after { animation: none; opacity: 0.5; }
   .cop__fill { transition: none; }
 }
+
+/* ورودی‌های لازم سرِ تسویه — نه در صفحه‌ی محصول.
+
+   کسی که هنوز دارد نگاه می‌کند نباید با کادرِ ایمیل روبه‌رو شود؛
+   کسی که تا این‌جا آمده تصمیمش را گرفته. */
+.co__need {
+  padding: var(--sp-5);
+  border: 1px solid var(--brand-line, var(--line));
+  border-radius: var(--r-md);
+  background: var(--blue-wash);
+  margin-bottom: var(--sp-5);
+}
+.co__need .co__review-h { display: block; margin-bottom: var(--sp-3); }
+.co__need-of { font-style: normal; color: var(--ink-faint); font-weight: 400; }
