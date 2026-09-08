@@ -7,6 +7,7 @@ import {
   CATEGORIES, PRODUCTS, getLowestPrice, type CategorySlug, type Product,
 } from '../../data/catalog';
 import { groupsWithItems } from '../../data/groups';
+import { NUMBER_COUNTRIES } from '../../data/numbers';
 import { Glyph, type GlyphName } from '../ui/Glyph';
 import { ProductArt } from '../ui/ProductArt';
 
@@ -112,11 +113,26 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
 
-        <Link href="/numbers" className="mega__cat mega__cat--sep" onClick={onNavigate}>
+        {/* ⚠ شماره مجازی پرچم نشان می‌دهد، نه شمارشِ محصول.
+
+            بقیه‌ی دسته‌ها «۱۲ محصول» می‌گویند و همان درست است.
+            این‌جا محصول یک چیز است — شماره — و آنچه فرق می‌کند
+            کشور است. «بیش از سی کشور» هم عددی بود که هیچ‌کدامشان
+            را نشان نمی‌داد؛ چند پرچم در همان جا بیشتر می‌گوید. */}
+        <Link
+          href="/numbers"
+          className="mega__cat mega__cat--sep mega__cat--flags"
+          onClick={onNavigate}
+        >
           <span className="mega__cat-ico" aria-hidden="true"><Glyph name="number" /></span>
           <span className="mega__cat-txt">
             <b>شماره مجازی</b>
-            <small>بیش از سی کشور</small>
+            <span className="mega__flags" aria-hidden="true">
+              {NUMBER_COUNTRIES.slice(0, 6).map((c) => (
+                <span key={c.code} title={c.name}>{c.flag}</span>
+              ))}
+              <em>+{fmt(Math.max(0, NUMBER_COUNTRIES.length - 6))}</em>
+            </span>
           </span>
           <ChevronLeft aria-hidden="true" />
         </Link>

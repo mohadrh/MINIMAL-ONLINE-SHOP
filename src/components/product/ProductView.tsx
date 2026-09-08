@@ -229,6 +229,29 @@ export function ProductView({ product: p }: { product: Product }) {
               <span className="pill"><ShieldCheck aria-hidden="true" />{p.warrantyLabel}</span>
             </div>
 
+            {/* ⚠ قیمتِ نهایی بالای پلن‌ها، نه فقط پایینشان.
+
+                کارفرما گفت «قیمت نهایی جلوی چشم باشد». حق داشت:
+                در دسکتاپ فهرستِ پلن‌ها بلند است و دکمه‌ی خرید با
+                عددش پایینِ پرده می‌افتد، پس کاربر پلن را عوض
+                می‌کند و نمی‌بیند قیمت چه شد.
+
+                این جعبه بالاست و با هر انتخاب همان‌جا عوض
+                می‌شود. جعبه‌ی پایینی هم می‌ماند — کسی که تا آن‌جا
+                خوانده، نباید برای دیدنِ قیمت برگردد بالا. */}
+            <div className="pdp-total">
+              <span className="pdp-total__k">قیمت نهایی</span>
+              <span className="pdp-total__v">
+                <b className="num">{fmt(price)}</b>
+                <span>تومان</span>
+              </span>
+              {variant.usd ? (
+                <span className="pdp-total__usd num">
+                  ${variant.usd.toLocaleString('fa-IR')} × {fmt(rate)}
+                </span>
+              ) : null}
+            </div>
+
             {/* انتخاب پلن */}
             <div className="pdp-plans" role="radiogroup" aria-label="انتخاب پلن">
               {p.variants.map((v) => (
@@ -472,7 +495,7 @@ export function ProductView({ product: p }: { product: Product }) {
             node: (
               <div className="pdp-why">
                 {[
-                  { icon: ShieldCheck, t: p.warrantyLabel, d: 'اگر وسط دوره مشکلی پیش بیاید، جایگزین می‌کنیم یا پول را برمی‌گردانیم.' },
+                  { icon: ShieldCheck, t: p.warrantyLabel, d: 'اگر وسط دوره مشکلی پیش بیاید، پشتیبانی تا حل شدنش کنارت است.' },
                   { icon: Clock, t: p.deliveryEstimate, d: 'بیشتر سفارش‌ها بلافاصله بعد از پرداخت تحویل می‌شوند.' },
                   { icon: Sparkles, t: 'پرداخت ریالی', d: 'با کارت بانکی خودت. نه ارز لازم داری، نه حساب خارجی.' },
                 ].map(({ icon: Icon, t, d }) => (

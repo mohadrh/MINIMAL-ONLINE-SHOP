@@ -132,6 +132,18 @@ for (const b of BANNERS) {
     </radialGradient>
   </defs>
 
+  <!-- ⚠ گوشه‌ی گرد در خودِ تصویر پخته می‌شود، نه فقط در CSS.
+
+       CSS گوشه را گرد می‌کند ولی هرجا تصویر بیرون از آن قاب
+       استفاده شود — اشتراک‌گذاری، تصویرِ شاخص، پیش‌نمایش —
+       دوباره مستطیلِ تیز است. با کلیپِ داخلِ فایل، همه‌جا
+       یکسان می‌ماند. -->
+  <defs>
+    <clipPath id="round">
+      <rect width="${W}" height="${H}" rx="34"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#round)">
   <rect width="${W}" height="${H}" fill="url(#bg)"/>
   <rect width="${W}" height="${H}" fill="url(#glow)"/>
 
@@ -147,10 +159,11 @@ for (const b of BANNERS) {
   ${PHX ? `<image href="${PHX}" x="86" y="${H - 128}" width="46" height="46" opacity="0.9"/>` : ''}
   <text x="${PHX ? 148 : 86}" y="${H - 96}" font-family="Arial, Helvetica, sans-serif"
         font-size="24" letter-spacing="3" fill="#ffffff" fill-opacity="0.66">PHOENIX SHOP</text>
+  </g>
 </svg>`;
 
-  await sharp(Buffer.from(svg)).webp({ quality: 90 }).toFile(resolve(OUT, `${b.out}.webp`));
-  console.log(`✓ ${b.out}.webp`);
+  await sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toFile(resolve(OUT, `${b.out}.png`));
+  console.log(`✓ ${b.out}.png`);
   made += 1;
 }
 

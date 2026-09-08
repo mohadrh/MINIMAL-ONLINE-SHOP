@@ -65,7 +65,7 @@ export function HotDeals() {
      نمی‌شدند — هر ۱۷ تخفیفِ سکشن مالِ گیم می‌شد و ریلِ دسته
      بی‌فایده. */
   const all = useMemo(() => {
-    return PRODUCTS
+    const ranked = PRODUCTS
       .map((p) => {
         const offs = p.variants
           .filter((v) => v.compareAt && v.compareAt > v.price)
@@ -75,6 +75,39 @@ export function HotDeals() {
       })
       .filter((x): x is NonNullable<typeof x> => x !== null)
       .sort((a, b) => b.off - a.off);
+
+    /* ⚠ مرتب کردن بر اساس درصد، یک دسته را جلو می‌اندازد.
+
+       گیم معمولاً بیشترین تخفیف را دارد، پس ردیفِ «همه» عملاً
+       ردیفِ گیم می‌شد و کاربر تا ته اسکرول می‌کرد تا اولین
+       اشتراک را ببیند. کارفرما همین را گفت: پخش باشد.
+
+       پس نوبتی بین دسته‌ها می‌چرخد: از هر دسته یکی، بعد دورِ
+       بعد. داخلِ هر دسته همچنان پرتخفیف‌ترین اول است، فقط
+       دسته‌ها با هم قاطی می‌شوند.
+
+       ⚠ تصادفی نیست، و عمداً.
+
+       با Math.random خروجیِ سرور و مرورگر فرق می‌کرد و ری‌اکت
+       موقعِ هیدریت به هم می‌ریخت. چرخشِ نوبتی همان «پخش بودن»
+       را می‌دهد بدون آن دردسر. */
+    const byCat = new Map<string, typeof ranked>();
+    for (const d of ranked) {
+      const list = byCat.get(d.p.category) ?? [];
+      list.push(d);
+      byCat.set(d.p.category, list);
+    }
+
+    const out: typeof ranked = [];
+    const queues = [...byCat.values()];
+    for (let i = 0; out.length < ranked.length; i += 1) {
+      let moved = false;
+      for (const q of queues) {
+        if (i < q.length) { out.push(q[i]); moved = true; }
+      }
+      if (!moved) break;
+    }
+    return out;
   }, []);
 
   /* پرتخفیف‌ترین دسته پیش‌فرض باز می‌شود — نه اولین تبِ فهرست.

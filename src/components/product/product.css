@@ -540,17 +540,26 @@
 .pdp-why { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-6); }
 @media (max-width: 800px) { .pdp-why { grid-template-columns: 1fr; } }
 
+/* ⚠ رنگ‌ها از توکن می‌آیند، نه سفیدِ ثابت.
+
+   این بلوک روزی داخل یک پنلِ تیره بود و رنگش سفید نوشته شده
+   بود: ‎#fff‎ برای تیتر و ‎#cfdbff‎ برای متن. پنل که به سکشنِ
+   عادی تبدیل شد، در حالت روشن سفید روی سفید افتاد و کلِ بخش
+   نامرئی شد — کارفرما همین را دید.
+
+   رنگِ ثابت همیشه یک روز به این‌جا می‌رسد. با توکن، هر دو تم
+   خودشان درست‌اند. */
 .pdp-why__item { text-align: center; display: grid; justify-items: center; gap: var(--sp-2); }
 .pdp-why__icon {
   width: 52px; height: 52px;
   display: grid; place-items: center;
   border-radius: var(--r-md);
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  color: var(--brand);
 }
 .pdp-why__icon svg { width: 22px; height: 22px; }
-.pdp-why__item b { color: #fff; font-size: var(--text-md); }
-.pdp-why__item p { font-size: var(--text-xs); color: #cfdbff; max-width: 30ch; }
+.pdp-why__item b { color: var(--ink); font-size: var(--text-md); }
+.pdp-why__item p { font-size: var(--text-xs); color: var(--ink-soft); max-width: 30ch; }
 
 /* ---------- فهرست مطالب و سوالات ---------- */
 
@@ -2373,4 +2382,63 @@
   font-size: var(--text-xs);
   color: var(--ink-faint);
   font-weight: 400;
+}
+
+/* ============================================================
+   قیمتِ نهایی، بالای پلن‌ها
+
+   ⚠ دو جا نوشته می‌شود، و عمدی است.
+
+   در دسکتاپ فهرستِ پلن‌ها بلند است و دکمه‌ی خرید با عددش پایینِ
+   پرده می‌افتد؛ کاربر پلن را عوض می‌کند و نمی‌بیند قیمت چه شد.
+   جعبه‌ی بالا همان لحظه جواب می‌دهد. جعبه‌ی پایینی هم می‌ماند —
+   کسی که تا آن‌جا خوانده نباید برای دیدنِ قیمت برگردد بالا.
+   ============================================================ */
+
+.pdp-total {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  margin-bottom: var(--sp-4);
+  border: 1px solid var(--brand-line, var(--line));
+  border-radius: var(--r-md);
+  background: var(--blue-wash);
+}
+.pdp-total__k { font-size: var(--text-xs); color: var(--ink-faint); }
+.pdp-total__v { display: flex; align-items: baseline; gap: 4px; margin-inline-start: auto; }
+.pdp-total__v b { font-size: var(--text-xl); font-weight: 900; color: var(--ink); }
+.pdp-total__v span { font-size: var(--text-xs); color: var(--ink-faint); }
+.pdp-total__usd {
+  flex-basis: 100%;
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: end;
+}
+
+/* ⚠ روی موبایل جعبه‌ی خرید به کفِ صفحه می‌چسبد.
+
+   صفحه‌ی محصول بلند است و در موبایل دکمه‌ی خرید بعد از دو پرده
+   اسکرول از دید بیرون می‌رود. کاربری که توضیحات را می‌خواند و
+   تصمیم می‌گیرد، باید همان‌جا بتواند بخرد — نه اینکه برگردد
+   بالا.
+
+   ارتفاعِ نوار به کفِ صفحه اضافه می‌شود تا آخرین سکشن زیرش
+   پنهان نماند. */
+@media (max-width: 900px) {
+  .pdp-buy {
+    position: sticky;
+    inset-block-end: 0;
+    z-index: 20;
+    padding: var(--sp-3) var(--sp-4);
+    margin-inline: calc(var(--sp-4) * -1);
+    border-block-start: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(10px);
+  }
+  .pdp-total { padding: var(--sp-3) var(--sp-4); }
+  .pdp-total__v b { font-size: var(--text-lg); }
 }
