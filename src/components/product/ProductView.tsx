@@ -124,8 +124,12 @@ export function ProductView({ product: p }: { product: Product }) {
      نمی‌داند. بقیه اگر قیمت تازه‌ای از سرور رسیده باشد همان را
      نشان می‌دهند، وگرنه عددِ پخته‌شده در بیلد. */
   const livePrices = useLivePrices();
-  const priceOf = (v: typeof variant) =>
-    (v.usd ? tomanFromUsd(v.usd, rate) : (livePrices[v.id]?.price ?? v.price));
+  const priceOf = (v: typeof variant) => {
+    /* مبلغِ دلاری اگر سرور تازه‌اش را داده باشد، وگرنه همان که
+       در بیلد نوشته شده */
+    const usd = livePrices[v.id]?.usd ?? v.usd;
+    return usd ? tomanFromUsd(usd, rate) : (livePrices[v.id]?.price ?? v.price);
+  };
   const price = priceOf(variant);
 
   /* ⚠ ورودی‌های لازم فقط از کاربرِ واردشده پرسیده می‌شوند.

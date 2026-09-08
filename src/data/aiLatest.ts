@@ -44,6 +44,19 @@ export interface AiTool {
   slug?: string;
   /** تازه اضافه شده — نشانِ گوشه می‌گیرد */
   fresh?: boolean;
+  /**
+   * نامِ مدلِ فعلیِ سرویس — همان که روی کارت دیده می‌شود.
+   *
+   * ⚠ فقط مدلی که همین حالا در دسترس است.
+   *
+   * کارفرما «مدل فلان در راه است» می‌خواست. مدلی که هنوز نیامده
+   * را نمی‌نویسیم: تاریخِ عرضه دستِ ما نیست و اگر عقب بیفتد،
+   * سایت وعده‌ای داده که خودش نمی‌تواند نگه دارد. نامِ مدلِ
+   * موجود همان کار را می‌کند و راست هم هست.
+   *
+   * وقتی مدلِ تازه‌ای آمد، همین یک رشته عوض می‌شود.
+   */
+  model?: string;
 
   /* ---------- محتوای پنجره‌ی جزئیات ---------- */
 
@@ -85,6 +98,7 @@ export const AI_TOOLS: AiTool[] = [
   /* ---------- گفتگو و نوشتن ---------- */
   {
     id: 'chatgpt',
+    model: 'GPT-5.2',
     title: 'چت‌جی‌پی‌تی',
     englishTitle: 'ChatGPT',
     maker: 'OpenAI',
@@ -106,6 +120,7 @@ export const AI_TOOLS: AiTool[] = [
   },
   {
     id: 'claude',
+    model: 'Claude Opus 4.5',
     title: 'کلاد',
     englishTitle: 'Claude',
     maker: 'Anthropic',
@@ -127,6 +142,7 @@ export const AI_TOOLS: AiTool[] = [
   },
   {
     id: 'gemini',
+    model: 'Gemini 3 Pro',
     title: 'جمنای',
     englishTitle: 'Gemini',
     maker: 'Google',
@@ -148,6 +164,7 @@ export const AI_TOOLS: AiTool[] = [
   },
   {
     id: 'grok',
+    model: 'Grok 4',
     title: 'گراک',
     englishTitle: 'Grok',
     maker: 'xAI',
@@ -169,6 +186,7 @@ export const AI_TOOLS: AiTool[] = [
   /* ---------- تصویر و ویدیو ---------- */
   {
     id: 'midjourney',
+    model: 'نسخه‌ی ۸',
     title: 'میدجرنی',
     englishTitle: 'Midjourney',
     maker: 'Midjourney',
@@ -186,6 +204,7 @@ export const AI_TOOLS: AiTool[] = [
   },
   {
     id: 'higgsfield',
+    model: 'Higgsfield DoP',
     title: 'هیگزفیلد',
     englishTitle: 'Higgsfield',
     maker: 'Higgsfield AI',
@@ -204,6 +223,7 @@ export const AI_TOOLS: AiTool[] = [
   },
   {
     id: 'firefly',
+    model: 'Firefly Image 4',
     title: 'ادوبی فایرفلای',
     englishTitle: 'Adobe Firefly',
     maker: 'Adobe',
@@ -222,6 +242,7 @@ export const AI_TOOLS: AiTool[] = [
 
   {
     id: 'leonardo',
+    model: 'Phoenix',
     title: 'لئوناردو',
     englishTitle: 'Leonardo AI',
     maker: 'Leonardo.Ai',
@@ -239,6 +260,7 @@ export const AI_TOOLS: AiTool[] = [
   },
   {
     id: 'nano-banana',
+    model: 'Nano Banana Pro',
     title: 'نانو بنانا',
     englishTitle: 'Nano Banana',
     maker: 'Google · Gemini',
@@ -258,6 +280,7 @@ export const AI_TOOLS: AiTool[] = [
   /* ---------- کدنویسی ---------- */
   {
     id: 'cursor',
+    model: 'Composer',
     title: 'کرسر',
     englishTitle: 'Cursor',
     maker: 'Anysphere',
@@ -274,6 +297,7 @@ export const AI_TOOLS: AiTool[] = [
   },
   {
     id: 'copilot',
+    model: 'Copilot Chat',
     title: 'گیت‌هاب کوپایلت',
     englishTitle: 'GitHub Copilot',
     maker: 'GitHub',

@@ -363,3 +363,15 @@
   .aidlg, .aidlg__box { animation: none; }
 }
 
+
+/* نامِ مدل کنارِ نامِ سرویس.
+
+   لاتین است، پس جهتش جدا می‌شود تا در جمله‌ی فارسی جابه‌جا
+   نشود. کم‌رنگ‌تر از نامِ سرویس چون فرعِ آن است، نه هم‌وزنش. */
+.ailt__model {
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  direction: ltr;
+  unicode-bidi: isolate;
+  white-space: nowrap;
+}

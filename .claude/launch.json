@@ -4,9 +4,23 @@
     {
       "name": "phoenix-v2",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3100,
       "autoPort": true
+    },
+    {
+      "name": "phoenix-static",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "serve",
+        "C:\\Users\\Asus\\AppData\\Local\\Temp\\claude\\C--Users-Asus-OneDrive-Desktop-phoenix-v2\\97e6ec16-7b8a-44d4-90f7-65c1558c7f7a\\scratchpad\\site",
+        "-l",
+        "4321"
+      ],
+      "port": 4321
     }
   ]
 }

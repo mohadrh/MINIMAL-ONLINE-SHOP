@@ -91,8 +91,10 @@ export function ProductCard(
      می‌بیند — و بدترین جای ممکن برای بی‌اعتمادی همان‌جاست. */
   const { rate } = useUsdRate();
   const livePrices = useLivePrices();
-  const liveOf = (vr: { id: string; price: number; usd?: number }) =>
-    (vr.usd ? tomanFromUsd(vr.usd, rate) : (livePrices[vr.id]?.price ?? vr.price));
+  const liveOf = (vr: { id: string; price: number; usd?: number }) => {
+    const usd = livePrices[vr.id]?.usd ?? vr.usd;
+    return usd ? tomanFromUsd(usd, rate) : (livePrices[vr.id]?.price ?? vr.price);
+  };
   const lowest = Math.min(...p.variants.map(liveOf));
   /* ⚠ کارت رنج می‌دهد، نه یک عدد.
 

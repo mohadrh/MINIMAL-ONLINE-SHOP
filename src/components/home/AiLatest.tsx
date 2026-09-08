@@ -100,6 +100,13 @@ export function AiLatest() {
                   <span className="ailt__body">
                     <span className="ailt__top">
                       <b>{t.title}</b>
+                      {/* ⚠ نامِ مدل کنارِ نامِ سرویس.
+
+                          کارفرما می‌خواست مدلِ تازه در متن دیده
+                          شود. «کلاد» به کسی که دنبال است نمی‌گوید
+                          کدام نسخه را می‌گیرد؛ «Claude Opus 4.5»
+                          می‌گوید. */}
+                      {t.model && <span className="ailt__model">{t.model}</span>}
                       {t.fresh && <span className="ailt__fresh">تازه</span>}
                     </span>
                     <span className="ailt__lead">

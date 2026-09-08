@@ -542,9 +542,18 @@ function phoenix_rest_prices(WP_REST_Request $request) {
         if (!$p) {
             continue;
         }
+        /* ⚠ مبلغ دلاری هم می‌آید، نه فقط تومان.
+
+           پلن‌های دلاری تومانشان را از نرخِ روز می‌گیرند نه از
+           ووکامرس. اگر این‌جا فقط تومان برگردد، سایت نمی‌فهمد
+           ادمین مبلغِ دلاری را عوض کرده و تا بیلدِ بعدی عددِ
+           قدیمی را حساب می‌کند. */
+        $f = phoenix_get_fields($pid);
+
         $out[(string) $pid] = array(
             'price'     => (int) round((float) $p->get_price()),
             'compareAt' => $p->is_on_sale() ? (int) round((float) $p->get_regular_price()) : null,
+            'usd'       => isset($f['usd']) ? (float) $f['usd'] : null,
             'stock'     => $p->is_in_stock()
                 ? ($p->managing_stock() ? $p->get_stock_quantity() : null)
                 : 0,
