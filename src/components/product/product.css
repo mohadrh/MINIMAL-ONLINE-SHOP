@@ -2369,8 +2369,7 @@
 
    «از» و «تا» کوچک و کم‌رنگ‌اند تا عددها خودشان دیده شوند؛
    بدونشان دو عددِ چسبیده به‌هم یک عددِ بلند به نظر می‌رسد. */
-.pcard__from,
-.pcard__to {
+.pcard__from {
   font-size: var(--text-xs);
   color: var(--ink-faint);
   font-weight: 400;

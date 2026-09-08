@@ -89,12 +89,12 @@ export function ProductCard(
 
      کمترین قیمتِ تنها گمراه‌کننده است: کاربر «۲۰۰٬۰۰۰» را
      می‌بیند، روی محصول می‌زند و پلنی که واقعاً می‌خواهد
-     ۱٬۲۰۰٬۰۰۰ است. رنج همان‌جا می‌گوید تا کجا می‌رود.
+     ۱٬۲۰۰٬۰۰۰ است. «از» همین را می‌گوید بدون اینکه دو عدد در
+     یک سطرِ باریک جا بخواهد.
 
-     وقتی همه‌ی پلن‌ها یک قیمت دارند رنج معنا ندارد و همان یک
-     عدد می‌ماند. */
-  const highest = Math.max(...p.variants.map(liveOf));
-  const ranged = highest > lowest;
+     وقتی همه‌ی پلن‌ها یک قیمت دارند «از» معنا ندارد و برداشته
+     می‌شود. */
+  const ranged = Math.max(...p.variants.map(liveOf)) > lowest;
   const liveWas = livePrices[v.id]?.compareAt ?? v.compareAt;
 
   const off =
@@ -327,15 +327,18 @@ export function ProductCard(
               خط بعد نیفتد. */}
           <span className="pcard__prices">
             {liveWas && <s className="pcard__was num">{fmt(liveWas)} تومان</s>}
+            {/* ⚠ فقط «از فلان»، نه رنجِ کامل.
+
+                یک بار رنج گذاشته شد — «از ۲۰۰٬۰۰۰ تا ۱٬۲۰۰٬۰۰۰
+                تومان» — و در عرضِ کم از کارت زد بیرون: پنج تکه
+                در یک سطر که هیچ‌کدام هم نمی‌شکنند.
+
+                «از» همان کارِ اصلی را می‌کند؛ می‌گوید این
+                کمترین است و پلن‌های گران‌تری هم هست. سقفش را
+                صفحه‌ی محصول نشان می‌دهد، جایی که جا هست. */}
             <span className="pcard__nowrow">
               {ranged && <span className="pcard__from">از</span>}
               <b className="pcard__now num">{fmt(lowest)}</b>
-              {ranged && (
-                <>
-                  <span className="pcard__to">تا</span>
-                  <b className="pcard__now num">{fmt(highest)}</b>
-                </>
-              )}
               <span className="pcard__unit">تومان</span>
             </span>
           </span>

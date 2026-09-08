@@ -199,6 +199,7 @@ export const AI_TOOLS: AiTool[] = [
     ],
     logo: 'higgsfield.svg',
     tint: '#c5f832',
+    slug: 'higgsfield',
     fresh: true,
   },
   {
