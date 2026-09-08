@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Instagram, Mail, MessageCircle, Send } from 'lucide-react';
+import { MessageCircle, Send } from 'lucide-react';
 import { CATEGORIES } from '../../data/catalog';
 import { asset } from '../../lib/asset';
 
@@ -40,11 +40,25 @@ export function Footer() {
             اشتراک‌هایی که از ایران نمی‌شود خرید، با کارت بانکی خودت. روی حساب
             شخصی خودت فعال می‌شوند و رمزت را هیچ‌وقت نمی‌خواهیم.
           </p>
+          {/* ⚠ فقط نشانی‌هایی که واقعاً وجود دارند.
+
+             هر چهارتا href="#" بودند — یعنی کاربر روی نشانِ تلگرام
+             می‌زد و هیچ اتفاقی نمی‌افتاد. لینکِ مرده بدتر از نبودنِ
+             لینک است: اولی اعتماد را خرج می‌کند، دومی فقط چیزی را
+             نشان نمی‌دهد.
+
+             اینستاگرام هنوز صفحه‌ای ندارد. روزی که ساخته شد، همین‌جا
+             یک <a> با نشانِ Instagram اضافه می‌شود و تمام. */}
           <div className="ft__social">
-            <a href="#" aria-label="تلگرام"><Send /></a>
-            <a href="#" aria-label="اینستاگرام"><Instagram /></a>
-            <a href="#" aria-label="پشتیبانی"><MessageCircle /></a>
-            <a href="#" aria-label="ایمیل"><Mail /></a>
+            <a
+              href="https://t.me/Ph0enix_Shop"
+              aria-label="تلگرام"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Send />
+            </a>
+            <Link href="/contact" aria-label="پشتیبانی"><MessageCircle /></Link>
           </div>
         </div>
 
