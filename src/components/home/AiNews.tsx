@@ -98,10 +98,10 @@ export function AiNews() {
                         )}
                       </span>
                     )}
-                    {tool && <span className="ainw__tag">{tool.title}</span>}
                   </div>
 
                   <div className="ainw__body">
+                    {tool && <span className="ainw__tag">{tool.title}</span>}
                     <time>{n.date}</time>
                     <h3>{n.title}</h3>
                     <p>{n.body}</p>

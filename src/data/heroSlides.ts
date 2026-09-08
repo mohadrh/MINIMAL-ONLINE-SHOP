@@ -108,7 +108,12 @@ export const HERO_SLIDES: HeroSlideData[] = [
     href: '/ai',
     art: {
       card: '#a52344',
-      label: ['Gemini', 'Pro'],
+      /* ⚠ برچسب باید همان چیزی باشد که تیتر می‌گوید.
+
+         تیتر «اشتراک هوش مصنوعی» شد ولی برچسبِ روی کارت
+         «Gemini Pro» ماند — یعنی بنر یک برند را نام می‌برد در
+         حالی که چهار نشان نشان می‌دهد و متن از همه می‌گوید. */
+      label: ['AI', 'Subscriptions'],
       tiles: [
         { id: 'openai', bg: '#ffffff', logo: 'openai.svg' },
         { id: 'gemini', bg: '#ffffff', logo: 'gemini.svg' },
@@ -191,11 +196,13 @@ export const HERO_SLIDES: HeroSlideData[] = [
     art: {
       card: '#7c5cf0',
       label: ['Gemini', 'Partner'],
+      /* ⚠ فقط نشانِ جمنای، نه چهار سرویس.
+
+         این اسلاید یک پیشنهادِ مشخص است روی یک محصولِ مشخص.
+         چهار نشانِ متفاوت رویش یعنی کاربر فکر می‌کند پلن شاملِ
+         هر چهارتاست. یک نشان، همان که پلن مالِ اوست. */
       tiles: [
-        { id: 'claude', bg: '#ffffff', logo: 'claude-burst.svg' },
         { id: 'gemini', bg: '#ffffff', logo: 'gemini.svg' },
-        { id: 'cursor', bg: '#ffffff', logo: 'cursor.png' },
-        { id: 'openai', bg: '#ffffff', logo: 'openai.svg' },
       ],
     },
     platforms: ['Web', 'Android', 'iOS'],
@@ -335,6 +342,48 @@ export const HERO_SLIDES: HeroSlideData[] = [
       ],
     },
     platforms: ['PS5', 'PS4'],
+  },
+  {
+    id: 'gaming-ps',
+    kind: 'gaming',
+    kindLabel: 'پلی‌استیشن',
+    titleLead: 'بازی‌های',
+    titleAccent: 'پلی‌استیشن',
+    englishTitle: 'PlayStation · Game Accounts',
+    kicker: 'اکانت قانونی، روی کنسول خودت',
+    description:
+      'اکانت ظرفیتی یعنی هزینه بین چند نفر تقسیم می‌شود و تو کسری از قیمت کامل می‌دهی. بازی روی کنسول خودت فعال می‌شود و آنلاین هم باز است.',
+    highlights: [
+      'کسری از قیمت خرید مستقیم',
+      'حالت آنلاین کاملاً فعال',
+      'گارانتی مادام‌العمر تعویض',
+    ],
+    backdrop: '/hero/banner/slide-ps-games.webp',
+    tint: '#0070d1',
+    ctaLabel: 'دیدن بازی‌های پلی‌استیشن',
+    href: '/gaming',
+    platforms: ['PS5', 'PS4'],
+  },
+  {
+    id: 'gaming-xbox',
+    kind: 'gaming',
+    kindLabel: 'ایکس‌باکس',
+    titleLead: 'بازی‌های',
+    titleAccent: 'ایکس‌باکس',
+    englishTitle: 'Xbox · Game Accounts',
+    kicker: 'گیم پس و بازی، هر دو',
+    description:
+      'اکانت بازی روی ایکس‌باکس خودت فعال می‌شود. اگر گیم پس می‌خواهی هم همان‌جا هست — یک اشتراک و صدها بازی.',
+    highlights: [
+      'اکانت قانونی با گارانتی',
+      'گیم پس اولتیمیت هم موجود است',
+      'فعال‌سازی روی کنسول خودت',
+    ],
+    backdrop: '/hero/banner/slide-xbox-games.webp',
+    tint: '#107c10',
+    ctaLabel: 'دیدن بازی‌های ایکس‌باکس',
+    href: '/gaming',
+    platforms: ['Xbox Series', 'Xbox One'],
   },
   {
     id: 'numbers',
