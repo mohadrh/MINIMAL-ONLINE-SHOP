@@ -10,6 +10,8 @@ import {
 import { ProductArt } from '../ui/ProductArt';
 import { useCompare } from '../shop/Compare';
 import { useCart, useFlight } from '../../app/providers';
+import { useUsdRate } from '../../lib/useRate';
+import { tomanFromUsd } from '../../lib/rate';
 import { useLivePrices } from '../../lib/api/livePrices';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
@@ -81,9 +83,16 @@ export function ProductCard(
      کمترین قیمت هم از روی همان نقشه حساب می‌شود نه از
      getLowestPrice، وگرنه کارت عددِ کهنه و صفحه‌ی محصول عددِ تازه
      نشان می‌دهند و همان تناقضی می‌شود که می‌خواستیم نباشد. */
+  /* ⚠ ترتیبِ قیمت این‌جا باید با صفحه‌ی محصول یکی باشد.
+
+     صفحه‌ی محصول اول دلاری را حساب می‌کند، بعد قیمتِ زنده، بعد
+     عددِ پخته‌شده در بیلد. کارت اگر همین ترتیب را نداشته باشد،
+     کاربر روی «۱٬۲۰۰٬۰۰۰» می‌زند و در صفحه‌ی محصول عددِ دیگری
+     می‌بیند — و بدترین جای ممکن برای بی‌اعتمادی همان‌جاست. */
+  const { rate } = useUsdRate();
   const livePrices = useLivePrices();
-  const liveOf = (vr: { id: string; price: number }) =>
-    livePrices[vr.id]?.price ?? vr.price;
+  const liveOf = (vr: { id: string; price: number; usd?: number }) =>
+    (vr.usd ? tomanFromUsd(vr.usd, rate) : (livePrices[vr.id]?.price ?? vr.price));
   const lowest = Math.min(...p.variants.map(liveOf));
   /* ⚠ کارت رنج می‌دهد، نه یک عدد.
 
