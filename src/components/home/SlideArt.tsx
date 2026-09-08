@@ -1,5 +1,6 @@
 import React from 'react';
 import { ServiceMark } from '../numbers/ServiceMark';
+import { asset } from '../../lib/asset';
 
 /**
  * تصویرِ اسلایدر هیرو.
@@ -39,7 +40,22 @@ export interface SlideArtSpec {
    * ترتیب مهم است چون کاشی‌ها روی هم می‌افتند: چپ، بالا، پایین،
    * راست. همان ترتیبی که تصویرهای اصلی داشتند.
    */
-  tiles: { id: string; bg: string; ink?: string }[];
+  tiles: {
+    id: string;
+    bg: string;
+    ink?: string;
+    /**
+     * نامِ فایلِ نشانِ رسمی در ‎public/brand/logos‎، بدون پسوند.
+     *
+     * ⚠ با ‎ink‎ جمع نمی‌شود.
+     *
+     * نشان‌های ServiceMark با currentColor کشیده می‌شوند، پس رنگشان
+     * از ‎ink‎ می‌آید. نشانِ رسمی رنگِ خودش را دارد و عوض نمی‌شود؛
+     * برای همین کاشی‌اش پس‌زمینه‌ی روشن می‌خواهد، مثل آیکونِ یک
+     * برنامه روی صفحه‌ی گوشی.
+     */
+    logo?: string;
+  }[];
 }
 
 /* جای چهار کاشی، بر حسب درصدِ عرض و ارتفاعِ تصویر (۱۲۰۰×۷۶۰).
@@ -108,7 +124,11 @@ export function SlideArt({ spec }: { spec: SlideArtSpec }) {
             color: t.ink ?? '#fff',
           }}
         >
-          <ServiceMark id={t.id} mark={t.id.slice(0, 1).toUpperCase()} />
+          {t.logo ? (
+            <img src={asset(`/brand/logos/${t.logo}.svg`)} alt="" />
+          ) : (
+            <ServiceMark id={t.id} mark={t.id.slice(0, 1).toUpperCase()} />
+          )}
         </span>
       ))}
     </div>
