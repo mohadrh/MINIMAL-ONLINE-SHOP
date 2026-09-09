@@ -214,13 +214,28 @@
 
 /* ---------- شبکه‌ی محصولات ----------
 
-   auto-fill با کف ۱۹۸ پیکسل: روی نمایشگر پهن پنج‌شش کارت در ردیف
-   می‌نشیند و کاربر در همان پرده‌ی اول فهرست را می‌بیند، نه سه
-   کارتِ بزرگ. */
+   ⚠ چهار ستونِ شمرده، نه auto-fill.
+
+   قبلاً ‎auto-fill‎ با کفِ ۱۹۸ پیکسل بود تا «کاربر در پرده‌ی اول
+   فهرست را ببیند». ولی اندازه گرفته شد: در عرضِ ۱۱۰۴ پیکسلیِ
+   ستونِ محصولات، پنج کارت جا می‌شد و هر کدام ۲۰۸ در ۳۶۹ می‌ماند
+   — یعنی ارتفاعش نزدیک دو برابرِ عرضش، کارتی باریک و کشیده.
+   و در همان ۲۰۸ پیکسل، ردیفِ قیمت جا نمی‌شد.
+
+   با چهار ستون هر کارت ۲۶۴ پیکسل می‌شود: هم نسبتش طبیعی‌تر است،
+   هم قیمت و «تومان» راحت داخلش می‌نشینند. */
 .shopx__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(198px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--sp-4);
+}
+
+/* زیر ۱۱۸۰ ستونِ کناری هنوز هست و جای محصولات کم می‌شود */
+@media (max-width: 1180px) {
+  .shopx__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .shopx__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 900px) {
@@ -235,5 +250,5 @@
 }
 
 @media (max-width: 560px) {
-  .shopx__grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--sp-3); }
+  .shopx__grid { gap: var(--sp-3); }
 }
