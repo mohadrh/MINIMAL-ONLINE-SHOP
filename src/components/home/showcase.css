@@ -21,13 +21,39 @@
 }
 .catshow__inner { position: relative; }
 
+/* ⚠ فلکس است نه گرید، و دلیلش فقط ردیفِ آخر است.
+
+   هفت کارت در سه ستون یعنی ردیفِ آخر یک کارت دارد. در گرید آن
+   کارت به لبه می‌چسبد و ردیف ناتمام به نظر می‌رسد؛
+   justify-content هم کلِ ستون‌ها را جابه‌جا می‌کند نه فقط
+   ردیفِ آخر را. در فلکس، همان یک کارت خودش وسط می‌نشیند. */
 .catshow__grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
   gap: var(--sp-4);
 }
-@media (max-width: 980px) { .catshow__grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 560px) { .catshow__grid { grid-template-columns: 1fr; gap: var(--sp-3); } }
+/* ⚠ چهار ستون، نه سه — تا ردیفِ ناتمام نماند.
+
+   هشت کارت داریم. در چهار ستون می‌شود دو ردیفِ پُر، در دو ستون
+   چهار ردیفِ پُر. سه ستون تنها حالتی است که ردیفِ آخر را نصفه
+   می‌گذارد، پس اصلاً استفاده نمی‌شود: از چهار مستقیم می‌رود
+   به دو. */
+.catshow__grid > .catcard {
+  flex: 0 1 calc((100% - 3 * var(--sp-4)) / 4);
+  max-width: calc((100% - 3 * var(--sp-4)) / 4);
+}
+@media (max-width: 1180px) {
+  .catshow__grid > .catcard {
+    flex-basis: calc((100% - var(--sp-4)) / 2);
+    max-width: calc((100% - var(--sp-4)) / 2);
+  }
+}
+@media (max-width: 560px) {
+  .catshow__grid { gap: var(--sp-3); }
+  .catshow__grid > .catcard { flex-basis: 100%; max-width: 100%; }
+}
 
 /* ---------- کارت دسته ---------- */
 
@@ -105,11 +131,17 @@
 }
 .catcard__title { font-size: var(--text-lg); }
 .catcard__head:hover .catcard__title { color: var(--tube); }
+/* دو خط، نه کمتر نه بیشتر — تا توضیحِ کوتاه و بلند هر دو یک
+   ارتفاع بگیرند و کارت‌ها هم‌قد بمانند. */
 .catcard__lead {
   font-size: var(--text-xs);
   line-height: 1.9;
   color: var(--ink-faint);
-  min-height: 2.6em;
+  min-height: 3.8em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .catcard__meta {
@@ -423,10 +455,22 @@
    در حالت شب، اختلافِ روشناییِ خودِ تراشه‌ها کافی بود تا گروه
    دیده شود؛ در حالت روز همه‌چیز روشن است و تراشه‌ها در کارت
    حل می‌شدند. پنل مرزِ گروه را برمی‌گرداند. */
+/* ⚠ ارتفاعش ثابت است، و همین کارت‌ها را هم‌اندازه می‌کند.
+
+   بدون آن، دسته‌ای با پنج نام سه ردیف تراشه می‌شد و دسته‌ای با
+   یک نام یک ردیف — اندازه گرفته شد: ۱۰۶ در برابر ۴۲ پیکسل. کارتِ
+   بلندتر ردیفش را می‌کشید و هیچ دو کارتی هم‌اندازه نمی‌ماند.
+
+   دو ردیف جا هست: هر تراشه ۲۶ پیکسل (۷+۷ پادینگ روی متنِ ۱۲)،
+   به‌اضافه‌ی ۶ فاصله‌ی بین دو ردیف و ۱۶ پادینگِ خودِ جعبه.
+   نامی که جا نشود در «دیدن همه» هست. */
 .catcard__chips {
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   gap: 6px;
+  height: 74px;
+  overflow: hidden;
   margin-block-start: var(--sp-3);
   padding: var(--sp-3);
   border-radius: var(--r-lg);
@@ -444,6 +488,14 @@
   color: var(--ink-faint);
   /* روی پنلِ طوسی، تراشه باید روشن‌تر از آن باشد وگرنه گم می‌شود */
   background: var(--paper);
+  /* ⚠ نصفِ ردیف، نه بیشتر.
+     نامِ بلند تمامِ عرض را می‌گرفت و آن ردیف یک تراشه بیشتر جا
+     نمی‌داد؛ چهار نام می‌شد چهار ردیف. با سقفِ نصف، همیشه دوتا
+     در ردیف می‌نشینند و چهارتا دقیقاً دو ردیف می‌شود. */
+  max-width: calc(50% - 3px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 [data-theme="dark"] .catcard__chip { background: rgba(255, 255, 255, 0.07); }
@@ -811,28 +863,21 @@
 .catcard { border-radius: 28px; }
 .catcard__chips { border-radius: 18px; }
 
-/* یکی عریض در بالا، یکی عریض در پایین.
+/* ⚠ کارتِ پهن برداشته شد — همه یک اندازه‌اند.
 
-   سه ستون می‌ماند؛ کارتِ اول و کارتِ آخر دو خانه می‌گیرند:
-   ۲ + ۵×۱ + ۲ = ۹ خانه، یعنی سه ردیفِ پُر بدونِ خانه‌ی خالی، و
-   لبه‌ی بالا و پایین هر دو صاف.
+   کارتِ اول و آخر دو خانه می‌گرفتند تا هفت کارت در سه ردیفِ پُر
+   بنشینند و لبه‌ها صاف بمانند. روی کاغذ مرتب بود، ولی در عمل
+   اندازه گرفته شد: دو کارتِ ۷۲۸ پیکسلی کنارِ پنج کارتِ ۳۵۶
+   پیکسلی، با ارتفاع‌های ۲۰۵ و ۲۶۹. یعنی هیچ دو کارتی هم‌اندازه
+   نبودند و ردیف‌ها هم‌تراز نمی‌شدند.
 
-   یک بار این را به چهار ستونِ یکدست عوض کردم تا کوتاه‌تر شود؛
-   کارفرما همین شکل را می‌خواست. کوتاه شدن از جمع‌تر کردنِ
-   خودِ کارت می‌آید، نه از عوض کردنِ چیدمان. */
+   حالا همه یک عرض و یک ارتفاع دارند و ردیفِ آخر — که یک کارت
+   کم دارد — وسط می‌نشیند به‌جای اینکه به یک سمت بچسبد. */
 
 @media (min-width: 981px) {
-  .catcard:first-child,
-  .catcard:last-child { grid-column: span 2; }
-  /* کارتِ پهن جای بیشتری برای متن دارد */
-  .catcard:first-child .catcard__lead,
-  .catcard:last-child .catcard__lead { max-width: 46ch; }
-
-  /* کارتِ جمع‌تر: پادینگ کمتر، نشانِ کوچک‌تر، و توضیحی
-     که دیگر ارتفاعِ حداقلِ دو‌خطی را مجبور نمی‌کند */
+  /* کارتِ جمع‌تر: پادینگ کمتر، نشانِ کوچک‌تر */
   .catcard { padding: var(--sp-5); }
   .catcard__ico svg { width: 26px; height: 26px; }
-  .catcard__lead { min-height: 0; }
   .catcard__chips { padding: var(--sp-2); margin-block-start: var(--sp-2); }
   .catcard__foot { padding-block-start: var(--sp-3); }
 }

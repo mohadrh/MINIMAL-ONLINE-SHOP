@@ -82,58 +82,23 @@
   max-height: min(32rem, calc(100vh - 8rem));
   overflow: hidden;
 
-  /* ---------- شیشه‌ی مایع ----------
+  /* ---------- سطحِ مات ----------
 
-     سه لایه، و هر سه لازم:
+     ⚠ شیشه بود و برداشته شد.
 
-     ۱ پس‌زمینه‌ی نیمه‌شفاف — تا چیزی که پشتش است کمی پیدا باشد
-     ۲ backdrop-filter با blur و saturate — همان چیزی که «شیشه»
-       می‌سازد؛ بدون saturate رنگ‌های پشتش مرده و خاکستری می‌شوند
-     ۳ خطِ روشن در بالا و لبه‌ی تیره در پایین — ضخامتِ شیشه را
-       نشان می‌دهد. بدونِ این لایه، پنل فقط یک مستطیلِ کدر است
-       نه شیشه.
+     پنل نیمه‌شفاف بود با backdrop-filter، و پشتش پیدا بود: متنِ
+     اسلایدر و نوارِ تخفیف از زیرِ نامِ محصولات رد می‌شدند. روی
+     یک صفحه‌ی آرام قشنگ بود، ولی این پنل درست روی شلوغ‌ترین
+     جای سایت باز می‌شود — بالای هیرو. آن‌جا شفافیت یعنی دو لایه
+     متن روی هم، و هیچ‌کدام خوانده نمی‌شود.
 
-     ⚠ پس‌زمینه‌ی مات هم هست، پیش از قاعده‌ی @supports. مرورگری که
-     backdrop-filter ندارد نباید پنلِ نیمه‌شفافِ ناخوانا ببیند. */
-  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+     حالا مات است. سایه عمقش را می‌دهد، نه شفافیت. */
+  border: 1px solid var(--line);
   border-radius: 26px;
   background: var(--paper);
   box-shadow:
     0 2px 6px -2px rgba(15, 17, 32, 0.08),
     0 32px 70px -34px rgba(15, 17, 32, 0.4);
-}
-
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .mega {
-    background: color-mix(in srgb, var(--paper) 72%, transparent);
-    -webkit-backdrop-filter: blur(26px) saturate(1.7);
-    backdrop-filter: blur(26px) saturate(1.7);
-    box-shadow:
-      /* لبه‌ی روشنِ بالا: نورِ افتاده روی سطحِ شیشه */
-      inset 0 1px 0 rgba(255, 255, 255, 0.75),
-      /* لبه‌ی محوِ پایین: ضخامت */
-      inset 0 -1px 0 rgba(15, 17, 32, 0.06),
-      0 2px 6px -2px rgba(15, 17, 32, 0.08),
-      0 36px 80px -34px rgba(15, 17, 32, 0.45);
-  }
-
-  [data-theme="dark"] .mega {
-    background: color-mix(in srgb, #161922 68%, transparent);
-    border-color: rgba(255, 255, 255, 0.12);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      0 36px 80px -30px rgba(0, 0, 0, 0.7);
-  }
-
-  /* نوارِ دسته‌ها هم شیشه‌ای می‌ماند، وگرنه یک نوارِ مات روی
-     پنلِ شفاف می‌نشیند و تضاد بدی می‌سازد */
-  .mega__cats {
-    background: color-mix(in srgb, var(--wash) 55%, transparent);
-    border-block-end-color: color-mix(in srgb, var(--line) 60%, transparent);
-  }
-  [data-theme="dark"] .mega__cats {
-    background: rgba(255, 255, 255, 0.04);
-  }
 }
 
 /* گوشه‌های داخلی هم گرد می‌شوند، وگرنه نوارِ بالا از قابِ گردِ
@@ -173,14 +138,23 @@
 }
 /* دو ردیفِ آخر با یک خط از دسته‌ها جدا می‌شوند — بی‌آنکه سرتیترِ
    جداگانه‌ای بگیرند که پایینِ ستون نصفه بماند. */
-/* شماره‌ی مجازی دسته‌ی کاتالوگ نیست — با یک خطِ عمودی جدا می‌شود */
+/* شماره‌ی مجازی دسته‌ی کاتالوگ نیست — با یک خطِ عمودی پیش از
+   خودش جدا می‌شود. خطِ جداکننده روی شبه‌عنصر است نه روی خودِ
+   دکمه، وگرنه وقتی زبانه فعال می‌شود پس‌زمینه‌اش روی خط می‌افتد
+   و خط نصفه دیده می‌شود. */
 .mega__cat--sep {
-  margin-inline-start: var(--sp-2);
-  padding-inline-start: var(--sp-4);
-  border-inline-start: 1px solid var(--line);
-  border-radius: 0;
+  position: relative;
+  margin-inline-start: var(--sp-3);
 }
-[data-theme="dark"] .mega__cat--sep { border-inline-start-color: rgba(255, 255, 255, 0.1); }
+.mega__cat--sep::before {
+  content: '';
+  position: absolute;
+  inset-inline-end: calc(var(--sp-3) * -0.5);
+  inset-block: 5px;
+  width: 1px;
+  background: var(--line);
+}
+[data-theme="dark"] .mega__cat--sep::before { background: rgba(255, 255, 255, 0.12); }
 
 /* ---------- ستون یک: دسته‌ها ---------- */
 
@@ -370,26 +344,6 @@
 .mega__all > span { overflow: hidden; text-overflow: ellipsis; }
 .mega__all .num { opacity: 0.7; }
 
-/* ---------- نوار نصفه ----------
-
-   محصولات بعدی، از پایین بریده. بریدگی خودش پیام است: «این‌جا
-   تمام نشده». فهرستی که صاف تمام شود هیچ نشانه‌ای نمی‌دهد که
-   ادامه‌ای هست.
-
-   ارتفاع نصفِ یک باکس است و ماسک، پایینش را محو می‌کند تا بریدگی
-   خط‌کش‌مانند نباشد. pointer-events: none چون این‌ها لینک نیستند
-   و کلیک روی نصفه‌ی یک کارت، انتظارِ برآورده‌نشده می‌سازد. */
-.mega__tease {
-  position: relative;
-  margin-top: var(--sp-3);
-  height: 38px;
-  overflow: hidden;
-  pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 12%, transparent 96%);
-  mask-image: linear-gradient(to bottom, #000 12%, transparent 96%);
-}
-.mega__grid--tease { opacity: 0.7; }
-
 /* ---------- ستون سه: جزئیاتِ محصولِ زیر نشانگر ---------- */
 
 .mega__peek {
@@ -521,26 +475,61 @@
 }
 .mega__box-art.is-logo img { width: 58%; height: 58%; }
 
-/* ⚠ پرچم‌ها به‌جای شمارشِ محصول.
+/* ---------- پنلِ شماره مجازی ----------
 
-   بقیه‌ی دسته‌ها «۱۲ محصول» می‌گویند و درست است. این‌جا محصول
-   یک چیز است — شماره — و آنچه فرق می‌کند کشور است. */
-.mega__flags {
+   ⚠ پرچم‌ها از نوارِ بالا به این‌جا آمدند.
+
+   شش پرچم و یک «+۲» کنارِ نامِ دسته در نوارِ باریکِ بالا فقط
+   شلوغی بود و با بقیه‌ی زبانه‌ها هم‌شکل نبود. این‌جا هر پرچم
+   نامِ کشورش را هم دارد و روی هاور اپراتورش را می‌گوید. */
+
+/* حرفِ اولِ سرویس، به‌جای نشان — برای شماره‌ها نشانِ برند نداریم */
+.mega__box-mark {
+  font-size: var(--text-md);
+  font-weight: 800;
+  color: var(--accent, var(--blue));
+  background: color-mix(in srgb, var(--accent, var(--blue)) 14%, var(--wash));
+}
+
+.mega__countries {
   display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}
+[data-theme="dark"] .mega__countries { border-top-color: rgba(255, 255, 255, 0.08); }
+
+.mega__countries-lbl {
+  flex: none;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+}
+
+.mega__countries-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px var(--sp-2);
+  min-width: 0;
+}
+
+.mega__country {
+  display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+/* پرچم ایموجی است و در راست‌به‌چپ باید جدا ایزوله شود، وگرنه
+   کنارِ نامِ فارسی جابه‌جا می‌نشیند */
+.mega__country em {
+  font-style: normal;
   font-size: 13px;
   line-height: 1;
-  /* پرچم‌ها ایموجی‌اند و در راست‌به‌چپ برعکس می‌چینند */
   direction: ltr;
+  unicode-bidi: isolate;
 }
-.mega__flags em {
-  font-style: normal;
-  font-size: var(--text-xs);
-  color: var(--ink-faint);
-  margin-inline-start: 2px;
-}
-/* روی هاور کمی بزرگ‌تر — تا معلوم شود همین‌ها کشورهایند */
-.mega__cat--flags:hover .mega__flags,
-.mega__cat--flags:focus-visible .mega__flags { font-size: 15px; }
-.mega__flags { transition: font-size var(--dur) var(--ease); }

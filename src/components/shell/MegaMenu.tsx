@@ -7,7 +7,7 @@ import {
   CATEGORIES, PRODUCTS, getLowestPrice, type CategorySlug, type Product,
 } from '../../data/catalog';
 import { groupsWithItems } from '../../data/groups';
-import { NUMBER_COUNTRIES } from '../../data/numbers';
+import { NUMBER_COUNTRIES, NUMBER_SERVICES, cheapestFor } from '../../data/numbers';
 import { Glyph, type GlyphName } from '../ui/Glyph';
 import { ProductArt } from '../ui/ProductArt';
 
@@ -41,8 +41,18 @@ const ICONS: Record<CategorySlug, GlyphName> = {
 const SHOWN = 6;
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
+/* ⚠ شماره مجازی دسته‌ی کاتالوگ نیست ولی مثل دسته رفتار می‌کند.
+
+   قبلاً یک لینکِ ساده بود کنارِ دسته‌ها، با شش پرچم و یک «+۲»
+   چپانده در همان جای تنگ. هم شلوغ بود هم با بقیه فرق داشت:
+   روی هر دسته‌ای هاور می‌کردی چیزی پایین باز می‌شد، روی این یکی
+   نه. حالا خودش هم یک زبانه است و شش سرویسِ پرتقاضا را نشان
+   می‌دهد؛ پرچم‌ها رفتند داخلِ پنل که جا دارند. */
+const NUMBERS = 'numbers' as const;
+type Tab = CategorySlug | typeof NUMBERS;
+
 export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
-  const [active, setActive] = useState<CategorySlug>(CATEGORIES[0].slug as CategorySlug);
+  const [active, setActive] = useState<Tab>(CATEGORIES[0].slug as CategorySlug);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onNavigate?.(); };
@@ -50,13 +60,25 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [onNavigate]);
 
-  const cat = CATEGORIES.find((c) => c.slug === active)!;
+  const onNumbers = active === NUMBERS;
+  const cat = CATEGORIES.find((c) => c.slug === active);
   const all = useMemo(() => PRODUCTS.filter((p) => p.category === active), [active]);
+
+  /* شش سرویسِ پرتقاضا، با ارزان‌ترین قیمتِ موجودشان */
+  const numberPicks = useMemo(
+    () =>
+      NUMBER_SERVICES.filter((s) => s.popular)
+        .concat(NUMBER_SERVICES.filter((s) => !s.popular))
+        .slice(0, SHOWN)
+        .map((s) => ({ service: s, from: cheapestFor('once', s.id) })),
+    [],
+  );
 
   /* شش‌تای اول، ولی از میان زیرگروه‌ها چیده می‌شوند نه از سرِ
      فهرست: یکی از هر زیرگروه، بعد دور دوم. اینطور کاربر در همان
      شش‌تا تنوعِ دسته را می‌بیند، نه شش بازیِ هم‌ژانر. */
   const shown = useMemo(() => {
+    if (active === NUMBERS) return [];
     const groups = groupsWithItems(active, PRODUCTS);
     const out: Product[] = [];
     for (let round = 0; out.length < SHOWN; round++) {
@@ -70,13 +92,7 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
     return out;
   }, [active]);
 
-  /* دو محصولِ بعدی، برای نوارِ نصفه‌ی پایین */
-  const more = useMemo(
-    () => all.filter((p) => !shown.some((x) => x.slug === p.slug)).slice(0, 2),
-    [all, shown],
-  );
-
-  const pickCat = (slug: CategorySlug) => setActive(slug);
+  const pickCat = (slug: Tab) => setActive(slug);
 
   return (
     <div className="mega" role="menu" aria-label="محصولات">
@@ -113,37 +129,84 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
           );
         })}
 
-        {/* ⚠ شماره مجازی پرچم نشان می‌دهد، نه شمارشِ محصول.
+        {/* ⚠ زبانه است، نه لینک — مثل بقیه‌ی دسته‌ها.
 
-            بقیه‌ی دسته‌ها «۱۲ محصول» می‌گویند و همان درست است.
-            این‌جا محصول یک چیز است — شماره — و آنچه فرق می‌کند
-            کشور است. «بیش از سی کشور» هم عددی بود که هیچ‌کدامشان
-            را نشان نمی‌داد؛ چند پرچم در همان جا بیشتر می‌گوید. */}
-        <Link
-          href="/numbers"
-          className="mega__cat mega__cat--sep mega__cat--flags"
-          onClick={onNavigate}
+            پرچم‌ها از این‌جا رفتند داخلِ پنل. شش پرچم و یک «+۲»
+            کنارِ نامِ دسته، در نوارِ باریکِ بالا، فقط شلوغی بود؛
+            پایین جا هست و همان‌جا هم معنی‌دارترند، چون کنارشان
+            نامِ کشور و اپراتور هم می‌آید. */}
+        <button
+          type="button"
+          role="tab"
+          aria-selected={onNumbers}
+          className={`mega__cat mega__cat--sep ${onNumbers ? 'is-on' : ''}`}
+          onMouseEnter={() => pickCat(NUMBERS)}
+          onFocus={() => pickCat(NUMBERS)}
+          onClick={() => pickCat(NUMBERS)}
         >
           <span className="mega__cat-ico" aria-hidden="true"><Glyph name="number" /></span>
-          <span className="mega__cat-txt">
-            <b>شماره مجازی</b>
-            <span className="mega__flags" aria-hidden="true">
-              {NUMBER_COUNTRIES.slice(0, 6).map((c) => (
-                <span key={c.code} title={c.name}>{c.flag}</span>
-              ))}
-              <em>+{fmt(Math.max(0, NUMBER_COUNTRIES.length - 6))}</em>
-            </span>
-          </span>
+          <span className="mega__cat-txt"><b>شماره مجازی</b></span>
           <ChevronLeft aria-hidden="true" />
-        </Link>
-
+        </button>
       </div>
 
       {/* ---------- ستون دو: شش محصول ---------- */}
       <div className="mega__body">
+        {onNumbers ? (
+          <>
+            <header className="mega__head">
+              <b>شماره مجازی</b>
+              <p>شماره‌ی کشوری دیگر، برای فعال‌سازی حساب — همان‌جا می‌بینی و حساب ساخته می‌شود.</p>
+            </header>
+
+            <div className="mega__grid">
+              {numberPicks.map(({ service, from }) => (
+                <Link
+                  key={service.id}
+                  href={`/numbers?service=${service.id}`}
+                  className="mega__box"
+                  style={{ ['--accent' as string]: service.accent }}
+                  onClick={onNavigate}
+                >
+                  {/* نشانِ برندها را نمی‌گذاریم؛ حرفِ اول روی
+                      زمینه‌ی رنگِ خودِ سرویس. */}
+                  <span className="mega__box-art mega__box-mark" aria-hidden="true">
+                    {service.mark}
+                  </span>
+                  <span className="mega__box-txt">
+                    <b>{service.name}</b>
+                    <span className="mega__box-price num">
+                      {from !== null ? `از ${fmt(from)}` : 'به‌زودی'}
+                    </span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+
+            {/* پرچم‌ها این‌جا، نه در نوارِ بالا. این‌جا جا هست و
+                نامِ کشور هم کنارشان می‌نشیند. */}
+            <div className="mega__countries">
+              <span className="mega__countries-lbl">کشورها</span>
+              <span className="mega__countries-list">
+                {NUMBER_COUNTRIES.map((c) => (
+                  <span key={c.code} className="mega__country" title={c.operator}>
+                    <em aria-hidden="true">{c.flag}</em>
+                    {c.name}
+                  </span>
+                ))}
+              </span>
+            </div>
+
+            <Link href="/numbers" className="mega__all" onClick={onNavigate}>
+              <span>دیدن همه‌ی شماره‌ها</span>
+              <ChevronLeft aria-hidden="true" />
+            </Link>
+          </>
+        ) : (
+        <>
         <header className="mega__head">
-          <b>{cat.title}</b>
-          <p>{cat.tagline}</p>
+          <b>{cat!.title}</b>
+          <p>{cat!.tagline}</p>
         </header>
 
         {/* شش باکس در دو ستون.
@@ -180,36 +243,12 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
           ))}
         </div>
 
-        {/* نوار پایینی، عمداً نصفه.
+        {/* ⚠ نوارِ نصفه‌ی پایین برداشته شد.
 
-            محصولات بعدیِ همین دسته‌اند و از پایین بریده می‌شوند.
-            بریدگی خودش پیام است: «این‌جا تمام نشده». فهرستی که
-            صاف تمام شود، هیچ نشانه‌ای نمی‌دهد که ادامه‌ای هست و
-            کاربر فرض می‌کند همین شش‌تاست.
-
-            aria-hidden است چون تکرارِ دیداریِ چیزی است که لینکِ
-            زیرش («دیدن همه») به آن می‌رسد؛ صفحه‌خوان نباید نصفه‌ی
-            یک کارت را بخواند. */}
-        {more.length > 0 && (
-          <div className="mega__tease" aria-hidden="true">
-            <div className="mega__grid mega__grid--tease">
-              {more.map((p) => (
-                <span key={p.slug} className="mega__box">
-                  <ProductArt
-                    className={`mega__box-art ${p.media.logo ? 'is-logo' : ''}`}
-                    src={p.media.logo ?? p.media.thumbnail}
-                    title={p.englishTitle}
-                    brand={p.brand}
-                  />
-                  <span className="mega__box-txt">
-                    <b>{p.title}</b>
-                    <span className="mega__box-price num">از {fmt(getLowestPrice(p))}</span>
-                  </span>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+            دو محصولِ بعدی از پایین بریده می‌شدند تا بگویند «این‌جا
+            تمام نشده». ولی چیزی که ساخت، پیام نبود — به نظر
+            می‌رسید پنل خراب است و ردیفِ آخرش جا نشده. عددِ کنارِ
+            «دیدن همه» همان حرف را بی‌ابهام می‌زند. */}
 
         {/* متن در یک <span> است تا فلش هیچ‌وقت از آن جدا نشود.
 
@@ -217,13 +256,15 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
             وقتی نام دسته بلند می‌شد — «شبکه‌های اجتماعی» — فلش
             تنها به خط بعد می‌افتاد. حالا شکستنِ خط فقط داخل خودِ
             متن اتفاق می‌افتد و فلش به آخرین کلمه چسبیده می‌ماند. */}
-        <Link href={`/${cat.slug}`} className="mega__all" onClick={onNavigate}>
+        <Link href={`/${cat!.slug}`} className="mega__all" onClick={onNavigate}>
           <span>
-            دیدن همه‌ی {cat.title}
+            دیدن همه‌ی {cat!.title}
             {all.length > SHOWN && <span className="num"> ({fmt(all.length)})</span>}
           </span>
           <ChevronLeft aria-hidden="true" />
         </Link>
+        </>
+        )}
       </div>
 
     </div>

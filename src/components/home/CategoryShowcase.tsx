@@ -45,10 +45,17 @@ const TUBES: Record<string, string> = {
   education: '#7c3aed',
   giftcard: '#ff9f1c',
   numbers: '#9333ea',
+  /* کارتِ «همه» رنگِ خودِ برند را می‌گیرد، نه رنگِ یک دسته —
+     چون به هیچ دسته‌ای تعلق ندارد و بالای همه‌شان است. */
+  all: '#7823d0',
 };
 
-/** حداکثر چند نام در هر کارت — بیشترش دیوارِ لینک می‌شود */
-const PER_CARD = 5;
+/** حداکثر چند نام در هر کارت — بیشترش دیوارِ لینک می‌شود.
+ *
+ * ⚠ چهار، چون هر تراشه نصفِ عرض است و چهارتا دقیقاً دو ردیف
+ * می‌شود. با پنج‌تا، دسته‌ای با نام‌های بلند — «گیفت کارت
+ * پلی‌استیشن» — چهار ردیف می‌خواست و ته جعبه بریده می‌شد. */
+const PER_CARD = 4;
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -57,7 +64,7 @@ export function CategoryShowcase() {
     const items = PRODUCTS.filter((p) => p.category === c.slug);
     const from = items.length ? Math.min(...items.map(getLowestPrice)) : 0;
     return {
-      slug: c.slug as CategorySlug | 'numbers',
+      slug: c.slug as CategorySlug | 'numbers' | 'all',
       title: c.title,
       tagline: c.tagline,
       count: items.length,
@@ -84,6 +91,30 @@ export function CategoryShowcase() {
       { slug: '', title: 'چت‌جی‌پی‌تی' },
     ],
     href: '/numbers',
+  });
+
+  /* ⚠ کارتِ هشتم، و دلیلش چیدمان است نه محتوا.
+     …ولی محتوایش هم واقعی است.
+
+     هفت کارت در هیچ تعداد ستونی ردیفِ کامل نمی‌شود: در چهار ستون
+     یکی تنها می‌ماند، در سه ستون هم. یک کارتِ تنها در ردیفِ آخر،
+     هرچقدر هم وسط‌چین، ناتمام به نظر می‌رسد.
+
+     هشت‌تا در چهار ستون دو ردیفِ پُر است و در دو ستون چهار ردیفِ
+     پُر — یعنی در هر اندازه‌ای مستطیل می‌ماند. و کارتی که اضافه
+     شد همان جایی است که کاربر بعد از دیدنِ دسته‌ها می‌خواهد برود. */
+  cards.push({
+    slug: 'all',
+    title: 'سایر محصولات',
+    tagline: 'اگر نمی‌دانی از کجا شروع کنی، همه‌شان یک‌جا این‌جاست',
+    count: PRODUCTS.length,
+    from: PRODUCTS.length ? Math.min(...PRODUCTS.map(getLowestPrice)) : 0,
+    items: [
+      { slug: '', title: 'مرتب‌سازی با قیمت' },
+      { slug: '', title: 'فیلترِ دسته' },
+      { slug: '', title: 'جست‌وجو' },
+    ],
+    href: '/shop',
   });
 
   return (

@@ -455,8 +455,31 @@
   .mediatext--rev .mediatext__art { order: 0; }
 }
 
-.mediatext__art { border-radius: var(--r-md); overflow: hidden; aspect-ratio: 4 / 3; background: var(--sunken); }
-.mediatext__art img { width: 100%; height: 100%; object-fit: cover; }
+/* ⚠ قابِ ۴:۳ برداشته شد، چون تصویرها ۴:۳ نیستند.
+
+   تصویرهای محصول دو شکل دارند و هیچ‌کدام ۴:۳ نیست: کارت‌ها
+   ۱۲۸۰×۷۲۰ یعنی ۱۶:۹، و تصویرهای cover مربع ۹۰۰×۹۰۰. هر دو
+   داخلِ قابِ ۴:۳ با object-fit: cover بریده می‌شدند — ۱۶:۹ از چپ
+   و راست، مربع از بالا و پایین.
+
+   حالا قابی در کار نیست: تصویر شکلِ خودش را نگه می‌دارد و کامل
+   دیده می‌شود. به‌جای بریدن، عرضش سقف دارد تا در ستونِ نیمه هم
+   غول‌پیکر نشود. */
+.mediatext__art {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  justify-self: center;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--sunken);
+}
+.mediatext__art img { display: block; width: 100%; height: auto; }
+
+/* محصولی که هنوز تصویر ندارد جایگزینِ تایپوگرافیک می‌گیرد، و آن
+   یکی چون <img> ندارد ارتفاعش صفر می‌شود. فقط همان‌جا قاب لازم
+   است. */
+.mediatext__art.is-blank { aspect-ratio: 4 / 3; }
 .mediatext__body h2 { margin-bottom: var(--sp-3); }
 
 .steps, .points { list-style: none; margin: var(--sp-8) 0 0; padding: 0; display: grid; gap: var(--sp-6); }

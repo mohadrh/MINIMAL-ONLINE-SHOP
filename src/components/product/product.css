@@ -278,7 +278,13 @@
 }
 
 .pcard__foot {
-  display: flex; align-items: center; gap: var(--sp-3);
+  display: flex; align-items: center;
+  /* ⚠ می‌پیچد — آخرین سپر وقتی عدد از همیشه بلندتر است.
+     بدون این، بلوکِ قیمت از لبه‌ی کارت می‌زد بیرون و «تومان»
+     بیرونِ قاب بریده می‌شد. */
+  flex-wrap: wrap;
+  column-gap: var(--sp-2);
+  row-gap: 6px;
   margin-top: auto;
   padding-top: var(--sp-4);
   border-top: 1px solid var(--line);
@@ -394,7 +400,12 @@
   display: grid;
   justify-items: end;
   gap: 1px;
-  min-width: 0;
+  /* ⚠ کوچک‌تر از محتوایش نمی‌شود.
+     min-width: 0 اجازه می‌داد جعبه جمع شود ولی محتوای داخلش
+     nowrap بود و جمع نمی‌شد — پس به‌جای پیچیدن، از کارت می‌زد
+     بیرون. حالا جعبه سرِ اندازه‌ی خودش می‌ماند و اگر کنارِ دکمه
+     جا نشد، کلِ بلوک به خطِ بعد می‌رود. */
+  min-width: max-content;
   text-align: end;
 }
 .pcard__was {
@@ -403,18 +414,37 @@
   line-height: 1.4;
 }
 .pcard__now {
-  font-size: var(--text-md);
+  /* اندازه گرفته شد: در کارتِ ۲۰۸ پیکسلی، جای قیمت ۹۴ پیکسل است
+     و عدد در ۱۶ پیکسل ۸۶ پیکسل می‌گرفت — با «از» و «تومان»
+     می‌شد ۱۲۳. یک پله کوچک‌تر، جا باز می‌کند بی‌آنکه عدد از
+     چشم بیفتد؛ خودش هنوز درشت‌ترین چیزِ ردیف است. */
+  font-size: var(--text-sm);
   font-weight: 900;
   color: var(--ink);
   line-height: 1.25;
   white-space: nowrap;
 }
 .pcard__unit { font-size: 10px; color: var(--ink-faint); line-height: 1.2; }
-.pcard__nowrow { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+
+/* ⚠ «تومان» خطِ خودش را دارد، نه کنارِ عدد.
+   کنارِ عدد بیست‌ودو پیکسل می‌خواست که در هیچ کارتی نبود. زیرِ
+   عدد، ردیف فقط به اندازه‌ی خودِ عدد پهن است و هر قیمتی —
+   کوتاه یا بلند — داخلِ قاب می‌ماند. */
+.pcard__nowrow {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: end;
+  justify-items: end;
+  align-items: baseline;
+  column-gap: 4px;
+  white-space: nowrap;
+}
+.pcard__nowrow > .pcard__from { grid-row: 1; }
+.pcard__nowrow > .pcard__now { grid-row: 1; }
+.pcard__nowrow > .pcard__unit { grid-row: 2; grid-column: 1 / -1; }
 
 /* دکمه‌ی خرید نباید زیر فشارِ قیمت جمع شود */
 .pcard__foot > .pcard__addwrap { flex-shrink: 0; }
-.pcard__foot { min-width: 0; }
 
 /* ============================================================
    مسیر راهنما
