@@ -16,7 +16,7 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": [
         "serve",
-        "C:\\Users\\Asus\\AppData\\Local\\Temp\\claude\\C--Users-Asus-OneDrive-Desktop-phoenix-v2\\97e6ec16-7b8a-44d4-90f7-65c1558c7f7a\\scratchpad\\site",
+        "out",
         "-l",
         "4321"
       ],
