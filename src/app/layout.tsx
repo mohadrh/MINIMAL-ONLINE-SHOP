@@ -11,8 +11,17 @@ import { LiveChat } from '../components/shell/LiveChat';
 import { CompareProvider, CompareBar } from '../components/shop/Compare';
 import { CartDrawer } from '../components/cart/CartDrawer';
 import { LivePriceProvider } from '../lib/api/livePrices';
+import { SITE_URL } from '../lib/site';
+
+const TITLE = 'فونیکس شاپ — اشتراک هوش مصنوعی، گیم و شماره مجازی';
+const DESCRIPTION =
+  'اشتراک‌هایی که از ایران نمی‌شود خرید، با کارت بانکی خودت. روی حساب شخصی خودت فعال می‌شوند و رمزت را نمی‌خواهیم.';
 
 export const metadata: Metadata = {
+  /* ⚠ بدونِ metadataBase، تصویرِ اشتراک‌گذاری آدرسِ نسبی می‌گیرد
+     و هیچ پیام‌رسانی نشانش نمی‌دهد. */
+  metadataBase: new URL(SITE_URL),
+
   /* آیکونِ تب و آیکونِ صفحه‌ی خانه‌ی موبایل، از نشانِ ققنوس. */
   icons: {
     icon: [
@@ -22,9 +31,32 @@ export const metadata: Metadata = {
     apple: '/apple-icon.png',
   },
 
-  title: 'فونیکس شاپ — اشتراک هوش مصنوعی، گیم و شماره مجازی',
-  description:
-    'اشتراک‌هایی که از ایران نمی‌شود خرید، با کارت بانکی خودت. روی حساب شخصی خودت فعال می‌شوند و رمزت را نمی‌خواهیم.',
+  title: TITLE,
+  description: DESCRIPTION,
+
+  /* ⚠ کارتِ اشتراک‌گذاری، برای جایی که واقعاً فروش از آن‌جاست.
+     این فروشگاه لینکش در تلگرام و اینستاگرام دست‌به‌دست می‌شود،
+     نه در نتیجه‌ی جست‌وجو. لینکی که پیش‌نمایشِ خالی می‌دهد، در
+     آن گفتگو مثل لینکِ مشکوک به نظر می‌رسد.
+
+     هر صفحه عنوان و توضیحِ خودش را دارد و نکست همان‌ها را در
+     og هم می‌گذارد؛ این‌جا فقط پایه و تصویرِ پیش‌فرض تعریف
+     می‌شود. */
+  openGraph: {
+    type: 'website',
+    siteName: 'فونیکس شاپ',
+    locale: 'fa_IR',
+    title: TITLE,
+    description: DESCRIPTION,
+    url: SITE_URL,
+    images: [{ url: '/icon.png', width: 512, height: 512, alt: 'فونیکس شاپ' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/icon.png'],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PRODUCTS, getProductBySlug } from '../../../data/catalog';
+import { absolute } from '../../../lib/site';
 import { ProductView } from '../../../components/product/ProductView';
 
 /* خروجی ایستا برای همه‌ی محصول‌ها.
@@ -18,9 +19,31 @@ export async function generateMetadata(
   const p = getProductBySlug(slug);
   if (!p) return { title: 'محصول پیدا نشد | فونیکس شاپ' };
 
+  const title = `خرید ${p.title} — ${p.englishTitle} | فونیکس شاپ`;
+
+  /* ⚠ تصویرِ محصول، نه نشانِ فروشگاه.
+
+     وقتی کسی لینکِ یک محصول را در تلگرام می‌فرستد، پیش‌نمایش
+     باید همان محصول را نشان بدهد. اگر همه‌ی لینک‌ها یک نشانِ
+     یکسان بدهند، گیرنده نمی‌فهمد کدامش کدام است. */
+  const image = p.media.cover ?? p.media.thumbnail;
+
   return {
-    title: `خرید ${p.title} — ${p.englishTitle} | فونیکس شاپ`,
+    title,
     description: p.shortDescription,
+    openGraph: {
+      type: 'website',
+      title,
+      description: p.shortDescription,
+      url: absolute(`product/${p.slug}`),
+      images: [{ url: image, alt: p.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: p.shortDescription,
+      images: [image],
+    },
   };
 }
 
