@@ -42,15 +42,28 @@ export interface Variant {
   /**
    * ضریبی که روی مبلغِ دلاری می‌نشیند تا قیمتِ فروش دربیاید.
    *
-   * ⚠ برای گیفت کارت usd مبلغِ اسمی است، نه قیمتِ ما.
+   * ⚠ وجودِ همین فیلد است که تعیین می‌کند قیمت از کجا می‌آید.
    *
-   * گیفت کارتِ ده دلاری واقعاً ده دلار اعتبار می‌دهد و همین عدد
-   * باید روی پلن دیده شود — ولی ما ده دلار نمی‌فروشیمش. بدونِ
-   * این ضریب، هر جا قیمت از ‎usd × نرخ‎ حساب می‌شد، حاشیه‌ی
-   * فروش می‌افتاد و کارت زیرِ قیمتِ خرید فروخته می‌شد.
+   * اگر تعریف شده باشد، قیمتِ تومانی از ‎usd × این ضریب × نرخِ
+   * روز‎ حساب می‌شود و ‎price‎ فقط پشتیبانِ فهرست‌هاست. اگر
+   * تعریف نشده باشد، ‎price‎ حرفِ آخر است و ‎usd‎ فقط نمایشی —
+   * یعنی «این سرویس در سایتِ خودش چند است».
    *
-   * اشتراک‌ها این را ندارند: مبلغِ دلاری‌شان همان چیزی است که
-   * می‌گیریم، پس ضریبِ یک.
+   * ⚠ چرا این تفکیک لازم شد.
+   *
+   * قبلاً هر جا usd بود، قیمت از رویش حساب می‌شد. ولی usd در
+   * داده دو معنی داشت و کسی جایی ننوشته بود:
+   *
+   *   گیفت کارت  — مبلغِ اسمیِ کارت. کارتِ ده دلاری واقعاً ده
+   *                دلار اعتبار می‌دهد و همین باید روی پلن دیده
+   *                شود، ولی ما ده دلار نمی‌فروشیمش.
+   *   اشتراک‌ها  — قیمتِ سایتِ خودشان. کنوا پرو سالی ۱۲۰ دلار
+   *                است ولی ما اکانتِ ظرفیتی می‌فروشیم و قیمتمان
+   *                ۲۰۵٬۰۰۰ تومان است، نه ۲۷ میلیون.
+   *
+   * نتیجه‌اش این بود که صفحه‌ی محصولِ کنوا ۲۷٬۱۸۰٬۰۰۰ نشان
+   * می‌داد و گیفت کارتِ ده دلاری ۲٬۲۷۰٬۰۰۰ به‌جای ۳٬۴۴۰٬۰۰۰ —
+   * یکی صد برابر گران، یکی یک‌سوم ارزان.
    */
   usdMargin?: number;
   stock: number | null;   // null = بدون محدودیت انبار
@@ -434,11 +447,11 @@ const SUBSCRIPTIONS: Product[] = [
        نام‌های کهنه را می‌نویسند. این اعداد از خودِ صفحه‌شان
        خوانده شده‌اند، نه از آن‌ها. */
     variants: [
-      { id: 'higgsfield-starter-1m', label: 'Starter — یک ماهه', price: 4_300_000, usd: 19, stock: null, isDefault: true,
+      { id: 'higgsfield-starter-1m', label: 'Starter — یک ماهه', price: 4_300_000, usd: 19, usdMargin: 1, stock: null, isDefault: true,
         guide: { fit: 'برای شروع و ویدیوهای کوتاه.', detail: 'سه مدلِ بدونِ محدودیت و صد ساختِ Nano Banana Pro در ماه. برای آشنا شدن با حرکت‌های دوربین و چند کلیپِ کوتاه کافی است.' } },
-      { id: 'higgsfield-plus-1m', label: 'Plus — یک ماهه', price: 13_360_000, usd: 59, stock: null,
+      { id: 'higgsfield-plus-1m', label: 'Plus — یک ماهه', price: 13_360_000, usd: 59, usdMargin: 1, stock: null,
         guide: { fit: 'برای تولیدکننده‌ی محتوایی که هفتگی کار می‌دهد.', detail: 'هفت مدلِ بدونِ محدودیت و پانصد ساختِ Nano Banana Pro در ماه، با صفِ سریع‌تر و دسترسی به حالت‌هایی که در Starter قفل‌اند.' } },
-      { id: 'higgsfield-plus-12m', label: 'Plus — یک ساله', price: 127_750_000, usd: 564, stock: null,
+      { id: 'higgsfield-plus-12m', label: 'Plus — یک ساله', price: 127_750_000, usd: 564, usdMargin: 1, stock: null,
         guide: { fit: 'وقتی می‌دانی بیش از چند ماه لازمش داری.', detail: 'همان پلن Plus با حسابِ سالانه — ماهی ۴۷ دلار به‌جای ۵۹. شش هزار ساختِ Nano Banana Pro در سال. اگر ویدیو کارِ همیشگی‌ات است، ارزان‌ترین راه همین است.' } },
     ],
     media: { thumbnail: '/products/higgsfield-card.webp', logo: '/brand/logos/higgsfield.svg', accent: '#7d9c12' },
@@ -528,9 +541,9 @@ const SUBSCRIPTIONS: Product[] = [
        منابع می‌گویند، ولی تا وقتی از داخلِ حساب تأیید نشده،
        قطعی‌اش ندان. */
     variants: [
-      { id: 'grok-super-1m', label: 'SuperGrok — یک ماهه', price: 6_800_000, usd: 30, stock: null, isDefault: true,
+      { id: 'grok-super-1m', label: 'SuperGrok — یک ماهه', price: 6_800_000, usd: 30, usdMargin: 1, stock: null, isDefault: true,
         guide: { fit: 'برای استفاده‌ی روزمره، بدون خوردن به سقف.', detail: 'سقفِ بالاترِ گفتگو، دسترسی زودتر به مدل‌های تازه، و حالتِ چندعاملی که سوالِ سخت را بین چند عامل تقسیم می‌کند.' } },
-      { id: 'grok-heavy-1m', label: 'SuperGrok Heavy — یک ماهه', price: 67_950_000, usd: 300, stock: null,
+      { id: 'grok-heavy-1m', label: 'SuperGrok Heavy — یک ماهه', price: 67_950_000, usd: 300, usdMargin: 1, stock: null,
         guide: { fit: 'برای کارِ پژوهشیِ سنگین.', detail: 'بالاترین سقف و کاملِ مدل‌های Heavy. مالِ کسی است که ساعت‌ها با پرسش‌های پیچیده کار می‌کند؛ برای استفاده‌ی معمولی زیاد است.' } },
     ],
     media: { thumbnail: '/products/grok-card.webp', logo: '/brand/logos/grok.svg', accent: '#17171a' },
@@ -572,11 +585,11 @@ const SUBSCRIPTIONS: Product[] = [
     /* نام‌های Apprentice و Artisan و Maestro کهنه‌اند و فقط در
        مقایسه‌های بیرونی مانده‌اند. این‌ها از leonardo.ai/pricing. */
     variants: [
-      { id: 'leonardo-essential-1m', label: 'Essential — یک ماهه', price: 2_720_000, usd: 12, stock: null, isDefault: true,
+      { id: 'leonardo-essential-1m', label: 'Essential — یک ماهه', price: 2_720_000, usd: 12, usdMargin: 1, stock: null, isDefault: true,
         guide: { fit: 'برای کارِ روزانه‌ی یک نفر.', detail: 'هشت‌هزار و پانصد توکنِ سریع در ماه، تصویرهای خصوصی، و ده مدلِ اختصاصیِ خودت. برای کسی که هفته‌ای چند بار تصویر می‌سازد کافی است.' } },
-      { id: 'leonardo-premium-1m', label: 'Premium — یک ماهه', price: 6_800_000, usd: 30, stock: null,
+      { id: 'leonardo-premium-1m', label: 'Premium — یک ماهه', price: 6_800_000, usd: 30, usdMargin: 1, stock: null,
         guide: { fit: 'وقتی تصویر بخشی از کارِ حرفه‌ای‌ات است.', detail: 'بیست‌وپنج‌هزار توکن در ماه و ساختِ تصویرِ بی‌نهایت با سرعتِ آرام روی مدل‌های منتخب — یعنی دیگر نگرانِ تمام شدنِ توکن نیستی.' } },
-      { id: 'leonardo-ultimate-1m', label: 'Ultimate — یک ماهه', price: 13_590_000, usd: 60, stock: null,
+      { id: 'leonardo-ultimate-1m', label: 'Ultimate — یک ماهه', price: 13_590_000, usd: 60, usdMargin: 1, stock: null,
         guide: { fit: 'برای تولیدکننده‌ی محتوا و کسب‌وکارِ کوچک.', detail: 'شصت‌هزار توکن، پنجاه مدلِ اختصاصی، شش ساختِ هم‌زمان، و ویدیوی بی‌نهایت با سرعتِ آرام. مالِ کسی است که روزانه خروجی می‌دهد.' } },
     ],
     media: { thumbnail: '/products/leonardo-card.webp', logo: '/brand/logos/leonardo.png', accent: '#7c3aed' },
@@ -616,11 +629,11 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'تا چند ساعت پس از پرداخت',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'firefly-standard-1m', label: 'Standard — یک ماهه', price: 2_260_000, usd: 9.99, stock: null, isDefault: true,
+      { id: 'firefly-standard-1m', label: 'Standard — یک ماهه', price: 2_260_000, usd: 9.99, usdMargin: 1, stock: null, isDefault: true,
         guide: { fit: 'برای کسی که گاهی داخل فتوشاپ لازمش دارد.', detail: 'دو هزار اعتبارِ ماهانه. ساختِ تصویرِ استاندارد بی‌حساب است و اعتبار فقط برای کارهای سنگین‌تر مثل ویدیو خرج می‌شود.' } },
-      { id: 'firefly-pro-1m', label: 'Pro — یک ماهه', price: 4_530_000, usd: 19.99, stock: null,
+      { id: 'firefly-pro-1m', label: 'Pro — یک ماهه', price: 4_530_000, usd: 19.99, usdMargin: 1, stock: null,
         guide: { fit: 'برای طراحی که هر روز با ادوبی کار می‌کند.', detail: 'چهار هزار اعتبار در ماه. برای کسی که پرکردنِ هوشمند و گسترشِ کادر بخشی از کارِ روزانه‌اش است.' } },
-      { id: 'firefly-proplus-1m', label: 'Pro Plus — یک ماهه', price: 11_320_000, usd: 49.99, stock: null,
+      { id: 'firefly-proplus-1m', label: 'Pro Plus — یک ماهه', price: 11_320_000, usd: 49.99, usdMargin: 1, stock: null,
         guide: { fit: 'وقتی ویدیو هم وارد کار می‌شود.', detail: 'ده هزار اعتبار در ماه. ویدیو و ترجمه‌ی صدا اعتبارِ زیادی می‌خورند؛ این پلن برای همان ساخته شده.' } },
     ],
     media: { thumbnail: '/products/firefly-card.webp', logo: '/brand/logos/firefly.svg', accent: '#d0021b' },
@@ -664,11 +677,11 @@ const SUBSCRIPTIONS: Product[] = [
     deliveryEstimate: 'تا چند ساعت پس از پرداخت',
     warrantyLabel: 'گارانتی تمام دوره‌ی اشتراک',
     variants: [
-      { id: 'copilot-pro-1m', label: 'Pro — یک ماهه', price: 2_270_000, usd: 10, stock: null, isDefault: true,
+      { id: 'copilot-pro-1m', label: 'Pro — یک ماهه', price: 2_270_000, usd: 10, usdMargin: 1, stock: null, isDefault: true,
         guide: { fit: 'برای کدنویسیِ روزمره.', detail: 'تکمیلِ خودکار بدونِ سقف و حالتِ عامل داخلِ ویرایشگر. اگر تازه از نسخه‌ی رایگان می‌آیی، همین را بگیر.' } },
-      { id: 'copilot-proplus-1m', label: 'Pro+ — یک ماهه', price: 8_830_000, usd: 39, stock: null,
+      { id: 'copilot-proplus-1m', label: 'Pro+ — یک ماهه', price: 8_830_000, usd: 39, usdMargin: 1, stock: null,
         guide: { fit: 'وقتی به مدل‌های گران‌ترِ داخلِ کوپایلت نیاز داری.', detail: 'سهمیه‌ی چند برابریِ درخواست‌های پریمیوم و دسترسی به مدل‌هایی که در Pro محدودند.' } },
-      { id: 'copilot-max-1m', label: 'Max — یک ماهه', price: 22_650_000, usd: 100, stock: null,
+      { id: 'copilot-max-1m', label: 'Max — یک ماهه', price: 22_650_000, usd: 100, usdMargin: 1, stock: null,
         guide: { fit: 'برای کارِ تمام‌وقت با عامل‌ها.', detail: 'بیشترین سهمیه، برای کسی که روزانه ساعت‌ها کارِ سنگین به عاملِ کوپایلت می‌سپارد.' } },
     ],
     media: { thumbnail: '/products/copilot-card.webp', logo: '/brand/logos/copilot.svg', accent: '#6e40c9' },
@@ -981,14 +994,16 @@ export const getDefaultVariant = (p: Product) =>
  * ⚠ تنها جایی که دلار به تومان تبدیل می‌شود. همه‌جا از همین
  * بگذرد، وگرنه دوباره سه نسخه‌ی کمی متفاوت پیدا می‌کند.
  *
- * ترتیب: دلاری، بعد قیمتِ ثابت. محصولِ دلاری قیمتش را از نرخِ
- * روز می‌گیرد؛ عددِ ثابت فقط برای چیزهایی است که اصلاً دلاری
- * نیستند.
+ * ⚠ شرط ‎usdMargin‎ است، نه ‎usd‎.
+ *
+ * داشتنِ مبلغِ دلاری به‌تنهایی یعنی «این سرویس در سایتِ خودش
+ * چند است» — نه اینکه ما همان را می‌گیریم. فقط پلنی که صریحاً
+ * ضریب دارد قیمتش از نرخِ روز می‌آید.
  */
 export const variantToman = (
   v: Pick<Variant, 'price' | 'usd' | 'usdMargin'>,
   rate: number = DEFAULT_USD_RATE,
-) => (v.usd ? tomanFromUsd(v.usd * (v.usdMargin ?? 1), rate) : v.price);
+) => (v.usd && v.usdMargin !== undefined ? tomanFromUsd(v.usd * v.usdMargin, rate) : v.price);
 
 /**
  * کمترین قیمتِ تومانیِ یک محصول.
