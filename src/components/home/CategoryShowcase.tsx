@@ -106,13 +106,17 @@ export function CategoryShowcase() {
   cards.push({
     slug: 'all',
     title: 'سایر محصولات',
-    tagline: 'اگر نمی‌دانی از کجا شروع کنی، همه‌شان یک‌جا این‌جاست',
+    tagline: 'باقیِ فهرست، با فیلتر و مرتب‌سازی — هرچه بالا ندیدی این‌جاست',
     count: PRODUCTS.length,
     from: PRODUCTS.length ? Math.min(...PRODUCTS.map(getLowestPrice)) : 0,
+    /* ⚠ این‌ها برچسبِ واقعیِ فروشگاه‌اند، نه اسمِ قابلیت.
+       هر کدام در ‎/shop‎ فیلترِ خودش را دارد، پس کلیک روی کارت
+       کاربر را دقیقاً به همان فهرست می‌رساند. */
     items: [
-      { slug: '', title: 'مرتب‌سازی با قیمت' },
-      { slug: '', title: 'فیلترِ دسته' },
-      { slug: '', title: 'جست‌وجو' },
+      { slug: '', title: 'پرفروش‌ها' },
+      { slug: '', title: 'تخفیف‌دارها' },
+      { slug: '', title: 'تازه رسیده‌ها' },
+      { slug: '', title: 'مقرون‌به‌صرفه' },
     ],
     href: '/shop',
   });
