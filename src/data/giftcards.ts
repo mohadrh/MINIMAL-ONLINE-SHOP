@@ -213,6 +213,10 @@ function giftProduct(c: GiftCfg): Product {
     label: `${usd.toLocaleString('fa-IR')} دلاری`,
     price: toman(usd),
     usd,
+    /* ⚠ بدونِ این، هرجا قیمت از ‎usd × نرخ‎ حساب شود حاشیه می‌افتد.
+       usd این‌جا مبلغِ اسمیِ کارت است — همان که روی پلن نوشته
+       می‌شود — نه قیمتی که می‌گیریم. */
+    usdMargin: GIFT_MARGIN,
     stock: null,
     isDefault: i === 0,
     guide: {

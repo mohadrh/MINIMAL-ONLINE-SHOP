@@ -5,13 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Columns2, Layers, Plus, Star } from 'lucide-react';
 import { ShareBubble } from './ShareBubble';
 import {
-  getDefaultVariant, getLowestPrice, needsCustomerInput, type Product,
+  getDefaultVariant, getLowestPrice, needsCustomerInput, variantToman, type Product,
 } from '../../data/catalog';
 import { ProductArt } from '../ui/ProductArt';
 import { useCompare } from '../shop/Compare';
 import { useCart, useFlight } from '../../app/providers';
 import { useUsdRate } from '../../lib/useRate';
-import { tomanFromUsd } from '../../lib/rate';
 import { useLivePrices } from '../../lib/api/livePrices';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
@@ -91,9 +90,11 @@ export function ProductCard(
      می‌بیند — و بدترین جای ممکن برای بی‌اعتمادی همان‌جاست. */
   const { rate } = useUsdRate();
   const livePrices = useLivePrices();
-  const liveOf = (vr: { id: string; price: number; usd?: number }) => {
+  const liveOf = (vr: { id: string; price: number; usd?: number; usdMargin?: number }) => {
     const usd = livePrices[vr.id]?.usd ?? vr.usd;
-    return usd ? tomanFromUsd(usd, rate) : (livePrices[vr.id]?.price ?? vr.price);
+    return usd
+      ? variantToman({ price: vr.price, usd, usdMargin: vr.usdMargin }, rate)
+      : (livePrices[vr.id]?.price ?? vr.price);
   };
   const lowest = Math.min(...p.variants.map(liveOf));
   /* ⚠ کارت رنج می‌دهد، نه یک عدد.

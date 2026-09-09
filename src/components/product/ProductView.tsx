@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { getAccount } from '../../lib/account';
 import { ArrowLeft, ChevronLeft, Check, Clock, Columns2, ShieldCheck, Sparkles } from 'lucide-react';
 import {
-  CATEGORIES, PRODUCTS, getProductsByCategory, type Product, type Variant,
+  CATEGORIES, PRODUCTS, getProductsByCategory, variantToman, type Product, type Variant,
 } from '../../data/catalog';
 import { asset } from '../../lib/asset';
 import { ProductSpecs } from './ProductSpecs';
@@ -17,7 +17,6 @@ import { ProductCard } from './ProductCard';
 import { ShareBubble } from './ShareBubble';
 import { ProductTerms } from './ProductTerms';
 import { useUsdRate } from '../../lib/useRate';
-import { tomanFromUsd } from '../../lib/rate';
 import { PlanGuide } from './PlanGuide';
 import { useCompare } from '../shop/Compare';
 import { Faq } from '../ui/Faq';
@@ -128,7 +127,9 @@ export function ProductView({ product: p }: { product: Product }) {
     /* مبلغِ دلاری اگر سرور تازه‌اش را داده باشد، وگرنه همان که
        در بیلد نوشته شده */
     const usd = livePrices[v.id]?.usd ?? v.usd;
-    return usd ? tomanFromUsd(usd, rate) : (livePrices[v.id]?.price ?? v.price);
+    return usd
+      ? variantToman({ price: v.price, usd, usdMargin: v.usdMargin }, rate)
+      : (livePrices[v.id]?.price ?? v.price);
   };
   const price = priceOf(variant);
 
