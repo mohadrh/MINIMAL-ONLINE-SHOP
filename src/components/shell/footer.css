@@ -150,7 +150,7 @@
 /* در شب هم خاموش شروع می‌شود — فقط رنگِ پایه فرق دارد */
 [data-theme='dark'] .ft__social a { color: var(--ink-soft); }
 [data-theme='dark'] .ft__social a:hover,
-[data-theme='dark'] .ft__social a:focus-visible { color: #cfe0ff; }
+[data-theme='dark'] .ft__social a:focus-visible { color: var(--blue); }
 
 @media (prefers-reduced-motion: reduce) {
   .ft__social a,
@@ -172,7 +172,25 @@
   padding-block: 9px;
   transition: color var(--dur) var(--ease);
 }
-.ft__col a:hover { color: var(--blue); }
+/* ⚠ هاورِ لینک‌های فوتر نورِ تراکوتا می‌گیرد.
+
+   آبی بود و در فوترِ تیره فقط رنگ عوض می‌شد — حرکتی که حس
+   نمی‌شد. حالا خودِ متن می‌درخشد: همان کاری که آیکون‌های
+   شبکه‌ی اجتماعیِ بالاتر می‌کنند، پس فوتر یک زبان دارد.
+
+   نور با text-shadow است نه filter — روی متن ارزان‌تر است و
+   لبه‌ی حروف را محو نمی‌کند. */
+.ft__col a:hover,
+.ft__col a:focus-visible {
+  color: var(--brand);
+  text-shadow:
+    0 0 8px color-mix(in srgb, var(--brand) 55%, transparent),
+    0 0 18px color-mix(in srgb, var(--brand) 30%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ft__col a:hover,
+  .ft__col a:focus-visible { text-shadow: none; }
+}
 
 .ft__bottom {
   display: flex;
@@ -189,7 +207,7 @@
 /* قانون قدیمیِ زمانی که آیکون‌ها کارت بودند. رنگش بالاتر تعریف
    شده و پس‌زمینه دیگر لازم نیست — آیکون بی‌قاب است. */
 [data-theme='dark'] .ft__col a { color: var(--ink-soft); }
-[data-theme='dark'] .ft__bottom { color: #6b7488; }
+[data-theme='dark'] .ft__bottom { color: var(--ink-faint); }
 
 
 /* ---------- چت: جرقه‌ها و لینک‌های داخل پیام ----------

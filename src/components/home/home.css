@@ -1586,11 +1586,22 @@
              calc(var(--i) * 340ms + 500ms) both;
 }
 
-[data-theme='dark'] .hero__neon-word[data-tube='0'] { --neon: #f59440; --neon-ink: #fff6ec; }
-[data-theme='dark'] .hero__neon-word[data-tube='1'] { --neon: #8b3fd4; --neon-ink: #f5ecff; }
-[data-theme='dark'] .hero__neon-word[data-tube='2'] { --neon: #ee2d7a; --neon-ink: #ffecf4; }
-[data-theme='dark'] .hero__neon-word[data-tube='3'] { --neon: #9333ea; --neon-ink: #e9fbff; }
-[data-theme='dark'] .hero__neon-word[data-tube='4'] { --neon: #4fe08a; --neon-ink: #ecfff4; }
+/* ⚠ پنج تیوبِ نئون از چهار رنگِ تم می‌آیند.
+
+   نارنجی، بنفش، سرخابی، ارغوانی و سبز بودند — پنج hex خام از
+   پالتِ قبلی. تیترِ هیرو اولین چیزی است که دیده می‌شود و همان‌جا
+   پنج رنگِ بیگانه روشن می‌شد.
+
+   حالا تراکوتا، اعتماد، هوش مصنوعی، باشگاه، و یک آمیزه — پس
+   تیتر همان تنوعِ نئونی را دارد ولی از خانواده‌ی خودش. */
+[data-theme='dark'] .hero__neon-word[data-tube='0'] { --neon: var(--brand); --neon-ink: #fff1ea; }
+[data-theme='dark'] .hero__neon-word[data-tube='1'] { --neon: var(--ai); --neon-ink: #f0eeff; }
+[data-theme='dark'] .hero__neon-word[data-tube='2'] { --neon: var(--vip); --neon-ink: #fff6e6; }
+[data-theme='dark'] .hero__neon-word[data-tube='3'] { --neon: var(--blue); --neon-ink: #e8f2ff; }
+[data-theme='dark'] .hero__neon-word[data-tube='4'] {
+  --neon: color-mix(in srgb, var(--brand) 55%, var(--vip));
+  --neon-ink: #fff4e8;
+}
 
 @keyframes heroNeonOn {
   /* تیوبِ خاموش */
@@ -1723,7 +1734,7 @@
   stroke-dasharray: 1;
   stroke-dashoffset: calc(1 - var(--done, 0) / 3);
   transition: stroke-dashoffset 560ms cubic-bezier(0.22, 1, 0.36, 1);
-  filter: drop-shadow(0 0 5px color-mix(in srgb, #ee2d7a 40%, transparent));
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--brand) 40%, transparent));
 }
 
 .buypath__step {

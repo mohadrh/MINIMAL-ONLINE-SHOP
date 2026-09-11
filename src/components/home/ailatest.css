@@ -81,7 +81,17 @@
   scroll-snap-align: center;
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
-  align-items: start;
+  /* ⚠ وسط، نه بالا.
+
+     ریل کارت‌ها را هم‌قدِ بلندترین می‌کند — کارتی که نامِ مدلش
+     دو خط می‌شود ارتفاع را تعیین می‌کند و بقیه همان‌قدر کشیده
+     می‌شوند. با ‎start‎ آن اضافه یکجا ته کارت جمع می‌شد و زیرِ
+     متن یک نوارِ خالی می‌ماند.
+
+     حالا محتوا وسطِ ارتفاع می‌نشیند، پس فاصله بالا و پایین
+     پخش می‌شود و هیچ‌جا خالیِ الکی نمی‌ماند. */
+  align-items: center;
+  align-content: center;
   gap: var(--sp-3);
   padding: var(--sp-3);
   text-align: start;
@@ -109,8 +119,16 @@
 .ailt__logo svg { width: 58%; height: 58%; color: var(--tube); }
 
 /* متنِ جمع‌تر: فاصله‌ی ردیف‌ها از ۵ به ۳، و نام یک پله کوچک‌تر.
-   کارت سه ردیف بیشتر ندارد و هر پیکسلِ فاصله در آن دیده می‌شود. */
-.ailt__body { min-width: 0; display: grid; gap: 3px; }
+   کارت سه ردیف بیشتر ندارد و هر پیکسلِ فاصله در آن دیده می‌شود.
+
+   ‎align-content: center‎ تا اگر کارت از محتوایش بلندتر شد، سه
+   ردیف با هم وسط بمانند نه اینکه بچسبند بالا. */
+.ailt__body {
+  min-width: 0;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+}
 
 .ailt__top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .ailt__top b { font-size: var(--text-xs); font-weight: 700; }

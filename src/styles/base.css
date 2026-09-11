@@ -95,7 +95,7 @@ a { color: inherit; text-decoration: none; }
 
 .section--blue {
   background: var(--blue-hover);
-  color: #cfdbff;
+  color: color-mix(in srgb, #fff 78%, var(--blue));
 }
 .section--blue h2,
 .section--blue h3 { color: #fff; }
@@ -116,7 +116,7 @@ a { color: inherit; text-decoration: none; }
   margin-bottom: var(--sp-3);
 }
 /* روی زمینه‌ی آبیِ سکشن، #9fbaff نسبت ۴٫۰ می‌داد — زیر حد. */
-.section--blue .sec-head__kicker { color: #b3c9ff; }
+.section--blue .sec-head__kicker { color: color-mix(in srgb, #fff 72%, var(--blue)); }
 
 .sec-head__lead {
   margin-top: var(--sp-3);
@@ -124,7 +124,7 @@ a { color: inherit; text-decoration: none; }
   color: var(--ink-faint);
   font-size: var(--text-sm);
 }
-.section--blue .sec-head__lead { color: #b9c9f5; }
+.section--blue .sec-head__lead { color: color-mix(in srgb, #fff 70%, var(--blue)); }
 
 .sec-head--center {
   text-align: center;
@@ -248,7 +248,7 @@ a { color: inherit; text-decoration: none; }
   border-color: #fff;
   color: var(--blue-hover);
 }
-.section--blue .btn--primary:hover { background: #f2ecff; border-color: #f2ecff; }
+.section--blue .btn--primary:hover { background: var(--blue-wash); border-color: var(--blue-wash); }
 
 /* ۱۰ پیکسل padding با متن ۱۳ پیکسلی می‌شد ۳۴ — زیر حداقلِ لمسی.
    ۱۲ می‌شود ۳۸ و ظاهرش هم عوض نمی‌شود. */
@@ -499,13 +499,21 @@ a { color: inherit; text-decoration: none; }
 }
 
 
+/* ⚠ حباب‌ها از چهار رنگِ تم ساخته می‌شوند، نه از ده رنگِ دلخواه.
+
+   این‌جا ده hex خام بود — نارنجی، سرخابی، بنفش، هلویی، فیروزه‌ای
+   و… — که از کمانِ لوگو آمده بودند. روی مهم‌ترین دکمه‌ی سایت،
+   کنارِ تراکوتا، مثل بازمانده‌ی یک تمِ دیگر دیده می‌شدند.
+
+   حالا همان پنج حباب‌اند با همان اندازه و مسیر — فقط رنگشان از
+   توکن می‌آید، پس اگر تم عوض شد این هم با آن می‌رود. */
 .btn--hero::before {
   background-image:
-    radial-gradient(circle closest-side, #f9821e 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #ee2d7a 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #7c3aed 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #ffa06b 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #6ee7c7 0 38%, transparent 72%);
+    radial-gradient(circle closest-side, var(--brand) 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, var(--vip) 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, var(--ai) 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, color-mix(in srgb, var(--brand) 55%, #fff) 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, var(--blue) 0 38%, transparent 72%);
   background-size: 58% 58%, 46% 46%, 52% 52%, 38% 38%, 34% 34%;
   background-position: 18% 26%, 62% 20%, 40% 74%, 80% 52%, 8% 62%;
   animation: goo-a 11s cubic-bezier(.45, 0, .55, 1) infinite alternate;
@@ -513,11 +521,11 @@ a { color: inherit; text-decoration: none; }
 
 .btn--hero::after {
   background-image:
-    radial-gradient(circle closest-side, #f0483c 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #9333ea 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #c04ae8 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #f4629b 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, #b0a4ff 0 38%, transparent 72%);
+    radial-gradient(circle closest-side, var(--brand-hover) 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, var(--ai) 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, color-mix(in srgb, var(--ai) 60%, var(--brand)) 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, var(--vip) 0 38%, transparent 72%),
+    radial-gradient(circle closest-side, color-mix(in srgb, var(--blue) 60%, #fff) 0 38%, transparent 72%);
   background-size: 50% 50%, 44% 44%, 40% 40%, 34% 34%, 30% 30%;
   background-position: 74% 66%, 30% 62%, 56% 40%, 14% 34%, 88% 26%;
   animation: goo-b 15s cubic-bezier(.45, 0, .55, 1) infinite alternate;
