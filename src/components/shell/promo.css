@@ -72,7 +72,7 @@
   text-align: center;
   animation: promo-in 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-[data-theme="dark"] .promo__link { color: #e9ecf3; }
+[data-theme="dark"] .promo__link { color: var(--ink); }
 @keyframes promo-in {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }

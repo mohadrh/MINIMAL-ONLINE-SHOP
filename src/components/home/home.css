@@ -843,7 +843,7 @@
 .qa__kicker { color: var(--blue); }
 .qa__title  { color: var(--ink); }
 
-[data-theme='dark'] .qa__kicker { color: #9fbaff; }
+[data-theme='dark'] .qa__kicker { color: var(--blue); }
 [data-theme='dark'] .qa__title  { color: #fff; }
 
 /* ---------- کارت شیشه‌ای ---------- */
@@ -885,10 +885,10 @@
 .qa__more { color: var(--blue); }
 
 [data-theme='dark'] .qa__card-head { border-bottom-color: rgba(255, 255, 255, 0.16); color: #fff; }
-[data-theme='dark'] .qa__card-glyph { color: #9fbaff; }
+[data-theme='dark'] .qa__card-glyph { color: var(--blue); }
 [data-theme='dark'] .qa__link { color: rgba(255, 255, 255, 0.72); }
 [data-theme='dark'] .qa__link:hover { color: #fff; }
-[data-theme='dark'] .qa__more { color: #9fbaff; }
+[data-theme='dark'] .qa__more { color: var(--blue); }
 
 /* ---------- ردیف خدمات دیگر ----------
 
@@ -1755,9 +1755,9 @@
    تیک، آیکونِ هر گام را با یک علامتِ عمومی عوض می‌کرد و شخصیتش را
    می‌گرفت؛ نورِ رنگی همان «انجام شد» را می‌گوید بدون اینکه چیزی
    را پاک کند. */
-.buypath__step:nth-child(1) { --tube: #f59440; }
-.buypath__step:nth-child(2) { --tube: #ee2d7a; }
-.buypath__step:nth-child(3) { --tube: #9333ea; }
+.buypath__step:nth-child(1) { --tube: var(--brand); }
+.buypath__step:nth-child(2) { --tube: var(--blue); }
+.buypath__step:nth-child(3) { --tube: var(--vip); }
 
 /* گامِ فعلی — حلقه‌ی رنگی، هنوز خاموش */
 .is-now .buypath__node {

@@ -421,7 +421,7 @@
   color: var(--ink-soft);
 }
 .mega__peek-plans li b { font-weight: 700; color: var(--ink); }
-[data-theme="dark"] .mega__peek-plans li b { color: #e9ecf3; }
+[data-theme="dark"] .mega__peek-plans li b { color: var(--ink); }
 .mega__peek-rest { color: var(--ink-faint) !important; font-size: 10px !important; }
 
 .mega__peek-cta {

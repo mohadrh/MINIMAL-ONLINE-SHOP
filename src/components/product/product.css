@@ -733,13 +733,30 @@
               border-color var(--dur) var(--ease);
 }
 .shop__chip:hover { border-color: var(--blue-line); color: var(--ink); }
+
+/* ⚠ دسته‌ی انتخاب‌شده نورِ تراکوتا می‌گیرد، نه آبی.
+
+   آبی بود و در شب روی زمینه‌ی تیره فقط یک قرصِ تختِ آبی می‌شد —
+   معلوم بود انتخاب شده ولی به چشم نمی‌آمد. حالا رنگِ برند است
+   با هاله‌ای از خودش، پس همان‌جایی که کاربر دارد انتخاب می‌کند
+   گرم‌ترین نقطه‌ی صفحه است.
+
+   هاله با color-mix از خودِ توکن ساخته می‌شود، پس اگر روزی رنگِ
+   برند عوض شد این هم با آن می‌آید. */
 .shop__chip.is-on {
-  background: var(--blue);
-  border-color: var(--blue);
-  color: #fff;
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--brand-ink);
   font-weight: 700;
+  box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--brand) 75%, transparent);
 }
-.shop__chip.is-on .shop__chip-dot { background: #fff; }
+/* در شب هاله پررنگ‌تر است — روی زمینه‌ی تیره نورِ کم دیده نمی‌شود */
+[data-theme='dark'] .shop__chip.is-on {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--brand) 45%, transparent),
+    0 8px 24px -6px color-mix(in srgb, var(--brand) 70%, transparent);
+}
+.shop__chip.is-on .shop__chip-dot { background: var(--brand-ink); }
 
 .shop__chip-dot {
   width: 7px; height: 7px;
@@ -747,7 +764,16 @@
   background: var(--accent, var(--blue));
 }
 
-[data-theme='dark'] .shop__chip { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.12); }
+/* ⚠ ‎:not(.is-on)‎ لازم است.
+
+   این قاعده بعد از قاعده‌ی ‎.is-on‎ می‌آید و هم‌وزنِ آن است، پس
+   بی این شرط پس‌زمینه‌ی تراکوتای چیپِ انتخاب‌شده را پس می‌گرفت و
+   فقط هاله‌اش می‌ماند — چیپِ فعال، تختِ خاکستری با یک نورِ
+   نارنجیِ بی‌منشأ دورش. */
+[data-theme='dark'] .shop__chip:not(.is-on) {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
 
 /* ---------- نوار جست‌وجو ---------- */
 
@@ -1401,7 +1427,7 @@
   to   { opacity: 1; translate: 0 0;    scale: 1; }
 }
 [data-theme='dark'] .shb__pop {
-  background: #171a22;
+  background: var(--paper);
   border-color: rgba(255, 255, 255, 0.12);
 }
 

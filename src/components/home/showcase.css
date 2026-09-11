@@ -274,7 +274,7 @@
 [data-theme="dark"] .hlg__foot { border-top-color: rgba(255, 255, 255, 0.09); }
 
 .hlg__from { font-size: var(--text-sm); font-weight: 800; color: var(--ink); }
-[data-theme="dark"] .hlg__from { color: #e9ecf3; }
+[data-theme="dark"] .hlg__from { color: var(--ink); }
 
 .hlg__go {
   display: inline-flex;

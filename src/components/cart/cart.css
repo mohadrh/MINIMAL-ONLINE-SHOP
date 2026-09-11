@@ -312,7 +312,7 @@
   transition: background 320ms var(--ease), border-color 320ms var(--ease),
               color 320ms var(--ease), scale 320ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-[data-theme='dark'] .cop__dot { background: #171b26; }
+[data-theme='dark'] .cop__dot { background: var(--paper); }
 
 .cop__num { font-size: var(--text-xs); font-weight: 700; }
 

@@ -182,7 +182,7 @@
   font-size: var(--text-xs);
   outline: none;
 }
-[data-theme="dark"] .navpill input { color: #e9ecf3; }
+[data-theme="dark"] .navpill input { color: var(--ink); }
 .navpill input::placeholder { color: var(--ink-faint); }
 .navpill input::-webkit-search-cancel-button { display: none; }
 
