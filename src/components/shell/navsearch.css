@@ -36,7 +36,7 @@
   }
 }
 [data-theme="dark"] .navsearch {
-  background: color-mix(in srgb, #14161d 92%, transparent);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
   border-color: rgba(255, 255, 255, 0.12);
 }
 @keyframes ns-in {

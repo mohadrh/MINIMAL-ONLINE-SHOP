@@ -236,7 +236,7 @@
   transition: border-color 350ms var(--ease), box-shadow 350ms var(--ease);
 }
 
-[data-theme='dark'] .assistbtn { color: #0f1116; }
+[data-theme='dark'] .assistbtn { color: var(--page); }
 
 .assistbtn__glyph {
   font-style: normal;

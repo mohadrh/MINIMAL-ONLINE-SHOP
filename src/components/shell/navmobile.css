@@ -26,7 +26,7 @@
   animation: navm-in 200ms var(--ease) both;
 }
 [data-theme="dark"] .navm {
-  background: #12141b;
+  background: var(--paper);
   border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 @keyframes navm-in {

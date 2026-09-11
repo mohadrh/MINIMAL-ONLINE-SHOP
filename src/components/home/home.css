@@ -283,7 +283,7 @@
 }
 
 [data-theme='dark'] .calc__tab { color: var(--ink-soft); }
-[data-theme='dark'] .calc__tab.is-on { color: #0f1116; }
+[data-theme='dark'] .calc__tab.is-on { color: var(--page); }
 
 .calc__body {
   display: grid;
@@ -628,7 +628,7 @@
     radial-gradient(120% 140% at 50% 0%,
       color-mix(in srgb, var(--art-accent, var(--blue)) 30%, transparent) 0%,
       transparent 70%),
-    color-mix(in srgb, var(--art-accent, var(--blue)) 14%, #12141b);
+    color-mix(in srgb, var(--art-accent, var(--blue)) 14%, var(--paper));
 }
 
 /* کاور مقاله.

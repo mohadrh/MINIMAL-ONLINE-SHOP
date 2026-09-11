@@ -17,7 +17,10 @@ html {
 
 body {
   margin: 0;
-  background: var(--paper);
+  /* ⚠ ‎--page‎ است نه ‎--paper‎.
+     صفحه کرم است و کارت سفید؛ اگر هر دو یکی باشند کارت‌ها روی
+     زمینه گم می‌شوند و مرزشان فقط از خط می‌آید. */
+  background: var(--page);
   color: var(--ink-soft);
   font-family: var(--font-fa);
   font-size: var(--text-base);

@@ -80,7 +80,7 @@
   }
 }
 [data-theme="dark"] .catcard {
-  background: color-mix(in srgb, #161922 78%, transparent);
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
   border-color: rgba(255, 255, 255, 0.1);
 }
 
@@ -255,7 +255,7 @@
   background: var(--wash);
   transition: translate 380ms var(--ease);
 }
-[data-theme="dark"] .hlg__art { border-color: #161922; background: rgba(255, 255, 255, 0.06); }
+[data-theme="dark"] .hlg__art { border-color: var(--paper); background: rgba(255, 255, 255, 0.06); }
 .hlg__art + .hlg__art { margin-inline-start: -18px; }
 .hlg__art img { width: 76%; height: 76%; object-fit: contain; }
 /* روی هاور از هم باز می‌شوند */
@@ -783,7 +783,7 @@
   scrollbar-width: thin;
 }
 [data-theme="dark"] .srst--hero .srst__out {
-  background: #12141b;
+  background: var(--paper);
   border-color: rgba(255, 255, 255, 0.12);
 }
 /* وقتی چیزی برای نشان دادن نیست، خودِ کادر هم نباشد */

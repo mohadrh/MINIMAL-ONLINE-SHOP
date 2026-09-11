@@ -120,7 +120,7 @@
    آن‌وقت لغزشِ خودش کار می‌کند. */
 .mega > * { min-height: 0; }
 [data-theme="dark"] .mega {
-  background: #14161d;
+  background: var(--paper);
   border-color: rgba(255, 255, 255, 0.1);
   box-shadow: 0 32px 74px -30px rgba(0, 0, 0, 0.8);
 }

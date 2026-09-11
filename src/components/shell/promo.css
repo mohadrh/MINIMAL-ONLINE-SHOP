@@ -28,7 +28,7 @@
       color-mix(in srgb, var(--brand) 20%, transparent) 0%,
       color-mix(in srgb, var(--blue) 22%, transparent) 55%,
       color-mix(in srgb, var(--brand) 16%, transparent) 100%),
-    #12141b;
+    var(--paper);
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
@@ -147,7 +147,7 @@
   background: #22c55e;
   box-shadow: 0 0 0 2px var(--paper);
 }
-[data-theme="dark"] .nav__chat-dot { box-shadow: 0 0 0 2px #0f1116; }
+[data-theme="dark"] .nav__chat-dot { box-shadow: 0 0 0 2px var(--page); }
 
 /* جرقه‌ها — فقط روی هاور */
 .nav__chat-spark {

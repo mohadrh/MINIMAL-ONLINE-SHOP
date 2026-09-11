@@ -1951,7 +1951,7 @@
   box-shadow: 0 40px 90px -40px rgba(0, 0, 0, 0.6);
   overflow: hidden;
 }
-[data-theme="dark"] .gmod__panel { background: #12141b; }
+[data-theme="dark"] .gmod__panel { background: var(--paper); }
 
 .gmod__head {
   display: flex;

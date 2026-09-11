@@ -16,7 +16,10 @@
 
 [data-theme='dark'] .ft {
   background: #0d1017;
-  color: #98a1b3;
+  /* این‌جا ‎#98a1b3‎ بود — خاکستریِ آبی‌مایلِ پالتِ بنفشِ قبلی.
+     خوانا بود، ولی در پالتِ گرمِ تازه سرد به نظر می‌رسید و با
+     بقیه‌ی متن‌های شب یکی نبود. توکن جایش نشست تا با تم بیاید. */
+  color: var(--ink-faint);
   border-top-color: rgba(255, 255, 255, 0.07);
 }
 
@@ -145,7 +148,7 @@
 }
 
 /* در شب هم خاموش شروع می‌شود — فقط رنگِ پایه فرق دارد */
-[data-theme='dark'] .ft__social a { color: #98a1b3; }
+[data-theme='dark'] .ft__social a { color: var(--ink-soft); }
 [data-theme='dark'] .ft__social a:hover,
 [data-theme='dark'] .ft__social a:focus-visible { color: #cfe0ff; }
 
@@ -185,7 +188,7 @@
 [data-theme='dark'] .ft__col h2 { color: #fff; }
 /* قانون قدیمیِ زمانی که آیکون‌ها کارت بودند. رنگش بالاتر تعریف
    شده و پس‌زمینه دیگر لازم نیست — آیکون بی‌قاب است. */
-[data-theme='dark'] .ft__col a { color: #98a1b3; }
+[data-theme='dark'] .ft__col a { color: var(--ink-soft); }
 [data-theme='dark'] .ft__bottom { color: #6b7488; }
 
 

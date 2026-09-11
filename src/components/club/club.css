@@ -357,7 +357,7 @@
   backdrop-filter: blur(14px) saturate(1.3);
 }
 [data-theme='dark'] .tier {
-  background: color-mix(in srgb, #161922 78%, transparent);
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
 }
 
 /* چراغِ ایستگاه */
@@ -395,7 +395,7 @@
   backdrop-filter: blur(14px) saturate(1.3);
 }
 [data-theme='dark'] .clubcalc__cell {
-  background: color-mix(in srgb, #161922 76%, transparent);
+  background: color-mix(in srgb, var(--paper) 76%, transparent);
 }
 
 /* نشانِ امتیاز، مثل ژتون */
