@@ -205,14 +205,29 @@
 }
 /* فلشِ ستونیِ قبلی در نوارِ افقی معنا ندارد */
 .mega__cat > svg { display: none; }
-.mega__cat:hover { background: color-mix(in srgb, var(--blue) 7%, transparent); }
+.mega__cat:hover { background: color-mix(in srgb, var(--brand) 8%, transparent); }
+
+/* ⚠ زبانه‌ی فعال نورِ تراکوتا می‌گیرد.
+
+   سایه‌اش ‎rgba(15,17,32,.3)‎ بود — یک خاکستریِ آبی‌مایلِ خام که
+   با هیچ تمی عوض نمی‌شد و در حالت شب اصلاً دیده نمی‌شد. حالا از
+   خودِ رنگِ برند ساخته می‌شود، پس همان‌جا که کاربر ایستاده
+   گرم‌ترین نقطه‌ی پنل است. */
 .mega__cat.is-on {
   background: var(--paper);
   color: var(--ink);
-  box-shadow: 0 2px 12px -6px rgba(15, 17, 32, 0.3);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent),
+    0 4px 14px -6px color-mix(in srgb, var(--brand) 60%, transparent);
 }
 .mega__cat.is-on > svg { opacity: 0.55; translate: 0 0; }
-[data-theme="dark"] .mega__cat.is-on { background: rgba(255, 255, 255, 0.07); color: #fff; }
+[data-theme="dark"] .mega__cat.is-on {
+  background: color-mix(in srgb, var(--brand) 14%, var(--paper));
+  color: var(--ink);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--brand) 45%, transparent),
+    0 6px 20px -6px color-mix(in srgb, var(--brand) 55%, transparent);
+}
 
 /* آیکون بدون کادر — همان قاعده‌ی همیشگی سایت */
 .mega__cat-ico { display: grid; place-items: center; color: var(--blue); }

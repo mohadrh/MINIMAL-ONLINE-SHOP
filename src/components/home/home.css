@@ -588,24 +588,40 @@
 
    خطِ رنگیِ زیرِ تیتر تنها چیزی است که با هاور می‌آید: از صفر
    باز می‌شود، پس حرکت در جهتِ خواندن است نه خلافش. */
+/* ⚠ کارتِ مقاله حالا قاب دارد.
+
+   تا امروز ‎padding: 0; border: 0; background: none‎ بود — یعنی
+   اصلاً کارت نبود، فقط تصویری با متنِ زیرش. لبه‌ی تصویر لبه‌ی
+   کارت بود و متن بی‌هیچ حاشیه‌ای زیرش می‌نشست.
+
+   دوازده پیکسل از هر چهار طرف: تصویر همان‌قدر از بالا و دو
+   پهلو فاصله می‌گیرد که متن از دو پهلو و پایین. کمتر از این
+   بچگانه به نظر می‌رسد و بیشترش کارت را پفکی می‌کند —
+   کارتِ محصول هم دقیقاً همین دوازده را دارد. */
 .art {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
-  padding: 0;
-  border: 0;
-  background: none;
-  transition: none;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: var(--paper);
+  transition:
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    translate var(--dur) var(--ease);
 }
+.art:hover {
+  translate: 0 -3px;
+  border-color: color-mix(in srgb, var(--art-accent, var(--blue)) 45%, transparent);
+  box-shadow: 0 16px 34px -26px color-mix(in srgb, var(--art-accent, var(--blue)) 85%, transparent);
+}
+@media (prefers-reduced-motion: reduce) { .art:hover { translate: none; } }
 
-/* ⚠ فاصله‌ی کارت‌های مقاله بیشتر از ریل‌های دیگر است.
-
-   ریلِ عمومی شانزده پیکسل فاصله دارد و برای کارت‌هایی که قاب و
-   زمینه دارند کافی است. کارتِ مقاله قاب ندارد — فقط تصویر و
-   متن — پس با همان فاصله، متنِ یکی به تصویرِ بعدی می‌چسبید و
-   سه کارت مثل یک بلوکِ پیوسته دیده می‌شدند. */
-.arts .rail { gap: var(--sp-8); }
-@media (max-width: 900px) { .arts .rail { gap: var(--sp-5); } }
+/* فاصله‌ی کارت‌ها حالا که قاب دارند کمتر لازم است، ولی کارفرما
+   فاصله‌ی بیشتر خواسته بود و همان می‌ماند. */
+.arts .rail { gap: var(--sp-6); }
+@media (max-width: 900px) { .arts .rail { gap: var(--sp-4); } }
 
 .art__cover {
   position: relative;

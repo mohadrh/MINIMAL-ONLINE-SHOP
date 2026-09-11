@@ -839,13 +839,21 @@
   color: var(--ink);
 }
 .amenu__wallet > div { flex: 1; }
-.amenu__wallet span { display: block; font-size: var(--text-xs); color: var(--ink-faint); }
+/* ⚠ ‎> div‎ لازم است، وگرنه همین قاعده روی خودِ آیکون هم می‌افتد.
+
+   ‎.amenu__wallet-ic‎ یک ‎<span>‎ است. بدونِ این شرط،
+   ‎display: block‎ روی آن می‌نشست و ‎display: grid‎ آیکون را
+   می‌شکست — پس ‎place-items: center‎ بی‌اثر می‌شد و آیکون
+   به‌جای وسطِ مربعِ آبی، گوشه‌ی بالا می‌چسبید. */
+.amenu__wallet > div span { display: block; font-size: var(--text-xs); color: var(--ink-faint); }
 .amenu__wallet b { font-size: var(--text-md); color: var(--blue); }
-.amenu__wallet svg { width: 16px; height: 16px; color: var(--ink-faint); }
+.amenu__wallet > div svg { width: 16px; height: 16px; color: var(--ink-faint); }
 
 .amenu__wallet-ic {
   width: 34px; height: 34px;
-  display: grid; place-items: center;
+  display: grid;
+  place-items: center;
+  flex: none;
   border-radius: 10px;
   background: var(--blue);
   color: #fff;
