@@ -36,11 +36,17 @@
      مرجع زمینه یک شیب تیره‌ی سیر است و همان است که پنل‌ها را
      شیشه‌ای نشان می‌دهد. اینجا معادلِ روزش را می‌گذاریم: یک شیب
      یاسیِ خیلی ملایم. */
-  background: linear-gradient(162deg, #f2f4fd 0%, #eaeefb 52%, #f4f2fb 100%);
+  background: linear-gradient(162deg,
+    color-mix(in srgb, var(--brand) 5%, var(--paper)) 0%,
+    color-mix(in srgb, var(--blue) 6%, var(--paper)) 52%,
+    var(--wash) 100%);
 }
 
 [data-theme='dark'] .acc {
-  background: linear-gradient(162deg, #0d0f18 0%, #141127 52%, #0e1019 100%);
+  background: linear-gradient(162deg,
+    var(--page) 0%,
+    color-mix(in srgb, var(--blue) 14%, var(--page)) 52%,
+    var(--page) 100%);
 }
 
 /* ---------- مِش محیطی ---------- */

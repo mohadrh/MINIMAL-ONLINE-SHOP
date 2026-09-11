@@ -186,7 +186,7 @@
   gap: var(--sp-2);
   padding: var(--sp-4);
   border-radius: 18px;
-  background: linear-gradient(160deg, #2aabee, var(--brand));
+  background: linear-gradient(160deg, var(--blue), var(--brand));
   color: #fff;
 }
 .ailx__promo-ico {

@@ -2126,7 +2126,7 @@
   inset-inline: var(--sp-6);
   height: 3px;
   border-radius: 0 0 99px 99px;
-  background: linear-gradient(to left, #ff8a3c, #ff5c8c);
+  background: linear-gradient(to left, var(--brand), var(--vip));
   z-index: 4;
 }
 

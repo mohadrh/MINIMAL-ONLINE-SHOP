@@ -277,7 +277,7 @@
   z-index: 1;
   pointer-events: none;
   transform: scale(0);
-  background: linear-gradient(140deg, #fff, #7cc4ff);
+  background: linear-gradient(140deg, #fff, color-mix(in srgb, var(--blue) 55%, #fff));
   clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
 }
 .assistbtn__spark--sm { width: 10px; height: 10px; }
