@@ -93,6 +93,19 @@ a { color: inherit; text-decoration: none; }
 
 .section--tint { background: var(--tint); }
 
+/* سکشنِ کوتاه — برای بلوکی که سرتیترِ بزرگ و متنِ مقدمه ندارد.
+   پادینگِ کاملِ سکشن برای چنین بلوکی چند برابرِ خودِ محتواست.
+
+   ⚠ ‎.section.section--slim‎ نه فقط ‎.section--slim‎.
+
+   قاعده‌ی ریسپانسیوِ ‎.section‎ پایین‌ترِ همین فایل است و هم‌وزن؛
+   با یک کلاس، آن یکی برنده می‌شد و زیر ۹۰۰ پیکسل پادینگ دوباره
+   به ۷۲ برمی‌گشت. دو کلاس یعنی همه‌جا این برنده است. */
+.section.section--slim { padding-block: var(--sp-12); }
+@media (max-width: 900px) {
+  .section.section--slim { padding-block: var(--sp-8); }
+}
+
 .section--blue {
   background: var(--blue-hover);
   color: color-mix(in srgb, #fff 78%, var(--blue));
@@ -175,21 +188,21 @@ a { color: inherit; text-decoration: none; }
    سی‌وهفت جا تکرار می‌شدند. رنگی که همه‌جا باشد دیگر تاکید نیست،
    نویز است.
 
-   حالا دکمه‌ی اصلی یک نارنجیِ یکدست است از رنگِ بالِ لوگو. حباب‌ها
-   نرفته‌اند — رفته‌اند روی .btn--hero که در هر صفحه فقط یکی است.
-   همان شخصیت، در جای درست.
+   حالا هیچ دکمه‌ای حباب ندارد — نه این و نه btn--hero.
+   یک دکمه‌ی تخت به رنگِ برند، همه‌جا یکسان.
 
    ⚠ متن تیره است نه سفید. سفید روی این نارنجی نسبت ۳٫۰ می‌دهد و
    مردود است؛ ‎#1a1020‎ نسبت ۵٫۷۶ می‌دهد. اندازه‌گیری شد. */
+/* ⚠ رنگِ تخت، بدون گرادیانت.
+
+   یک گرادیانتِ سه‌توقفی داشت که از سفیدِ ۱۲٪ به برند و بعد به
+   ‎--brand-hover‎ می‌رفت. ظریف بود، ولی کارفرما گفت همه‌ی
+   دکمه‌ها ساده و دقیقاً به رنگ‌های تم باشند — و گرادیانت روی
+   دکمه یعنی سه رنگ به‌جای یک. */
 .btn--primary {
   position: relative;
   isolation: isolate;
-  background: linear-gradient(
-    158deg,
-    color-mix(in srgb, #fff 12%, var(--brand)) 0%,
-    var(--brand) 52%,
-    var(--brand-hover) 100%
-  );
+  background: var(--brand);
   border-color: transparent;
   color: var(--brand-ink);
   font-weight: 700;
@@ -202,15 +215,17 @@ a { color: inherit; text-decoration: none; }
     translate var(--dur) var(--ease);
 }
 
+/* هاور هم رنگِ تم است، نه روشن‌کردنِ فیلتری: ‎--brand-hover‎
+   خودش در پالت تعریف شده و در هر دو تم درست است. */
 .btn--primary:hover {
-  filter: brightness(1.06);
+  background: var(--brand-hover);
   translate: 0 -1px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
     0 12px 26px -14px color-mix(in srgb, var(--brand) 90%, transparent);
 }
 
-.btn--primary:active { translate: 0 0; filter: brightness(0.97); }
+.btn--primary:active { translate: 0 0; background: var(--brand-hover); }
 .btn--primary svg { color: inherit; }
 
 /* دکمه‌ی ثانویه هم شیشه است، ولی بنفشِ خیلی کم‌رنگ */
@@ -458,117 +473,26 @@ a { color: inherit; text-decoration: none; }
      بالای هشت می‌ماند — چه کهربایی باشد چه شیشه.
    ============================================================ */
 
-.btn--hero { overflow: hidden; }
+/* ⚠ حباب‌های متحرکِ دکمه‌ی هیرو برداشته شدند.
 
-/* ده حبابِ رنگیِ جدا، محو، که مستقل از هم می‌لغزند.
+   ده حبابِ رنگی پشتِ این دکمه می‌چرخیدند و به هم می‌رسیدند —
+   دو شبه‌عنصر، دو انیمیشنِ یازده و پانزده ثانیه‌ای، و یک بلورِ
+   یازده پیکسلی. تکنیکش کار می‌کرد، ولی کارفرما گفت همه‌ی
+   دکمه‌ها ساده و از سه رنگِ تم باشند.
 
-   ⚠ نکته‌ای که چند بار از قلم افتاد: چسبیدن کارِ blur نیست.
+   حالا دکمه‌ی هیرو همان ‎.btn--primary‎ است، فقط کمی بزرگ‌تر.
+   یک دکمه‌ی سایت یعنی یک رفتار؛ استثنای متحرک، همان چیزی بود
+   که «رنگی رنگی» به نظر می‌رسید.
 
-   blur لبه‌ی هر حباب را محو می‌کند، پس دو حبابِ نزدیک فقط روی هم
-   می‌افتند و همچنان دو چیزِ جدا دیده می‌شوند. چیزی که آن گردنه‌ی
-   کشیده‌ی بینِ دو قطره را می‌سازد، فیلترِ SVG در GooFilter است:
-   آلفا محو می‌شود و بعد با شیبِ تند کشیده می‌شود، پس هرجا آلفای
-   دو حباب روی هم جمع شده از آستانه رد می‌شود و پر می‌ماند.
+   ⚠ ‎.btn--primary:hover‎ هم برگشت به ساده.
 
-   برای همین لبه‌ی خودِ حباب‌ها این‌جا قاطع است (رنگ تا ۶۰٪ بعد
-   قطع) نه محو — کار محو کردن با فیلتر است، و اگر خودِ گرادیان هم
-   محو باشد چیزی برای چسباندن نمی‌ماند.
-
-   حرکت هم باید مستقل باشد وگرنه هیچ‌وقت به هم نمی‌رسند: هر حباب
-   یک لایه‌ی background جداست و background-position هر لایه به
-   مقصدِ خودش می‌رود. چرخشِ کلِ لایه این را نمی‌داد، چون فاصله‌ی
-   حباب‌ها ثابت می‌ماند. */
-.btn--hero::before,
-.btn--hero::after {
-  content: '';
-  position: absolute;
-  inset: -30%;
-  z-index: -1;
-  opacity: 0.95;
-  pointer-events: none;
-  background-repeat: no-repeat;
-  /* ⚠ فیلترِ چسبندگی برداشته شد.
-
-     یک بار حباب‌ها با فیلتر SVG به هم چسبانده شدند — تکنیکش
-     درست کار می‌کرد ولی نتیجه‌اش روی دکمه‌ی کوچک یک توده‌ی
-     یک‌دست می‌شد نه چند حباب. کارفرما درست گفت: هر رنگ باید
-     حبابِ جدای خودش باشد و محو. پس بلورِ ساده — لبه‌ی نرم،
-     حبابِ جدا. */
-  filter: blur(11px) saturate(1.35);
-  transition: opacity 320ms var(--ease);
+   شیشه‌ای می‌شد و پس‌زمینه‌اش را با کاغذ عوض می‌کرد تا حباب‌های
+   پشتش پیدا شوند. حالا که حبابی نیست، آن هاور فقط دکمه را
+   کم‌رنگ می‌کرد — پس همان روشن‌شدنِ ساده‌ی بالاتر می‌ماند. */
+.btn--hero {
+  padding: 16px 30px;
+  font-size: var(--text-md);
 }
 
-
-/* ⚠ حباب‌ها از چهار رنگِ تم ساخته می‌شوند، نه از ده رنگِ دلخواه.
-
-   این‌جا ده hex خام بود — نارنجی، سرخابی، بنفش، هلویی، فیروزه‌ای
-   و… — که از کمانِ لوگو آمده بودند. روی مهم‌ترین دکمه‌ی سایت،
-   کنارِ تراکوتا، مثل بازمانده‌ی یک تمِ دیگر دیده می‌شدند.
-
-   حالا همان پنج حباب‌اند با همان اندازه و مسیر — فقط رنگشان از
-   توکن می‌آید، پس اگر تم عوض شد این هم با آن می‌رود. */
-.btn--hero::before {
-  background-image:
-    radial-gradient(circle closest-side, var(--brand) 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, var(--vip) 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, var(--ai) 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, color-mix(in srgb, var(--brand) 55%, #fff) 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, var(--blue) 0 38%, transparent 72%);
-  background-size: 58% 58%, 46% 46%, 52% 52%, 38% 38%, 34% 34%;
-  background-position: 18% 26%, 62% 20%, 40% 74%, 80% 52%, 8% 62%;
-  animation: goo-a 11s cubic-bezier(.45, 0, .55, 1) infinite alternate;
-}
-
-.btn--hero::after {
-  background-image:
-    radial-gradient(circle closest-side, var(--brand-hover) 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, var(--ai) 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, color-mix(in srgb, var(--ai) 60%, var(--brand)) 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, var(--vip) 0 38%, transparent 72%),
-    radial-gradient(circle closest-side, color-mix(in srgb, var(--blue) 60%, #fff) 0 38%, transparent 72%);
-  background-size: 50% 50%, 44% 44%, 40% 40%, 34% 34%, 30% 30%;
-  background-position: 74% 66%, 30% 62%, 56% 40%, 14% 34%, 88% 26%;
-  animation: goo-b 15s cubic-bezier(.45, 0, .55, 1) infinite alternate;
-}
-
-/* هر حباب مقصدِ خودش را دارد، پس در راه به هم می‌رسند، یکی
-   می‌شوند و دوباره جدا می‌شوند */
-@keyframes goo-a {
-  to { background-position: 52% 62%, 26% 58%, 68% 30%, 34% 22%, 72% 78%; }
-}
-@keyframes goo-b {
-  to { background-position: 34% 30%, 66% 34%, 28% 68%, 62% 82%, 22% 18%; }
-}
-
-/* روی هاور شیشه شفاف‌تر می‌شود و حباب‌ها تیزتر — انگار نزدیک‌تر
-   آمده‌ای و از پشتِ شیشه بهتر می‌بینی. */
-.btn--primary:hover {
-  background: color-mix(in srgb, var(--paper) 38%, transparent);
-  border-color: color-mix(in srgb, var(--brand) 65%, transparent);
-  color: var(--ink);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 14px 32px -18px color-mix(in srgb, var(--brand) 70%, transparent);
-}
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .btn--primary:hover {
-    -webkit-backdrop-filter: blur(16px) saturate(1.5);
-    backdrop-filter: blur(16px) saturate(1.5);
-  }
-}
-[data-theme='dark'] .btn--primary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #f4f7fd;
-}
-
-.btn--hero:hover::before,
-.btn--hero:hover::after { opacity: 1; }
-
-@media (prefers-reduced-motion: reduce) {
-  .btn--hero::before,
-  .btn--hero::after { animation: none; }
-}
-
-/* کلاسِ آزمایشیِ قدیمی؛ حالا حباب‌ها روی ‎.btn--hero‎ هستند. */
+/* کلاسِ آزمایشیِ قدیمی؛ دیگر حبابی در کار نیست. */
 .btn--aurora { /* عمداً خالی */ }

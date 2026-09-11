@@ -1729,12 +1729,59 @@
    pathLength=۱ طول را نرمال می‌کند، پس dasharray یک است و offset
    از یک تا صفر می‌آید — بی‌آنکه طولِ واقعیِ کمان مهم باشد. همین
    باعث می‌شود عرضِ صفحه هیچ اثری روی درصدِ پرشدن نگذارد. */
+/* ⚠ سیم دیگر رنگین‌کمان نیست.
+
+   گرادیانتِ نارنجی→سرخابی→بنفش داشت — سه رنگ روی یک خطِ دو
+   پیکسلی که کارفرما گفت «خط رنگی رنگی» و درست هم بود: مسیر را
+   شلوغ می‌کرد بی‌آنکه چیزی بگوید.
+
+   حالا یک خطِ تراکوتای ساده که فقط می‌گوید تا کجا آمده‌ایم، و
+   چیزی که چشم را می‌برد چنگکِ روی آن است نه رنگِ خط. */
 .buypath__wire-lit {
+  stroke: var(--brand);
   stroke-width: 3;
   stroke-dasharray: 1;
   stroke-dashoffset: calc(1 - var(--done, 0) / 3);
   transition: stroke-dashoffset 560ms cubic-bezier(0.22, 1, 0.36, 1);
   filter: drop-shadow(0 0 5px color-mix(in srgb, var(--brand) 40%, transparent));
+}
+
+/* ---------- چنگک ----------
+
+   روی سیم می‌رود و سرِ هر گام می‌ایستد. حرکتش را animateMotion
+   در خودِ SVG انجام می‌دهد، پس با کشیده شدنِ قاب از مسیر جدا
+   نمی‌شود.
+
+   ⚠ ‎vector-effect‎ روی هر سه لازم است.
+
+   قاب ‎preserveAspectRatio="none"‎ دارد و افقی کشیده می‌شود؛
+   بدونِ این، فک‌ها و بازو هم با همان نسبت پهن می‌شدند و چنگک
+   شبیه یک لکه‌ی کش‌آمده می‌شد نه ابزار. */
+.buypath__claw * {
+  vector-effect: non-scaling-stroke;
+}
+.buypath__claw-arm,
+.buypath__claw-jaw {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.buypath__claw-arm { stroke-width: 1.6; opacity: 0.55; }
+.buypath__claw-hub {
+  fill: var(--brand);
+  stroke: var(--paper);
+  stroke-width: 1.5;
+}
+.buypath__claw {
+  filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--brand) 45%, transparent));
+}
+
+/* با کم‌کردنِ حرکت، چنگک همان اول ته مسیر می‌ایستد و تکان
+   نمی‌خورد — بودنش اطلاعات است، حرکتش تزئین. */
+@media (prefers-reduced-motion: reduce) {
+  .buypath__claw animateMotion { display: none; }
 }
 
 .buypath__step {

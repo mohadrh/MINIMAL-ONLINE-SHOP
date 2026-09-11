@@ -68,6 +68,31 @@ export function WhyPhoenix() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [openQ, setOpenQ] = useState<string | null>(null);
 
+  /* ⚠ چنگک با ویژگی هدایت می‌شود، نه با state.
+
+     ‎animateMotion‎ یک عنصرِ SVG است و ری‌اکت نمی‌تواند با
+     رندرِ دوباره جایش را نرم عوض کند — هر بار از اول می‌پرد.
+     پس ‎keyPoints‎ دستی نوشته می‌شود و ‎beginElement()‎ صدا
+     زده، تا مرورگر خودش از نقطه‌ی قبلی به نقطه‌ی تازه برود.
+
+     مسیر از راست به چپ کشیده شده و گام‌ها هم از راست شروع
+     می‌شوند، پس ‎done/۳‎ مستقیم همان کسرِ مسیر است. */
+  const motionRef = useRef<SVGAnimateMotionElement>(null);
+  const atRef = useRef(0);
+
+  useEffect(() => {
+    const el = motionRef.current;
+    if (!el) return;
+    const to = Math.min(1, Math.max(0, done / STEPS.length));
+    const from = atRef.current;
+    if (Math.abs(to - from) < 0.001) return;
+    atRef.current = to;
+    el.setAttribute('keyPoints', `${from};${to}`);
+    /* beginElement روی مرورگرهایی که SMIL ندارند وجود ندارد؛
+       نبودنش نباید صفحه را بشکند — چنگک همان‌جا می‌ماند. */
+    (el as unknown as { beginElement?: () => void }).beginElement?.();
+  }, [done]);
+
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduce) { setDone(STEPS.length); return; }
@@ -145,21 +170,44 @@ export function WhyPhoenix() {
                 aria-hidden="true"
                 focusable="false"
               >
-                <defs>
-                  <linearGradient id="trackGrad" x1="1" y1="0" x2="0" y2="0">
-                    <stop offset="0%" stopColor="#f59440" />
-                    <stop offset="50%" stopColor="#ee2d7a" />
-                    <stop offset="100%" stopColor="#9333ea" />
-                  </linearGradient>
-                </defs>
                 <path className="buypath__wire-bed" d={WIRE} pathLength={1} vectorEffect="non-scaling-stroke" />
                 <path
                   className="buypath__wire-lit"
                   d={WIRE}
                   pathLength={1}
                   vectorEffect="non-scaling-stroke"
-                  stroke="url(#trackGrad)"
                 />
+
+                {/* ⚠ چنگک روی همان مسیر می‌رود، نه کنارش.
+
+                    با ‎offset-path‎ نمی‌شد: آن روی مختصاتِ CSS کار
+                    می‌کند و این SVG با ‎preserveAspectRatio="none"‎
+                    کشیده می‌شود، پس چنگک از سیم جدا می‌افتاد.
+
+                    ‎animateMotion‎ در خودِ SVG است و همان ‎d‎ را
+                    می‌خواند، پس هرچقدر هم قاب کشیده شود چنگک دقیقاً
+                    روی سیم می‌ماند. جای ایستادنش با ‎keyPoints‎
+                    تعیین می‌شود که از ‎--done‎ می‌آید. */}
+                <g className="buypath__claw">
+                  <animateMotion
+                    ref={motionRef}
+                    dur="620ms"
+                    fill="freeze"
+                    calcMode="linear"
+                    keyPoints="0;0"
+                    keyTimes="0;1"
+                    path={WIRE}
+                    rotate="auto"
+                  />
+                  {/* بازوی آویز */}
+                  <line x1="0" y1="-26" x2="0" y2="-9" className="buypath__claw-arm" />
+                  {/* دو فک — روی هاورِ گام باز و بسته نمی‌شوند، چون
+                      حرکتشان باید به رسیدن گره ربط داشته باشد نه به
+                      نشانگر. بسته می‌مانند و فقط می‌روند. */}
+                  <path className="buypath__claw-jaw" d="M -1.5 -9 L -8 1 L -5.5 3.5" />
+                  <path className="buypath__claw-jaw" d="M 1.5 -9 L 8 1 L 5.5 3.5" />
+                  <circle className="buypath__claw-hub" cx="0" cy="-9" r="3.4" />
+                </g>
               </svg>
 
               {STEPS.map((s, i) => {

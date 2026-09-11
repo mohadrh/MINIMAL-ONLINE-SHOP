@@ -385,9 +385,13 @@
 
 /* ---------- ردیفِ خدماتِ دیگر ---------- */
 
-.psv__extras { margin-block-start: var(--sp-10); }
+/* بدون مارجین — پادینگِ خودِ سکشن (section--slim) کافی است و
+   با هم جمع می‌شدند. */
+.psv__extras { margin-block-start: 0; }
+/* هم‌اندازه‌ی سرتیترِ بقیه‌ی سکشن‌ها. با ‎--text-base‎ (۱۴) شبیهِ
+   یک برچسب بود نه سرتیتر، و ردیفِ خدماتِ زیرش را بی‌سر می‌گذاشت. */
 .psv__extras-title {
-  font-size: var(--text-base);
+  font-size: var(--text-lg);
   text-align: center;
   margin-block-end: var(--sp-5);
 }
@@ -433,7 +437,7 @@
 }
 .psv__x svg { transition: color var(--dur) var(--ease), filter var(--dur) var(--ease), scale var(--dur) var(--ease); }
 .psv__x b { transition: color var(--dur) var(--ease); }
-.psv__x b { font-size: var(--text-sm); font-weight: 700; }
+.psv__x b { font-size: var(--text-base); font-weight: 700; }
 .psv__x-go {
   display: inline-flex;
   align-items: center;

@@ -563,14 +563,34 @@
   transition: opacity 0.4s var(--ease);
 }
 
+/* ⚠ دکمه‌ی بستن همان گرادیانتِ دکمه‌ی چت را دارد.
+
+   تخت و تیره بود (‎--page‎) با سایه‌ی بنفشِ ‎rgba(120,35,208)‎ —
+   یک رنگِ خام از پالتِ قبلی که با تم عوض نمی‌شد. یعنی همان دکمه
+   وقتی باز می‌شد شخصیتش را از دست می‌داد و به یک قرصِ تیره با
+   هاله‌ی بنفش تبدیل می‌شد.
+
+   حالا بسته و باز یک سطح‌اند؛ فقط آیکونش از گفتگو به ضربدر
+   عوض می‌شود. */
 .chatfab.is-open {
-  background: var(--page);
+  background:
+    radial-gradient(120% 120% at 15% 115%,
+      var(--brand) 0%,
+      color-mix(in srgb, var(--brand) 55%, var(--blue)) 38%,
+      var(--blue) 72%);
   overflow: hidden;
   box-shadow:
-    0 8px 26px -8px rgba(120, 35, 208, 0.65),
+    0 8px 26px -8px color-mix(in srgb, var(--brand) 55%, transparent),
+    0 4px 18px -6px color-mix(in srgb, var(--blue) 60%, transparent),
     inset 0 0 0 1px rgba(255, 255, 255, 0.16);
 }
-.chatfab.is-open:hover { background: var(--page); }
+.chatfab.is-open:hover {
+  background:
+    radial-gradient(120% 120% at 15% 115%,
+      var(--brand) 0%,
+      color-mix(in srgb, var(--brand) 60%, var(--blue-hover)) 42%,
+      var(--blue-hover) 78%);
+}
 .chatfab.is-open .chatfab__orb { opacity: 1; }
 
 .chatfab__blob {
