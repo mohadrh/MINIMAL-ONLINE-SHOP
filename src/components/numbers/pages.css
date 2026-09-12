@@ -109,7 +109,11 @@
 .nums__offer:hover { border-color: var(--blue-line); }
 [data-theme='dark'] .nums__offer { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.12); }
 
-.nums__flag { font-size: 26px; line-height: 1; }
+/* پرچم حالا تصویر است نه ایموجی؛ نسبتش ۳:۲ و گوشه‌ی نرم دارد
+   تا لبه‌ی تیزِ مستطیل کنارِ بقیه‌ی عناصرِ گرد ناجور نباشد. */
+.nums__flag { display: inline-flex; flex: none; }
+.nums__flag img { width: 30px; height: 20px; border-radius: 3px;
+  object-fit: cover; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08); }
 .nums__offer-body b { display: block; font-size: var(--text-sm); color: var(--ink); }
 .nums__offer-body span { font-size: var(--text-xs); color: var(--ink-faint); }
 .nums__price { font-size: var(--text-md); font-weight: 800; color: var(--ink); white-space: nowrap; }
@@ -396,7 +400,7 @@
   padding: 10px var(--sp-4);
 }
 
-.nums__flag { font-size: 22px; line-height: 1; flex: none; }
+.nums__flag img { width: 26px; height: 17px; }
 .nums__country { font-size: var(--text-sm); font-weight: 700; white-space: nowrap; }
 .nums__op {
   font-size: var(--text-xs);

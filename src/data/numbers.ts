@@ -60,20 +60,32 @@ export const NUMBER_KINDS: NumberKindInfo[] = [
 export interface NumberCountry {
   code: string;
   name: string;
+  /**
+   * ⚠ ایموجیِ پرچم روی ویندوز پرچم نیست.
+   *
+   * ویندوز گلیفِ پرچم ندارد و ‎🇺🇸‎ را به‌صورت دو حرفِ «US»
+   * نشان می‌دهد. اندازه‌گیری شد: صفر درصدِ پیکسل‌های رندرشده
+   * رنگ داشتند، یعنی هیچ پرچمی کشیده نمی‌شد.
+   *
+   * پس پرچمِ واقعی فایلِ SVG است و این فقط پشتیبان می‌ماند —
+   * برای جایی مثل ‎title‎ یا متنِ ساده که تصویر نمی‌شود گذاشت.
+   */
   flag: string;
+  /** نشانیِ پرچمِ برداری در ‎public/brand/flags‎ */
+  flagSrc: string;
   /** اپراتور — روی نرخ موفقیت اثر دارد، پس نشانش می‌دهیم */
   operator: string;
 }
 
 export const NUMBER_COUNTRIES: NumberCountry[] = [
-  { code: 'us', name: 'آمریکا', flag: '🇺🇸', operator: 'T-Mobile' },
-  { code: 'gb', name: 'انگلستان', flag: '🇬🇧', operator: 'EE' },
-  { code: 'de', name: 'آلمان', flag: '🇩🇪', operator: 'Vodafone' },
-  { code: 'nl', name: 'هلند', flag: '🇳🇱', operator: 'KPN' },
-  { code: 'ca', name: 'کانادا', flag: '🇨🇦', operator: 'Rogers' },
-  { code: 'pl', name: 'لهستان', flag: '🇵🇱', operator: 'Play' },
-  { code: 'ro', name: 'رومانی', flag: '🇷🇴', operator: 'Orange' },
-  { code: 'my', name: 'مالزی', flag: '🇲🇾', operator: 'Maxis' },
+  { code: 'us', name: 'آمریکا', flag: '🇺🇸', operator: 'T-Mobile' , flagSrc: '/brand/flags/us.svg' },
+  { code: 'gb', name: 'انگلستان', flag: '🇬🇧', operator: 'EE' , flagSrc: '/brand/flags/gb.svg' },
+  { code: 'de', name: 'آلمان', flag: '🇩🇪', operator: 'Vodafone' , flagSrc: '/brand/flags/de.svg' },
+  { code: 'nl', name: 'هلند', flag: '🇳🇱', operator: 'KPN' , flagSrc: '/brand/flags/nl.svg' },
+  { code: 'ca', name: 'کانادا', flag: '🇨🇦', operator: 'Rogers' , flagSrc: '/brand/flags/ca.svg' },
+  { code: 'pl', name: 'لهستان', flag: '🇵🇱', operator: 'Play' , flagSrc: '/brand/flags/pl.svg' },
+  { code: 'ro', name: 'رومانی', flag: '🇷🇴', operator: 'Orange' , flagSrc: '/brand/flags/ro.svg' },
+  { code: 'my', name: 'مالزی', flag: '🇲🇾', operator: 'Maxis' , flagSrc: '/brand/flags/my.svg' },
 ];
 
 /* ---------------------------------------------------------------

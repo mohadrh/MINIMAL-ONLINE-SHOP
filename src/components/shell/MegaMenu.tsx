@@ -10,6 +10,7 @@ import { groupsWithItems } from '../../data/groups';
 import { NUMBER_COUNTRIES, NUMBER_SERVICES, cheapestFor } from '../../data/numbers';
 import { Glyph, type GlyphName } from '../ui/Glyph';
 import { ProductArt } from '../ui/ProductArt';
+import { asset } from '../../lib/asset';
 
 /**
  * مگامنوی محصولات.
@@ -190,7 +191,8 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
               <span className="mega__countries-list">
                 {NUMBER_COUNTRIES.map((c) => (
                   <span key={c.code} className="mega__country" title={c.operator}>
-                    <em aria-hidden="true">{c.flag}</em>
+                    {/* تصویر است نه ایموجی — دلیلش در numbers.ts نوشته شده */}
+                    <img src={asset(c.flagSrc)} alt="" aria-hidden="true" loading="lazy" />
                     {c.name}
                   </span>
                 ))}

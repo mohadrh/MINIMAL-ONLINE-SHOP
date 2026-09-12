@@ -539,12 +539,12 @@
   color: var(--ink-soft);
   white-space: nowrap;
 }
-/* پرچم ایموجی است و در راست‌به‌چپ باید جدا ایزوله شود، وگرنه
-   کنارِ نامِ فارسی جابه‌جا می‌نشیند */
-.mega__country em {
-  font-style: normal;
-  font-size: 13px;
-  line-height: 1;
-  direction: ltr;
-  unicode-bidi: isolate;
+/* پرچم تصویر است، نه ایموجی — ایموجیِ پرچم روی ویندوز به‌صورت
+   دو حرف دیده می‌شود. */
+.mega__country img {
+  width: 18px;
+  height: 12px;
+  border-radius: 2px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.1);
 }

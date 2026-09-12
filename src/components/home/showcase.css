@@ -403,12 +403,45 @@
 /* بدون مارجین — پادینگِ خودِ سکشن (section--slim) کافی است و
    با هم جمع می‌شدند. */
 .psv__extras { margin-block-start: 0; }
-/* هم‌اندازه‌ی سرتیترِ بقیه‌ی سکشن‌ها. با ‎--text-base‎ (۱۴) شبیهِ
-   یک برچسب بود نه سرتیتر، و ردیفِ خدماتِ زیرش را بی‌سر می‌گذاشت. */
+/* ---------- سرتیترِ «دیگر خدمات» ----------
+
+   ⚠ این تنها سرتیترِ رنگیِ سایت است، و استثنا بودنش عمدی است.
+
+   بقیه‌ی سرتیترها مرکبی می‌مانند (دلیلش پایینِ base.css نوشته
+   شده) چون هر کدام یک ریزتیترِ رنگی بالای سرشان دارند که کارِ
+   رنگ را می‌کند. این یکی ریزتیتر ندارد — یک بلوکِ کوتاه است
+   وسطِ صفحه — پس اگر مرکبی بماند، بی‌نشان است.
+
+   دو خطِ نازکِ کناری، تیتر را وسط قاب می‌گیرند: شکلی که با
+   یک ردیفِ متقارنِ آیکون زیرش می‌خواند. خط‌ها از رنگِ برند
+   می‌آیند و به شفاف محو می‌شوند، پس قاب می‌سازند نه کادر. */
 .psv__extras-title {
-  font-size: var(--text-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  color: var(--brand);
   text-align: center;
-  margin-block-end: var(--sp-5);
+  margin-block-end: var(--sp-6);
+}
+.psv__extras-title::before,
+.psv__extras-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to left,
+    color-mix(in srgb, var(--brand) 45%, transparent),
+    transparent);
+}
+.psv__extras-title::after {
+  background: linear-gradient(to right,
+    color-mix(in srgb, var(--brand) 45%, transparent),
+    transparent);
+}
+/* روی موبایل خط‌ها جا را از تیتر می‌گیرند و تیتر دو خط می‌شود */
+@media (max-width: 460px) {
+  .psv__extras-title { font-size: var(--text-lg); gap: var(--sp-3); }
 }
 
 .psv__row {
@@ -538,6 +571,15 @@
 }
 [data-theme="dark"] .catcard__chip { background: rgba(255, 255, 255, 0.07); }
 
+/* ⚠ قابِ نشان در شب هم سفید می‌ماند، نه تیره.
+
+   نشانِ اوپن‌ای‌آی، میدجرنی، گراک و اپل همه ‎fill="black"‎ دارند
+   — یعنی برای زمینه‌ی روشن کشیده شده‌اند. با قابِ تیره، سیاه روی
+   تیره می‌نشست و عملاً ناپدید می‌شدند؛ کارفرما همین را دید.
+
+   رنگِ خودِ نشان را نمی‌شود عوض کرد (نشانِ برند است)، پس قاب
+   عوض می‌شود. همان کاری که کارت‌های «تازه‌های هوش مصنوعی» از
+   قبل می‌کردند. */
 .catcard__chip-ic {
   display: grid;
   place-items: center;
@@ -546,7 +588,7 @@
   height: 26px;
   border-radius: 50%;
   overflow: hidden;
-  background: var(--paper);
+  background: #fff;
   font-size: 11px;
   font-weight: 800;
   color: var(--tube);
@@ -557,7 +599,16 @@
     rotate 420ms cubic-bezier(0.34, 1.4, 0.64, 1),
     filter 260ms var(--ease);
 }
-.catcard__chip-ic img { width: 100%; height: 100%; object-fit: contain; }
+/* ⚠ هفتاد‌ودو درصد، نه صد.
+
+   قاب گرد است و ‎overflow: hidden‎ دارد. نشانی که بلندتر از
+   پهنایش باشد — فیگما نسبتِ ۱۸ در ۲۷ دارد — با ‎contain‎ تا لبه‌ی
+   بالا و پایینِ مربع کشیده می‌شد و دایره سر و تهش را می‌بُرید.
+   کارفرما همین را دید که «فیگما کامل نیست».
+
+   مربعِ امنِ داخلِ دایره ۷۱٪ ضلع است، پس هر نشانی با هر نسبتی
+   داخل می‌ماند. */
+.catcard__chip-ic img { width: 72%; height: 72%; object-fit: contain; }
 
 /* نامِ بسته: ستونِ صفرکسری، پس عرضش صفر است ولی متن سالم می‌ماند */
 .catcard__chip-name {

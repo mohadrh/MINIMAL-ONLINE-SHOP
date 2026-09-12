@@ -110,9 +110,9 @@ export function CategoryShowcase() {
     from: 0,
     items: [
       { slug: '', title: 'تلگرام', logo: '/brand/logos/telegram.svg' },
-      { slug: '', title: 'واتساپ', logo: '' },
+      { slug: '', title: 'واتساپ', logo: '/brand/logos/whatsapp.svg' },
       { slug: '', title: 'چت‌جی‌پی‌تی', logo: '/brand/logos/openai.svg' },
-      { slug: '', title: 'اینستاگرام', logo: '' },
+      { slug: '', title: 'ایکس', logo: '/brand/logos/x.svg' },
       { slug: '', title: 'دیسکورد', logo: '/brand/logos/discord.svg' },
       { slug: '', title: 'استیم', logo: '/brand/logos/steam.svg' },
     ],

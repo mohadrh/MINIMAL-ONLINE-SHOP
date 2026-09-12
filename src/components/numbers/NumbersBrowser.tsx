@@ -1,5 +1,6 @@
 'use client';
 
+import { asset } from '../../lib/asset';
 import React, { useMemo, useState } from 'react';
 import { Search, ShoppingBag } from 'lucide-react';
 import {
@@ -146,7 +147,7 @@ export function NumbersBrowser() {
                   <div key={`${o.serviceId}-${o.countryCode}`} className="nums__offer">
                     {/* پرچم اول می‌آید: کشور را از شکلش می‌شناسی،
                         پیش از اینکه نامش را بخوانی. */}
-                    <span className="nums__flag" aria-hidden="true">{c?.flag}</span>
+                    <span className="nums__flag" aria-hidden="true">{c && <img src={asset(c.flagSrc)} alt="" loading="lazy" />}</span>
                     <b className="nums__country">{c?.name}</b>
                     <span className="nums__op">{c?.operator}</span>
                     <span className="nums__stock num">
