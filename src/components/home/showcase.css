@@ -13,11 +13,26 @@
    شروع می‌شود، مثلاً چه چیزهایی.
    ============================================================ */
 
+/* ⚠ پس‌زمینه ساده است، و این یک تصمیم است نه کم‌کاری.
+
+   ستاره‌های متحرک و هاله‌های چرخان برداشته شدند. جایشان یک
+   شیبِ عمودیِ خیلی ملایم از کرمِ صفحه به سطحِ ملایم نشست: سکشن
+   از بقیه‌ی صفحه جدا می‌شود — که کارِ پس‌زمینه است — بی‌آنکه
+   چیزی پشتِ کارت‌ها تکان بخورد.
+
+   خطِ نازکِ بالا و پایین هم مرز را می‌سازد، همان‌طور که بقیه‌ی
+   سایت با خط جدا می‌کند نه با سایه. */
 .catshow {
   position: relative;
   isolation: isolate;
   overflow: hidden;
   padding-block: var(--sp-20);
+  background:
+    linear-gradient(to bottom,
+      var(--page) 0%,
+      var(--wash) 45%,
+      var(--page) 100%);
+  border-block: 1px solid var(--line);
 }
 .catshow__inner { position: relative; }
 
@@ -468,15 +483,21 @@
    دو ردیف جا هست: هر تراشه ۲۶ پیکسل (۷+۷ پادینگ روی متنِ ۱۲)،
    به‌اضافه‌ی ۶ فاصله‌ی بین دو ردیف و ۱۶ پادینگِ خودِ جعبه.
    نامی که جا نشود در «دیدن همه» هست. */
+/* ⚠ ارتفاعِ ثابت ماند، ولی حالا یک ردیفِ نشان است نه دو ردیفِ نام.
+
+   با نشان‌های ۳۴ پیکسلی، شش‌تا در یک ردیف جا می‌شوند — جایی که
+   قبلاً فقط چهار نامِ متنی در دو ردیف می‌نشست. ارتفاع ثابت است
+   تا کارت‌ها هم‌قد بمانند. */
 .catcard__chips {
   display: flex;
   flex-wrap: wrap;
-  align-content: flex-start;
+  align-content: center;
+  align-items: center;
   gap: 6px;
-  height: 74px;
+  height: 62px;
   overflow: hidden;
   margin-block-start: var(--sp-3);
-  padding: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
   border-radius: var(--r-lg);
   background: color-mix(in srgb, var(--wash) 70%, transparent);
 }
@@ -484,28 +505,84 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
+/* ---------- تراشه‌ی نشان ----------
+
+   ⚠ نام با گریدِ صفرکسری باز می‌شود، نه با max-width.
+
+   با ‎max-width‎ باید یک عددِ ثابت حدس زد و نامِ بلندتر از آن
+   بریده می‌شد؛ با ‎grid-template-columns: 0fr → 1fr‎ مرورگر
+   خودش اندازه‌ی واقعیِ متن را هدف می‌گیرد، پس هر نامی کامل باز
+   می‌شود و انیمیشن هم نرم است. */
 .catcard__chip {
-  font-size: var(--text-xs);
-  line-height: 1;
-  padding: 7px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 4px;
   border-radius: 999px;
-  color: var(--ink-faint);
-  /* روی پنلِ طوسی، تراشه باید روشن‌تر از آن باشد وگرنه گم می‌شود */
   background: var(--paper);
-  /* ⚠ نصفِ ردیف، نه بیشتر.
-     نامِ بلند تمامِ عرض را می‌گرفت و آن ردیف یک تراشه بیشتر جا
-     نمی‌داد؛ چهار نام می‌شد چهار ردیف. با سقفِ نصف، همیشه دوتا
-     در ردیف می‌نشینند و چهارتا دقیقاً دو ردیف می‌شود. */
-  max-width: calc(50% - 3px);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+  color: var(--ink-soft);
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease),
+    gap var(--dur) var(--ease);
 }
 [data-theme="dark"] .catcard__chip { background: rgba(255, 255, 255, 0.07); }
-.catcard__chip:hover {
-  color: var(--brand-ink);
+
+.catcard__chip-ic {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--paper);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--tube);
+  /* بزرگ‌شدن، چرخش و درخشش — هر سه روی خودِ نشان، نه روی تراشه،
+     وگرنه نامِ کنارش هم می‌چرخد. */
+  transition:
+    scale 320ms cubic-bezier(0.34, 1.5, 0.64, 1),
+    rotate 420ms cubic-bezier(0.34, 1.4, 0.64, 1),
+    filter 260ms var(--ease);
+}
+.catcard__chip-ic img { width: 100%; height: 100%; object-fit: contain; }
+
+/* نامِ بسته: ستونِ صفرکسری، پس عرضش صفر است ولی متن سالم می‌ماند */
+.catcard__chip-name {
+  display: grid;
+  grid-template-columns: 0fr;
+  overflow: hidden;
+  font-size: var(--text-xs);
+  line-height: 1;
+  white-space: nowrap;
+  transition: grid-template-columns 320ms var(--ease);
+}
+.catcard__chip-name > span { overflow: hidden; min-width: 0; }
+
+.catcard__chip:hover,
+.catcard__chip:focus-visible {
+  gap: 7px;
+  padding-inline-end: 11px;
   background: var(--tube);
+  color: var(--brand-ink);
+}
+.catcard__chip:hover .catcard__chip-name,
+.catcard__chip:focus-visible .catcard__chip-name { grid-template-columns: 1fr; }
+
+.catcard__chip:hover .catcard__chip-ic,
+.catcard__chip:focus-visible .catcard__chip-ic {
+  scale: 1.16;
+  rotate: 360deg;
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--tube) 75%, transparent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catcard__chip-ic,
+  .catcard__chip-name,
+  .catcard__chip { transition: none; }
+  .catcard__chip:hover .catcard__chip-ic { rotate: none; scale: 1; }
 }
 
 .catcard__foot {

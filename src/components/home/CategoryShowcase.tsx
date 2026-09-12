@@ -7,8 +7,7 @@ import {
   CATEGORIES, PRODUCTS, getLowestPrice, type CategorySlug,
 } from '../../data/catalog';
 import { Glyph, type GlyphName } from '../ui/Glyph';
-import { StarField } from '../shell/StarField';
-import { MorphBackdrop } from '../ui/MorphBackdrop';
+import { asset } from '../../lib/asset';
 
 /**
  * ویترین دسته‌بندی‌ها.
@@ -70,7 +69,7 @@ const TUBES: Record<string, string> = {
  * ⚠ چهار، چون هر تراشه نصفِ عرض است و چهارتا دقیقاً دو ردیف
  * می‌شود. با پنج‌تا، دسته‌ای با نام‌های بلند — «گیفت کارت
  * پلی‌استیشن» — چهار ردیف می‌خواست و ته جعبه بریده می‌شد. */
-const PER_CARD = 4;
+const PER_CARD = 6;
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -87,7 +86,16 @@ export function CategoryShowcase() {
       /* نام‌ها از خودِ کاتالوگ می‌آیند، نه از فهرستِ دستی. محصولِ
          تازه خودش این‌جا پیدایش می‌شود و محصولِ حذف‌شده لینکِ مرده
          جا نمی‌گذارد. با ووکامرس هم همین می‌ماند. */
-      items: items.slice(0, PER_CARD).map((p) => ({ slug: p.slug, title: p.title })),
+      /* ⚠ نشان اگر بود، وگرنه تصویرِ کارت.
+
+         بازی‌ها لوگو ندارند و ندارند‌ش هم درست است — کسی بازی را
+         از روی نشانِ ناشر نمی‌شناسد، از روی جلدش می‌شناسد. پس
+         همان جلدِ مربع در قابِ کوچک می‌نشیند. */
+      items: items.slice(0, PER_CARD).map((p) => ({
+        slug: p.slug,
+        title: p.title,
+        logo: p.media.logo ?? p.media.thumbnail,
+      })),
       href: `/${c.slug}`,
     };
   });
@@ -101,9 +109,12 @@ export function CategoryShowcase() {
     count: 0,
     from: 0,
     items: [
-      { slug: '', title: 'تلگرام' },
-      { slug: '', title: 'واتساپ' },
-      { slug: '', title: 'چت‌جی‌پی‌تی' },
+      { slug: '', title: 'تلگرام', logo: '/brand/logos/telegram.svg' },
+      { slug: '', title: 'واتساپ', logo: '' },
+      { slug: '', title: 'چت‌جی‌پی‌تی', logo: '/brand/logos/openai.svg' },
+      { slug: '', title: 'اینستاگرام', logo: '' },
+      { slug: '', title: 'دیسکورد', logo: '/brand/logos/discord.svg' },
+      { slug: '', title: 'استیم', logo: '/brand/logos/steam.svg' },
     ],
     href: '/numbers',
   });
@@ -128,22 +139,24 @@ export function CategoryShowcase() {
        هر کدام در ‎/shop‎ فیلترِ خودش را دارد، پس کلیک روی کارت
        کاربر را دقیقاً به همان فهرست می‌رساند. */
     items: [
-      { slug: '', title: 'پرفروش‌ها' },
-      { slug: '', title: 'تخفیف‌دارها' },
-      { slug: '', title: 'تازه رسیده‌ها' },
-      { slug: '', title: 'مقرون‌به‌صرفه' },
+      { slug: '', title: 'پرفروش‌ها', logo: '' },
+      { slug: '', title: 'تخفیف‌دارها', logo: '' },
+      { slug: '', title: 'تازه رسیده‌ها', logo: '' },
+      { slug: '', title: 'مقرون‌به‌صرفه', logo: '' },
     ],
     href: '/shop',
   });
 
   return (
-    <section className="catshow reveal">
-      {/* روز و شب، هر دو رندر می‌شوند و CSS یکی را نشان می‌دهد —
-          نه جاوااسکریپت. اگر با شرطِ JS انتخاب می‌شدند، سرور یک
-          چیز می‌فرستاد و کلاینت چیز دیگری. */}
-      <div className="qa__day"><MorphBackdrop tone="blue" /></div>
-      <div className="qa__night"><StarField /></div>
+    /* ⚠ پس‌زمینه‌ی ستاره و هاله‌ی متحرک برداشته شد.
 
+       یک آسمانِ پرستاره در شب و چهار هاله‌ی چرخانِ رنگی در روز
+       پشتِ این سکشن بود. کارفرما گفت قشنگ است ولی حواسِ مشتری را
+       پرت می‌کند — و این‌جا بدترین جای ممکن برای حواس‌پرتی است،
+       چون همان نقطه‌ای است که کاربر باید دسته‌اش را انتخاب کند.
+
+       جایش یک ته‌رنگِ ثابت و آرام نشست که در CSS تعریف شده. */
+    <section className="catshow reveal">
       <div className="wrap catshow__inner">
         <div className="sec-head sec-head--mid">
           <span className="sec-head__kicker">از کجا شروع کنم</span>
@@ -172,27 +185,48 @@ export function CategoryShowcase() {
 
               <p className="catcard__lead">{c.tagline}</p>
 
-              {/* نامِ محصول‌ها — همان چیزی که کاربر واقعاً دنبالش است */}
+              {/* ⚠ نشانِ سرویس‌ها، نه نامشان.
+
+                  تا امروز نامِ هر محصول یک تراشه‌ی متنی بود. با
+                  نشان، هم بیشترشان جا می‌شوند — شش به‌جای چهار —
+                  هم کاربر سرویس را از روی لوگو زودتر می‌شناسد تا
+                  از روی نامِ فارسی‌اش.
+
+                  نام نرفته: روی هاور از کنارِ نشان باز می‌شود. */}
               <span className="catcard__chips">
-                {c.items.map((it) => (
-                  it.slug ? (
-                    <Link key={it.slug} href={`/product/${it.slug}`} className="catcard__chip">
-                      {it.title}
+                {c.items.map((it) => {
+                  const href = it.slug ? `/product/${it.slug}` : c.href;
+                  return (
+                    <Link
+                      key={it.slug || it.title}
+                      href={href}
+                      className="catcard__chip"
+                      title={it.title}
+                    >
+                      <span className="catcard__chip-ic" aria-hidden="true">
+                        {it.logo
+                          ? <img src={asset(it.logo)} alt="" loading="lazy" />
+                          : <b>{it.title.slice(0, 1)}</b>}
+                      </span>
+                      {/* گرید صفر‌کسری → یک‌کسری: بازشدنِ نرم بدونِ
+                          پرشِ چیدمان، که با max-width نمی‌شود */}
+                      <span className="catcard__chip-name"><span>{it.title}</span></span>
                     </Link>
-                  ) : (
-                    <Link key={it.title} href={c.href} className="catcard__chip">
-                      {it.title}
-                    </Link>
-                  )
-                ))}
+                  );
+                })}
               </span>
 
               <span className="catcard__foot">
+                {/* ⚠ قیمت از کارتِ دسته برداشته شد.
+
+                    «از ۲۰۰٬۰۰۰ تومان» این‌جا بود. کارفرما گفت
+                    برداشته شود — و درست است: کمترین قیمتِ یک دسته
+                    معمولاً مالِ ارزان‌ترین پلنِ کوچک‌ترین محصول
+                    است و انتظاری می‌سازد که صفحه‌ی محصول
+                    برآورده‌اش نمی‌کند. تعدادِ محصول می‌ماند، چون
+                    آن یکی راست است و کمک می‌کند. */}
                 <span className="catcard__meta">
                   {c.count > 0 && <span className="num">{fmt(c.count)} محصول</span>}
-                  {c.from > 0 && (
-                    <span className="catcard__from num">از {fmt(c.from)} تومان</span>
-                  )}
                   {c.count === 0 && <span>بیش از سی کشور</span>}
                 </span>
 
