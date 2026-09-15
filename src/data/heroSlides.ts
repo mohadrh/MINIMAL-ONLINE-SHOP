@@ -5,11 +5,27 @@
    سبد» ندارد. کارش این است که در ثانیه‌ی اول بگوید اینجا چه چیزهایی
    هست و تازه‌ترین‌ها کدام‌اند، و کسی که دنبال همان است را جذب کند.
    خرید در سکشن‌های بعدی و صفحه‌ی محصول اتفاق می‌افتد.
+
+   ⚠ پنج اسلاید، و هر کدام یک دسته — نه یک محصول.
+
+   سیزده اسلاید بود و بیشترشان یک محصولِ تک را تبلیغ می‌کردند:
+   بتلفیلد ۶، کال‌آو‌دیوتی، جی‌تی‌ای، جمنای پرو… یعنی هیرو
+   عملاً یک ردیفِ محصول شده بود، آن هم با تکرار (پنج اسلاید فقط
+   برای گیم). و با چرخشِ سه‌ثانیه‌ای، چهل‌ودو ثانیه طول می‌کشید
+   تا یک دور تمام شود که کسی تا آخرش نمی‌ماند.
+
+   حالا هر اسلاید یک دسته است و ‎href‎ش هم به صفحه‌ی همان دسته
+   می‌رود، پس هیرو همان کاری را می‌کند که باید: گفتنِ اینکه
+   این‌جا چه *دسته‌هایی* هست.
+
+   دو دسته اسلاید ندارند و عمدی است: «آموزشی» هیچ‌وقت بنر
+   نداشت، و «شماره مجازی» دسته‌ی کاتالوگ نیست. هر دو در سکشنِ
+   دسته‌بندی‌ها کارتِ خودشان را دارند.
    ============================================================ */
 
 import type { SlideArtSpec } from '../components/home/SlideArt';
 
-export type HeroKind = 'ai' | 'gaming' | 'creative' | 'social';
+export type HeroKind = 'ai' | 'gaming' | 'creative' | 'social' | 'giftcard';
 
 export interface HeroSlideData {
   id: string;
@@ -55,38 +71,6 @@ export interface HeroSlideData {
 
 export const HERO_SLIDES: HeroSlideData[] = [
   {
-    id: 'ai-creative',
-    kind: 'ai',
-    kindLabel: 'هوش مصنوعی',
-    badge: 'جدید',
-    titleLead: 'هوش مصنوعیِ',
-    titleAccent: 'تولید محتوا',
-    englishTitle: 'Midjourney · Higgsfield · Leonardo · Nano Banana',
-    kicker: 'تصویر، ویدیو و متن — با یک توضیح',
-    description:
-      'صحنه را توصیف می‌کنی و تصویر یا ویدیو تحویل می‌گیری. برای کسی که کارش تولید محتواست و نمی‌خواهد هر بار دنبال عکاس و تدوینگر بگردد.',
-    highlights: [
-      'منصفانه‌ترین قیمت بازار ایران',
-      'تحویل در کمترین زمان',
-      'پشتیبانی فعال تا آخرین روز',
-    ],
-    backdrop: '/hero/banner/slide-ai-v2.png',
-    tint: '#e8862e',
-    ctaLabel: 'دیدن ابزارها',
-    href: '/ai',
-    art: {
-      card: '#6b21b6',
-      label: ['Creative', 'AI'],
-      tiles: [
-        { id: 'midjourney', bg: '#ffffff', logo: 'midjourney.svg' },
-        { id: 'higgsfield', bg: '#ffffff', logo: 'higgsfield.svg' },
-        { id: 'nano-banana', bg: '#ffffff', logo: 'nano-banana.png' },
-        { id: 'firefly', bg: '#ffffff', logo: 'firefly.svg' },
-      ],
-    },
-    platforms: ['Web', 'iOS', 'Android'],
-  },
-  {
     id: 'ai-gemini',
     kind: 'ai',
     kindLabel: 'هوش مصنوعی',
@@ -124,116 +108,6 @@ export const HERO_SLIDES: HeroSlideData[] = [
     platforms: ['Web', 'Android', 'iOS'],
   },
   {
-    id: 'giftcard',
-    kind: 'gaming',
-    kindLabel: 'گیفت کارت',
-    badge: 'تازه اضافه شد',
-    titleLead: 'گیفت',
-    titleAccent: 'کارت',
-    englishTitle: 'PlayStation · Xbox · Steam · Apple',
-    kicker: 'کد اورجینال، تحویل سیستمی',
-    description:
-      'شارژ استور و کیف پول، بدون کارت ارزی. کد را می‌گیری و خودت در حسابت وارد می‌کنی — اعتبار همان‌جا می‌نشیند و تاریخ انقضا هم ندارد.',
-    highlights: [
-      'ارزان‌ترین گیفت کارت با کد اورجینال',
-      'تحویل آنی بعد از پرداخت',
-      'ضمانت سالم بودن کد',
-    ],
-    backdrop: '/hero/banner/slide-gift-v2.png',
-    tint: '#ff9900',
-    ctaLabel: 'دیدن گیفت کارت‌ها',
-    href: '/giftcard',
-    art: {
-      card: '#b02fa8',
-      label: ['Gift', 'Cards'],
-      tiles: [
-        { id: 'apple', bg: '#ffffff', logo: 'apple.svg' },
-        { id: 'netflix', bg: '#ffffff', logo: 'netflix.svg' },
-        { id: 'spotify', bg: '#ffffff', logo: 'spotify.svg' },
-        { id: 'xbox', bg: '#ffffff', logo: 'xbox.svg' },
-      ],
-    },
-    platforms: ['PS5', 'Xbox', 'PC', 'iOS'],
-  },
-  {
-    id: 'gaming-bf6',
-    kind: 'gaming',
-    kindLabel: 'گیم',
-    badge: 'جدید',
-    titleLead: 'بتلفیلد',
-    titleAccent: 'شش',
-    englishTitle: 'Battlefield 6 · EA',
-    kicker: 'از نبرد جدید جا نمان',
-    description:
-      'نقشه‌های بزرگ، ۶۴ بازیکن و تخریبی که ساختمان‌ها را واقعاً فرو می‌ریزد. اکانت روی کنسول خودت فعال می‌شود و بخش آنلاین کامل در اختیارت است.',
-    highlights: ['اکانت قانونی', 'دسترسی کامل به آنلاین', 'در صورت بروز مشکل، پشتیبانی کامل'],
-    backdrop: '/hero/banner/slide-game-v2.png',
-    tint: '#6ea8c7',
-    ctaLabel: 'مشاهده‌ی محصول',
-    href: '/product/battlefield-6',
-    platforms: ['PS5', 'Xbox', 'PC'],
-  },
-  {
-    id: 'ai-gemini-partner',
-    kind: 'ai',
-    kindLabel: 'هوش مصنوعی',
-    badge: 'ظرفیت محدود',
-    titleLead: 'پارتنر',
-    titleAccent: 'جمنای پرو',
-    englishTitle: 'Gemini Pro · Partner Program',
-    kicker: 'بهترین قیمت، با دسترسی کامل',
-    description:
-      'جمنای پرو با کمترین قیمت ممکن و بدون هیچ محدودیتی — همان امکاناتی که پلن اختصاصی می‌دهد، چون هزینه بین اعضای پلن پخش می‌شود.',
-    highlights: [
-      'کمترین قیمت جمنای پرو در ایران',
-      'دسترسی کامل، بدون محدودیت',
-      'پشتیبانی فعال تا پایان اشتراک',
-    ],
-    backdrop: '/hero/banner/slide-gift-v2.png',
-    tint: '#7c5cf0',
-    ctaLabel: 'مشاهده‌ی امکانات',
-    href: '/product/gemini-pro',
-    art: {
-      card: '#4a7cf7',
-      label: ['Gemini', 'Partner'],
-      /* ⚠ یک نشان، بزرگ — نه چهار نشانِ کوچک.
-
-         این اسلاید یک پیشنهادِ مشخص است روی یک محصولِ مشخص.
-         چهار نشانِ متفاوت رویش یعنی کاربر فکر می‌کند پلن شاملِ
-         هر چهارتاست.
-
-         solo کاشی را وسطِ کارت و بزرگ می‌کند: وقتی یک نشان
-         بیشتر نیست، چیدمانِ خوشه‌ایِ چهارتایی معنا ندارد و
-         کاشیِ تنها در گوشه رها می‌ماند. */
-      solo: true,
-      tiles: [
-        { id: 'gemini', bg: '#ffffff', logo: 'gemini.svg' },
-      ],
-    },
-    platforms: ['Web', 'Android', 'iOS'],
-  },
-  {
-    id: 'gaming-cod',
-    kind: 'gaming',
-    kindLabel: 'گیم',
-    titleLead: 'کال آو دیوتی',
-    titleAccent: 'مدرن وارفر',
-    englishTitle: 'Call of Duty · Modern Warfare',
-    kicker: 'کد را می‌گیری، خودت فعال می‌کنی',
-    description:
-      'بدون قفل منطقه‌ای، بدون واسطه. کد روی اکانت خودت می‌نشیند و تمام پیشرفتت سر جایش می‌ماند — نه اکانت قرضی، نه ترس از قطع شدن.',
-    highlights: [
-      'کد گلوبال، هر کجا کار می‌کند',
-      'تحویل بلافاصله بعد از پرداخت',
-      'مولتی‌پلیر و وارزون، هر دو باز',
-    ],
-    backdrop: '/hero/banner/slide-cod-v2.png',
-    tint: '#7c93b8',
-    ctaLabel: 'مشاهده‌ی محصول',
-    href: '/product/call-of-duty-modern-warfare',
-    platforms: ['PC', 'Steam', 'Battle.net'],
-  },
-  {
     id: 'creative-suite',
     kind: 'creative',
     kindLabel: 'طراحی و ادیت',
@@ -263,28 +137,6 @@ export const HERO_SLIDES: HeroSlideData[] = [
       ],
     },
     platforms: ['Web', 'Desktop', 'Mobile'],
-  },
-  {
-    id: 'gaming-gta',
-    kind: 'gaming',
-    kindLabel: 'گیم',
-    badge: 'به‌زودی',
-    titleLead: 'جی‌تی‌ای',
-    titleAccent: 'شش',
-    englishTitle: 'Grand Theft Auto VI',
-    kicker: 'قبل از اینکه ظرفیت پر شود',
-    description:
-      'اکانت ظرفیتی یعنی هزینه بین چند نفر تقسیم می‌شود و تو کسری از قیمت کامل می‌دهی. آنلاین و آپدیت‌های رسمی، هر دو باز.',
-    highlights: [
-      'کسری از قیمت خرید مستقیم',
-      'حالت آنلاین کاملاً فعال',
-      'در صورت بروز مشکل، پشتیبانی کامل',
-    ],
-    backdrop: '/hero/banner/slide-gta-v2.png',
-    tint: '#d977b8',
-    ctaLabel: 'دیدن اکانت‌های گیم',
-    href: '/gaming',
-    platforms: ['PS5', 'Xbox'],
   },
   {
     id: 'social-premium',
@@ -318,110 +170,82 @@ export const HERO_SLIDES: HeroSlideData[] = [
     platforms: ['Web', 'iOS', 'Android'],
   },
   {
-    id: 'playstation',
+    /* ⚠ این اسلاید پلی‌استیشنی بود و عوض شد.
+
+       کارفرما گفت بازی‌های ما فقط برای کامپیوتر است. اسلاید
+       تیترش «پلی‌استیشن» بود، نشانِ PS و ایکس‌باکس داشت و
+       ‎platforms‎ش ‎PS5/PS4‎ — یعنی بنرِ اولِ صفحه چیزی را تبلیغ
+       می‌کرد که اصلاً فروخته نمی‌شود.
+
+       بعدش هم گفت «اکانت گیم فقط استیم داریم»، پس نامِ بتل‌نت و
+       اپیک هم رفت و تیتر از «کامپیوتر» به «استیم» عوض شد —
+       «کامپیوتر» هنوز پهن‌تر از چیزی بود که می‌فروشیم.
+
+       گیفت کارتِ پلی‌استیشن و ایکس‌باکس هنوز فروخته می‌شود و
+       اسلایدِ گیفت کارت هم دست‌نخورده ماند — آن شارژِ استور است،
+       نه بازی. */
+    id: 'gaming-pc',
     kind: 'gaming',
-    kindLabel: 'پلی‌استیشن',
-    titleLead: 'پلی‌استیشن',
-    titleAccent: 'بازی و گیفت کارت',
-    englishTitle: 'PlayStation · Games & Gift Cards',
-    kicker: 'اکانت قانونی، یا شارژ مستقیم استور',
+    kindLabel: 'اکانت استیم',
+    titleLead: 'بازی‌های',
+    titleAccent: 'استیم',
+    englishTitle: 'Steam Accounts',
+    kicker: 'اکانت استیم، بدون کارت ارزی',
     description:
-      'اگر بازی می‌خواهی اکانت ظرفیتی داریم و اگر می‌خواهی خودت بخری، گیفت کارت پلی‌استیشن را می‌گیری و در حسابت وارد می‌کنی.',
+      'بازی‌های روز کامپیوتر با قیمت ریالی، روی اکانت استیم. نه کارت ارزی لازم داری نه حساب خارجی.',
     highlights: [
-      'بهترین قیمت اکانت و گیفت کارت پلی‌استیشن',
-      'تحویل فوری کد',
+      'بهترین قیمت اکانت استیم',
+      'تحویل بعد از پرداخت',
       'در صورت بروز مشکل، پشتیبانی کامل',
     ],
     backdrop: '/hero/banner/slide-game-v2.png',
-    tint: '#0b3f9e',
-    ctaLabel: 'دیدن پلی‌استیشن',
+    tint: '#1b2838',
+    ctaLabel: 'دیدن بازی‌ها',
     href: '/gaming',
     art: {
-      card: '#0b3f9e',
-      label: ['PlayStation', 'Store'],
+      card: '#1b2838',
+      label: ['PC', 'Games'],
       tiles: [
-        { id: 'playstation', bg: '#0b3f9e' },
         { id: 'steam', bg: '#ffffff', logo: 'steam.svg' },
-        { id: 'xbox', bg: '#ffffff', logo: 'xbox.svg' },
-        { id: 'gift', bg: '#ffffff', ink: '#0b3f9e' },
+        { id: 'discord', bg: '#ffffff', logo: 'discord.svg' },
+        { id: 'gift', bg: '#ffffff', ink: '#1b2838' },
+        { id: 'pc', bg: '#ffffff', ink: '#1b2838' },
       ],
     },
-    platforms: ['PS5', 'PS4'],
+    platforms: ['PC', 'Steam'],
   },
   {
-    id: 'gaming-ps',
-    kind: 'gaming',
-    kindLabel: 'پلی‌استیشن',
-    titleLead: 'بازی‌های',
-    titleAccent: 'پلی‌استیشن',
-    englishTitle: 'PlayStation · Game Accounts',
-    kicker: 'اکانت قانونی، روی کنسول خودت',
+    id: 'giftcard',
+    kind: 'giftcard',
+    kindLabel: 'گیفت کارت',
+    badge: 'تازه اضافه شد',
+    titleLead: 'گیفت',
+    titleAccent: 'کارت',
+    englishTitle: 'PlayStation · Xbox · Steam · Apple',
+    kicker: 'کد اورجینال، تحویل سیستمی',
     description:
-      'اکانت ظرفیتی یعنی هزینه بین چند نفر تقسیم می‌شود و تو کسری از قیمت کامل می‌دهی. بازی روی کنسول خودت فعال می‌شود و آنلاین هم باز است.',
+      'شارژ استور و کیف پول، بدون کارت ارزی. کد را می‌گیری و خودت در حسابت وارد می‌کنی — اعتبار همان‌جا می‌نشیند و تاریخ انقضا هم ندارد.',
     highlights: [
-      'منصفانه‌ترین قیمت اکانت پلی‌استیشن',
-      'تحویل در سریع‌ترین زمان',
-      'در صورت بروز مشکل، پشتیبانی کامل',
+      'ارزان‌ترین گیفت کارت با کد اورجینال',
+      'تحویل آنی بعد از پرداخت',
+      'ضمانت سالم بودن کد',
     ],
-    backdrop: '/hero/banner/slide-ps-games.png',
-    tint: '#0070d1',
-    ctaLabel: 'دیدن بازی‌های پلی‌استیشن',
-    href: '/gaming',
-    platforms: ['PS5', 'PS4'],
-  },
-  {
-    id: 'gaming-xbox',
-    kind: 'gaming',
-    kindLabel: 'ایکس‌باکس',
-    titleLead: 'بازی‌های',
-    titleAccent: 'ایکس‌باکس',
-    englishTitle: 'Xbox · Game Accounts',
-    kicker: 'گیم پس و بازی، هر دو',
-    description:
-      'اکانت بازی روی ایکس‌باکس خودت فعال می‌شود. اگر گیم پس می‌خواهی هم همان‌جا هست — یک اشتراک و صدها بازی.',
-    highlights: [
-      'بهترین قیمت اکانت و گیم پس ایکس‌باکس',
-      'فعال‌سازی فوری روی کنسول خودت',
-      'پشتیبانی فعال',
-    ],
-    backdrop: '/hero/banner/slide-xbox-games.png',
-    tint: '#107c10',
-    ctaLabel: 'دیدن بازی‌های ایکس‌باکس',
-    href: '/gaming',
-    platforms: ['Xbox Series', 'Xbox One'],
-  },
-  {
-    id: 'numbers',
-    kind: 'social',
-    kindLabel: 'شماره مجازی',
-    titleLead: 'شماره',
-    titleAccent: 'مجازی',
-    englishTitle: 'Virtual Numbers',
-    kicker: 'فقط برای کد تایید، بدون سیم‌کارت',
-    description:
-      'شماره‌ی یک کشور دیگر می‌گیری، کد تاییدش را همان‌جا می‌بینی و حسابت ساخته می‌شود. برای سرویس‌هایی که شماره‌ی ایران را قبول نمی‌کنند.',
-    highlights: [
-      'ارزان‌ترین شماره مجازی',
-      'دریافت کد در کمترین زمان',
-      'در صورت بروز مشکل، پشتیبانی کامل',
-    ],
-    backdrop: '/hero/banner/slide-flag-v2.png',
-    tint: '#2ecc8f',
-    ctaLabel: 'دیدن شماره‌ها',
-    href: '/numbers',
+    backdrop: '/hero/banner/slide-gift-v2.png',
+    tint: '#ff9900',
+    ctaLabel: 'دیدن گیفت کارت‌ها',
+    href: '/giftcard',
     art: {
-      card: '#1f7a5a',
-      label: ['Virtual', 'Numbers'],
+      card: '#b02fa8',
+      label: ['Gift', 'Cards'],
       tiles: [
-        { id: 'whatsapp', bg: '#25d366' },
-        { id: 'telegram', bg: '#ffffff', logo: 'telegram.svg' },
-        { id: 'openai', bg: '#ffffff', logo: 'openai.svg' },
-        { id: 'x', bg: '#17171a' },
+        { id: 'apple', bg: '#ffffff', logo: 'apple.svg' },
+        { id: 'netflix', bg: '#ffffff', logo: 'netflix.svg' },
+        { id: 'spotify', bg: '#ffffff', logo: 'spotify.svg' },
+        { id: 'xbox', bg: '#ffffff', logo: 'xbox.svg' },
       ],
     },
-    platforms: ['Web', 'iOS', 'Android'],
+    platforms: ['PS5', 'Xbox', 'PC', 'iOS'],
   },
-
 ];
 
 /* ============================================================

@@ -158,7 +158,6 @@ export const TAGS: Tag[] = [
   // ---- نوع تحویل ----
   { slug: 'instant', label: 'تحویل آنی', group: 'delivery', hint: 'بلافاصله بعد از پرداخت تحویل می‌شود' },
   { slug: 'upgrade-on-account', label: 'ارتقای اکانت خودت', group: 'delivery', hint: 'روی حساب شخصی خودت فعال می‌شود، بدون رمز' },
-  { slug: 'capacity', label: 'اکانت ظرفیتی', group: 'delivery', hint: 'بین چند نفر تقسیم می‌شود، ارزان‌تر' },
   { slug: 'private-account', label: 'اکانت اختصاصی', group: 'delivery', hint: 'کامل مال خودت، بدون شریک' },
   { slug: 'preorder', label: 'پیش‌فروش', group: 'delivery', hint: 'قبل از عرضه رزرو می‌شود' },
 

@@ -22,6 +22,72 @@
   gap: var(--sp-6); margin-bottom: var(--sp-6);
 }
 .ailx__head h2 { font-size: var(--text-2xl); margin-bottom: var(--sp-2); }
+
+/* ---------- تیترِ سکشن ----------
+
+   نشان و متن یک خط‌اند و از پایین تراز می‌شوند، نه از وسط: متنِ
+   فارسی دُم دارد — «ی» و «ن» — و تراز از وسط نشان را نسبت به
+   خطِ کرسی بالا می‌اندازد. */
+.ailx__title {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-3);
+  font-size: var(--text-3xl);
+  line-height: 1.25;
+}
+
+.ailx__title-ic {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  /* سایه زیرِ خودِ شکل می‌افتد نه زیرِ قابِ مربع، چون drop-shadow
+     روی آلفای شکل کار می‌کند نه روی جعبه‌اش */
+  filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--brand) 32%, transparent));
+  animation: ailx-float 4.5s var(--ease) infinite;
+}
+.ailx__title-ic svg { width: 100%; height: 100%; display: block; }
+
+/* شناور، نه چرخان — پشته‌ی ورق باید سنگین به نظر برسد */
+@keyframes ailx-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+/* ⚠ گرادیانِ متن، ساکن و از سه رنگِ خودِ تم.
+
+   رنگ‌های تازه وارد نمی‌شوند و حرکتی هم ندارد — قرارِ سایت همین
+   بود. فقط نیمِ دومِ تیتر رنگی است: اگر کلِ جمله گرادیان بگیرد،
+   تأکید از بین می‌رود چون همه‌چیز تأکید شده. */
+.ailx__title em {
+  font-style: normal;
+  background-image: linear-gradient(
+    100deg,
+    var(--brand) 0%,
+    var(--ai) 52%,
+    var(--blue) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ⚠ تکیه‌گاه برای وقتی background-clip کار نکند.
+
+   اگر مرورگری آن را نفهمد، ‎color: transparent‎ می‌ماند و نیمِ
+   تیتر نامرئی می‌شود. این پرسش فقط جایی پاس می‌شود که هر دو
+   پشتیبانی باشند. */
+@supports not ((background-clip: text) or (-webkit-background-clip: text)) {
+  .ailx__title em { color: var(--brand); background-image: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ailx__title-ic { animation: none; }
+}
+
+@media (max-width: 560px) {
+  .ailx__title { font-size: var(--text-2xl); gap: var(--sp-2); }
+  .ailx__title-ic { width: 32px; height: 32px; }
+}
 .ailx__lead { font-size: var(--text-sm); color: var(--ink-faint); max-width: 46ch; }
 
 .ailx__tools { display: flex; align-items: center; gap: var(--sp-4); }

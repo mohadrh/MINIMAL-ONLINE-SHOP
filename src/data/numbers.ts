@@ -108,20 +108,27 @@ export interface NumberService {
   name: string;
   group: ServiceGroup;
   accent: string;
-  /** حرف اول برای نشان‌واره — لوگوی برندها را نمی‌گذاریم */
+  /** حرف اول برای نشان‌واره — تکیه‌گاهِ سرویس‌هایی که نشان نداریم */
   mark: string;
+  /** نشانِ برند، اگر در ‎public/brand/logos‎ داشته باشیمش.
+
+      ⚠ قاعده‌ی قبلی «لوگوی برندها را نمی‌گذاریم» بود و عوض شد:
+      کارفرما خواست همه‌ی آیتم‌های منو نشانِ خودشان را داشته
+      باشند. حرفِ اول برای سرویسی می‌ماند که فایلِ نشانش را
+      نداریم — بهتر از قابِ خالی است. */
+  logo?: string;
   popular?: boolean;
 }
 
 export const NUMBER_SERVICES: NumberService[] = [
-  { id: 'telegram',  name: 'Telegram',  group: 'messaging', accent: '#4aa3e8', mark: 'T', popular: true },
-  { id: 'whatsapp',  name: 'WhatsApp',  group: 'messaging', accent: '#25d366', mark: 'W', popular: true },
+  { id: 'telegram',  name: 'Telegram',  group: 'messaging', accent: '#4aa3e8', mark: 'T', logo: '/brand/logos/telegram.svg', popular: true },
+  { id: 'whatsapp',  name: 'WhatsApp',  group: 'messaging', accent: '#25d366', mark: 'W', logo: '/brand/logos/whatsapp.svg', popular: true },
   { id: 'signal',    name: 'Signal',    group: 'messaging', accent: '#3a76f0', mark: 'S' },
   { id: 'instagram', name: 'Instagram', group: 'social',    accent: '#e1306c', mark: 'I', popular: true },
   { id: 'tiktok',    name: 'TikTok',    group: 'social',    accent: '#ff0050', mark: 'K' },
-  { id: 'x',         name: 'X',         group: 'social',    accent: '#8899a6', mark: 'X' },
-  { id: 'discord',   name: 'Discord',   group: 'social',    accent: '#5865f2', mark: 'D' },
-  { id: 'openai',    name: 'ChatGPT',   group: 'ai',        accent: '#10a37f', mark: 'C', popular: true },
+  { id: 'x',         name: 'X',         group: 'social',    accent: '#8899a6', mark: 'X', logo: '/brand/logos/x.svg' },
+  { id: 'discord',   name: 'Discord',   group: 'social',    accent: '#5865f2', mark: 'D', logo: '/brand/logos/discord.svg' },
+  { id: 'openai',    name: 'ChatGPT',   group: 'ai',        accent: '#10a37f', mark: 'C', logo: '/brand/logos/openai.svg', popular: true },
   { id: 'claude',    name: 'Claude',    group: 'ai',        accent: '#e8862e', mark: 'A' },
   { id: 'gemini',    name: 'Gemini',    group: 'ai',        accent: '#4a7cf7', mark: 'G' },
   { id: 'midjourney',name: 'Midjourney',group: 'ai',        accent: '#7c3aed', mark: 'M' },
@@ -129,7 +136,7 @@ export const NUMBER_SERVICES: NumberService[] = [
   { id: 'binance',   name: 'Binance',   group: 'finance',   accent: '#f0b90b', mark: 'B' },
   { id: 'wise',      name: 'Wise',      group: 'finance',   accent: '#9fe870', mark: 'W' },
   { id: 'google',    name: 'Google',    group: 'other',     accent: '#ea4335', mark: 'G', popular: true },
-  { id: 'steam',     name: 'Steam',     group: 'other',     accent: '#66c0f4', mark: 'S' },
+  { id: 'steam',     name: 'Steam',     group: 'other',     accent: '#66c0f4', mark: 'S', logo: '/brand/logos/steam.svg' },
   { id: 'uber',      name: 'Uber',      group: 'other',     accent: '#cccccc', mark: 'U' },
   { id: 'amazon',    name: 'Amazon',    group: 'other',     accent: '#ff9900', mark: 'A' },
 ];

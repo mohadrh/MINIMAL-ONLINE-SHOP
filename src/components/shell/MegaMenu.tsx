@@ -4,10 +4,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Info, Layers, ShoppingBag } from 'lucide-react';
 import {
-  CATEGORIES, PRODUCTS, getLowestPrice, type CategorySlug, type Product,
+  CATEGORIES, PRODUCTS, type CategorySlug, type Product,
 } from '../../data/catalog';
 import { groupsWithItems } from '../../data/groups';
-import { NUMBER_COUNTRIES, NUMBER_SERVICES, cheapestFor } from '../../data/numbers';
+import { NUMBER_COUNTRIES, NUMBER_SERVICES } from '../../data/numbers';
 import { Glyph, type GlyphName } from '../ui/Glyph';
 import { ProductArt } from '../ui/ProductArt';
 import { asset } from '../../lib/asset';
@@ -39,6 +39,17 @@ const ICONS: Record<CategorySlug, GlyphName> = {
   giftcard: 'gift',
 };
 
+/* ⚠ سقف برداشته شد — همه‌ی محصولاتِ دسته می‌آیند.
+
+   شش‌تا بود، با این استدلال که «مگامنویی که هفده ردیف داشته باشد
+   دیگر منو نیست، صفحه‌ی دسته است». آن استدلال برای *باکس* درست
+   بود: هفده باکسِ ۶۲پیکسلی در سه ستون، پنلی می‌ساخت بلندتر از
+   صفحه.
+
+   ولی کارفرما گفت باکس‌ها بروند و همه لیست شوند. ردیفِ متنیِ
+   لیست یک‌سومِ ارتفاعِ باکس را می‌گیرد، پس همان هفده‌تا حالا جا
+   می‌شوند — و «دیدن همه» سرِ جایش می‌ماند برای رفتن به صفحه‌ی
+   دسته. */
 const SHOWN = 6;
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -65,13 +76,13 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
   const cat = CATEGORIES.find((c) => c.slug === active);
   const all = useMemo(() => PRODUCTS.filter((p) => p.category === active), [active]);
 
-  /* شش سرویسِ پرتقاضا، با ارزان‌ترین قیمتِ موجودشان */
+  /* شش سرویسِ پرتقاضا. قیمت دیگر لازم نیست — دلیلش پایین‌تر
+     کنارِ خودِ باکس نوشته شده. */
   const numberPicks = useMemo(
     () =>
       NUMBER_SERVICES.filter((s) => s.popular)
         .concat(NUMBER_SERVICES.filter((s) => !s.popular))
-        .slice(0, SHOWN)
-        .map((s) => ({ service: s, from: cheapestFor('once', s.id) })),
+        .slice(0, 12),
     [],
   );
 
@@ -80,13 +91,17 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
      شش‌تا تنوعِ دسته را می‌بیند، نه شش بازیِ هم‌ژانر. */
   const shown = useMemo(() => {
     if (active === NUMBERS) return [];
+    /* ⚠ ترتیب هنوز از میانِ زیرگروه‌ها چیده می‌شود، فقط بی‌سقف.
+
+       چیدنِ دوری یعنی اولِ فهرست یکی از هر زیرگروه می‌آید نه شش
+       بازیِ هم‌ژانر — و حالا که همه‌شان می‌آیند، همین ترتیب
+       بالای لیست را متنوع نگه می‌دارد. */
     const groups = groupsWithItems(active, PRODUCTS);
     const out: Product[] = [];
-    for (let round = 0; out.length < SHOWN; round++) {
+    for (let round = 0; ; round++) {
       let added = false;
       for (const g of groups) {
         if (g.items[round]) { out.push(g.items[round]); added = true; }
-        if (out.length >= SHOWN) break;
       }
       if (!added) break;
     }
@@ -161,7 +176,7 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
             </header>
 
             <div className="mega__grid">
-              {numberPicks.map(({ service, from }) => (
+              {numberPicks.map((service) => (
                 <Link
                   key={service.id}
                   href={`/numbers?service=${service.id}`}
@@ -169,16 +184,23 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
                   style={{ ['--accent' as string]: service.accent }}
                   onClick={onNavigate}
                 >
-                  {/* نشانِ برندها را نمی‌گذاریم؛ حرفِ اول روی
-                      زمینه‌ی رنگِ خودِ سرویس. */}
-                  <span className="mega__box-art mega__box-mark" aria-hidden="true">
-                    {service.mark}
-                  </span>
+                  {/* ⚠ نشانِ برند، و حرفِ اول فقط وقتی نداریمش.
+
+                      قاعده‌ی قبلی «نشانِ برندها را نمی‌گذاریم» بود.
+                      کارفرما گفت همه‌ی آیتم‌های منو نشان داشته
+                      باشند — و حق دارد: کاربر تلگرام را از نشانش
+                      می‌شناسد نه از حرفِ «T» روی مربعِ آبی. */}
+                  {service.logo ? (
+                    <span className="mega__box-art mega__box-art--logo" aria-hidden="true">
+                      <img src={asset(service.logo)} alt="" loading="lazy" />
+                    </span>
+                  ) : (
+                    <span className="mega__box-art mega__box-mark" aria-hidden="true">
+                      {service.mark}
+                    </span>
+                  )}
                   <span className="mega__box-txt">
                     <b>{service.name}</b>
-                    <span className="mega__box-price num">
-                      {from !== null ? `از ${fmt(from)}` : 'به‌زودی'}
-                    </span>
                   </span>
                 </Link>
               ))}
@@ -237,9 +259,15 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
                 title={p.englishTitle}
                 brand={p.brand}
               />
+              {/* ⚠ قیمت از منو برداشته شد.
+
+                  منو جای تصمیمِ «کدام سرویس» است نه «چند». عدد
+                  کنارِ نامِ هر ردیف، شش خطِ منو را به شش عددِ
+                  رقیب تبدیل می‌کرد و نگاه را از نام می‌برد —
+                  کارفرما هم همین را گفت. قیمتِ کامل با همه‌ی
+                  پلن‌ها در صفحه‌ی محصول است، یک کلیک آن‌طرف‌تر. */}
               <span className="mega__box-txt">
                 <b>{p.title}</b>
-                <span className="mega__box-price num">از {fmt(getLowestPrice(p))}</span>
               </span>
             </Link>
           ))}
@@ -261,7 +289,7 @@ export function MegaMenu({ onNavigate }: { onNavigate?: () => void }) {
         <Link href={`/${cat!.slug}`} className="mega__all" onClick={onNavigate}>
           <span>
             دیدن همه‌ی {cat!.title}
-            {all.length > SHOWN && <span className="num"> ({fmt(all.length)})</span>}
+            <span className="num"> ({fmt(all.length)})</span>
           </span>
           <ChevronLeft aria-hidden="true" />
         </Link>

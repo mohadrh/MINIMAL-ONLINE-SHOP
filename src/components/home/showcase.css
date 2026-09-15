@@ -72,10 +72,17 @@
 
 /* ---------- کارت دسته ---------- */
 
+/* ⚠ ‎overflow‎ کارت باز است، و این عمدی است.
+
+   قبلاً ‎hidden‎ بود و پیلِ نامِ تراشه‌ها را سرِ لبه می‌بُرید.
+   کارفرما خواست نام همیشه به یک سمت باز شود و «روی همه‌ی
+   المان‌ها بیفتد»، پس باید بتواند از کارت بیرون بزند.
+
+   چیزی هم از دست نمی‌رود: تنها فرزندی که به بریدن نیاز داشت
+   ‎__flood‎ بود، و آن خودش گردیِ کارت را به ارث می‌برد. */
 .catcard {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -99,7 +106,14 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* ⚠ کارتِ زیرِ نشانگر بالای بقیه می‌آید.
+
+   هر کارت با ‎isolation: isolate‎ لایه‌ی مستقلِ خودش است، و
+   لایه‌های هم‌تراز به ترتیبِ DOM روی هم می‌نشینند — یعنی کارتِ
+   بعدی روی پیلی که از کارتِ قبلی بیرون زده می‌افتد. با یک
+   ‎z-index‎ی روی هاور، کلِ کارت و پیلش بالا می‌آیند. */
 .catcard:hover {
+  z-index: 2;
   translate: 0 -4px;
   border-color: color-mix(in srgb, var(--tube) 55%, transparent);
   box-shadow: 0 20px 44px -30px color-mix(in srgb, var(--tube) 90%, transparent);
@@ -113,6 +127,8 @@
   position: absolute;
   inset: 0;
   z-index: -1;
+  /* جای ‎overflow: hidden‎ی که از کارت برداشته شد */
+  border-radius: inherit;
   background: linear-gradient(to top,
     color-mix(in srgb, var(--tube) 22%, transparent) 0%,
     transparent 62%);
@@ -538,7 +554,10 @@
   align-items: center;
   gap: 6px;
   height: 90px;
-  overflow: hidden;
+  /* ⚠ ‎visible‎ نه ‎hidden‎ — پیلِ نام باید بتواند بیرون بزند.
+     تراشه‌ها عرضِ ثابت دارند و هیچ‌وقت ردیف نمی‌شکنند، پس دیگر
+     چیزی نیست که لازم باشد بریده شود. */
+  overflow: visible;
   margin-block-start: var(--sp-3);
   padding: var(--sp-2) var(--sp-3);
   border-radius: var(--r-lg);
@@ -557,19 +576,41 @@
    خودش اندازه‌ی واقعیِ متن را هدف می‌گیرد، پس هر نامی کامل باز
    می‌شود و انیمیشن هم نرم است. */
 .catcard__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-  padding: 4px;
+  position: relative;
+  /* ⚠ صفر است، نه ‎auto‎ — و همین یک عدد لازم است.
+
+     ‎position: relative‎ با ‎z-index: auto‎ لایه‌ی مستقل نمی‌سازد.
+     یعنی ‎z-index‎ی که روی قابِ نشان و پیلِ نام گذاشته‌ایم، همه
+     در لایه‌ی کارت با هم رقابت می‌کنند نه هرکدام داخلِ تراشه‌ی
+     خودش. نتیجه‌اش این بود که نشانِ تراشه‌ی *بغلی* (با ۲) از
+     روی پیلِ تراشه‌ی زیرِ نشانگر (با ۱) رد می‌شد و پیل شیشه‌ای
+     به نظر می‌رسید — کارفرما گفت «از زیرش مورد کناری هم معلوم
+     می‌شود».
+
+     با یک عددِ صریح، هر تراشه لایه‌ی خودش را می‌سازد: داخلش
+     نشان روی پیل می‌نشیند، و بیرون، تراشه‌ها فقط با ‎z-index‎ِ
+     خودشان مرتب می‌شوند — هاور می‌شود ۲ و بالای همه می‌آید. */
+  z-index: 0;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
   border-radius: 999px;
   background: var(--paper);
   color: var(--ink-soft);
-  transition:
-    background var(--dur) var(--ease),
-    color var(--dur) var(--ease),
-    gap var(--dur) var(--ease);
+  transition: background var(--dur) var(--ease);
 }
-[data-theme="dark"] .catcard__chip { background: rgba(255, 255, 255, 0.07); }
+
+/* ⚠ در شب، تراشه و قابِ نشان هر دو بی‌زمینه می‌شوند.
+
+   کارفرما گفت دایره‌ی روشنِ پشتِ هر نشان جالب نیست و در حالتِ
+   تیره بهتر است خودِ نشان باشد. حق داشت: هشت کارتِ تیره با
+   چهل‌وشش دایره‌ی روشنِ کوچک، صفحه را خال‌خال می‌کرد.
+
+   جای دایره یک هاله‌ی نئونی از رنگِ خودِ دسته نشست — نور هست،
+   ولی تیره و از پشت، نه یک بشقابِ سفید. */
+[data-theme="dark"] .catcard__chip { background: transparent; }
 
 /* ⚠ قابِ نشان در شب هم سفید می‌ماند، نه تیره.
 
@@ -581,6 +622,16 @@
    عوض می‌شود. همان کاری که کارت‌های «تازه‌های هوش مصنوعی» از
    قبل می‌کردند. */
 .catcard__chip-ic {
+  /* ⚠ بالای پیلِ نام می‌نشیند، وگرنه هاور لوگو را می‌پوشاند.
+
+     پیلِ نام مطلق است و ‎z-index: 1‎ دارد. این قاب پوزیشن نداشت،
+     پس در لایه‌ی جریانِ عادی می‌ماند — یعنی زیرِ هر عنصرِ
+     پوزیشن‌دار. پادینگِ ۳۸ پیکسلیِ پیل جا را برای نشان باز
+     می‌کرد ولی *زمینه‌ی* پیل همچنان زیرِ آن ۳۸ پیکسل کشیده
+     می‌شد و روی نشان می‌افتاد؛ کارفرما گفت «هاور که می‌شویم
+     دیگر لوگو معلوم نیست». */
+  position: relative;
+  z-index: 2;
   display: grid;
   place-items: center;
   flex: none;
@@ -597,7 +648,20 @@
   transition:
     scale 320ms cubic-bezier(0.34, 1.5, 0.64, 1),
     rotate 420ms cubic-bezier(0.34, 1.4, 0.64, 1),
-    filter 260ms var(--ease);
+    filter 260ms var(--ease),
+    /* ⚠ هاله هم باید نرم بیاید، وگرنه چرخش دیده نمی‌شود.
+
+       در حالتِ شب قابِ سفید نیست و تنها چیزی که چرخشش را نشان
+       می‌دهد خودِ نشان است. تا وقتی ‎box-shadow‎ در این فهرست
+       نبود، هاله در همان فریمِ اول با تمامِ شدت روشن می‌شد و
+       چهارصدوبیست میلی‌ثانیه چرخش زیرِ آن برق گم می‌شد —
+       کارفرما گفت «همش نورانی می‌شود و نمی‌بینم بچرخد»، و
+       اندازه‌گیری هم همین را نشان داد: چرخش انجام می‌شد،
+       فقط دیده نمی‌شد.
+
+       حالا نور هم‌زمان با چرخش و کمی دیرتر بالا می‌آید، پس اول
+       حرکت را می‌بینی و بعد درخشش را. */
+    box-shadow 420ms var(--ease) 60ms;
 }
 /* ⚠ هفتاد‌ودو درصد، نه صد.
 
@@ -610,27 +674,120 @@
    داخل می‌ماند. */
 .catcard__chip-ic img { width: 72%; height: 72%; object-fit: contain; }
 
-/* نامِ بسته: ستونِ صفرکسری، پس عرضش صفر است ولی متن سالم می‌ماند */
+/* ---------- حالتِ تیره: هاله به‌جای بشقاب ---------- */
+
+[data-theme="dark"] .catcard__chip-ic {
+  background: transparent;
+  /* هاله‌ی نئونی از رنگِ دسته، پشتِ نشان. دو لایه است: یک تاریکیِ
+     نزدیک که نشان را از زمینه جدا می‌کند، و یک درخششِ پخش. */
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tube) 26%, transparent),
+    0 0 9px -1px color-mix(in srgb, var(--tube) 42%, transparent);
+  background-image: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--tube) 22%, transparent) 0%,
+    transparent 72%
+  );
+}
+[data-theme="dark"] .catcard__chip:hover .catcard__chip-ic,
+[data-theme="dark"] .catcard__chip:focus-visible .catcard__chip-ic {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--tube) 48%, transparent),
+    0 0 12px -2px color-mix(in srgb, var(--tube) 58%, transparent);
+}
+
+/* ⚠ در شب هاله‌ی ‎filter‎ ملایم‌تر از روز است.
+
+   در روز نشان روی بشقابِ سفید است و نورِ هفتاد‌وپنج درصدی از
+   کنارش می‌زند بیرون. در شب بشقاب نیست و همان نور مستقیم روی
+   خودِ نشان می‌افتد و سفیدش می‌کند — یعنی همان چیزی که باید
+   چرخشش را نشان بدهد، ناخوانا می‌شود. */
+[data-theme="dark"] .catcard__chip:hover .catcard__chip-ic,
+[data-theme="dark"] .catcard__chip:focus-visible .catcard__chip-ic {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tube) 45%, transparent));
+}
+
+/* ⚠ سه نشان بدونِ بشقابِ سفید ناپدید می‌شوند.
+
+   بیشترِ نشان‌های تک‌رنگ — اوپن‌ای‌آی، گراک، میدجرنی، کلاد — یک
+   مربعِ سیاه با علامتِ سفید داخلش‌اند: مربع در زمینه‌ی تیره محو
+   می‌شود ولی علامتِ سفید سرِ جایش می‌ماند و خوانا است.
+
+   ولی اپل، کپ‌کات و ایکس فقط یک شکلِ تیره‌اند و هیچ سفیدی
+   ندارند؛ بدونِ بشقاب کاملاً نامرئی می‌شوند. برای همین سه‌تا
+   ‎data-mono‎ گذاشته می‌شود و مرکبشان به سفید برمی‌گردد.
+
+   فیلتر روی همه نمی‌رود: تلگرام و دیسکورد و فیگما رنگی‌اند و
+   وارونه‌شدنشان نشانِ برند را خراب می‌کند. */
+[data-theme="dark"] .catcard__chip-ic img[data-mono] {
+  filter: brightness(0) invert(1);
+}
+
+/* آیکونِ فیلتر — روی کارتِ «دسترسی سریع فیلترها».
+
+   خطی است نه توپُر، چون در قابِ ۲۶پیکسلی شکلِ توپُر لکه می‌شود.
+   رنگ از ‎--tube‎ می‌آید مثل حرفِ قبلی، پس با همان دسته هم‌رنگ
+   می‌ماند و در هاور هم که زمینه رنگی می‌شود، ‎currentColor‎
+   خودش را با متن عوض می‌کند. */
+.catcard__chip-ic > svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.1;
+}
+
+/* ---------- نامِ تراشه ----------
+
+   ⚠ نام مطلق است و از چیدمان بیرون، نه یک ستونِ گرید.
+
+   قبلاً نام یک ستونِ ‎0fr → 1fr‎ بود که روی هاور باز می‌شد.
+   باز شدنش نرم بود ولی تراشه را از ۳۴ به ۱۱۱ پیکسل می‌رساند، و
+   شش تراشه در کارتِ ۱۹۹پیکسلی با این عرض دیگر در ردیف جا
+   نمی‌شدند. نتیجه این بود که ردیف وسطِ هاور می‌شکست و بقیه‌ی
+   تراشه‌ها به سطرِ بعد می‌پریدند — همان «پرش» که کارفرما دید. هر
+   ارتفاعی هم که برای جعبه می‌گذاشتیم این را درست نمی‌کرد، چون
+   مشکل از جابه‌جاییِ افقی بود.
+
+   حالا تراشه همیشه ۳۴ پیکسل است و هیچ‌وقت عرضش عوض نمی‌شود. نام
+   یک پیلِ مطلق است که از زیرِ نشان بیرون می‌آید و روی همسایه‌اش
+   می‌افتد. دیده‌شدنش همان است، ولی چیدمان اصلاً خبردار نمی‌شود —
+   پس هیچ تراشه‌ای تکان نمی‌خورد. */
 .catcard__chip-name {
-  display: grid;
-  grid-template-columns: 0fr;
-  overflow: hidden;
+  position: absolute;
+  inset-block-start: 0;
+  /* در راست‌به‌چپ، ‎start‎ یعنی راست: لبه‌ی راستِ پیل روی لبه‌ی
+     راستِ تراشه می‌نشیند و متن به سمتِ چپ باز می‌شود. */
+  inset-inline-start: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  height: 34px;
+  /* ۳۸ پیکسلِ سمتِ راست زیرِ خودِ نشان می‌ماند تا متن رویش نیفتد */
+  padding-inline: 38px 13px;
+  border-radius: 999px;
+  background: var(--tube);
+  color: var(--brand-ink);
   font-size: var(--text-xs);
   line-height: 1;
   white-space: nowrap;
-  transition: grid-template-columns 320ms var(--ease);
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.86 1;
+  transform-origin: 100% 50%;
+  transition:
+    opacity 200ms var(--ease),
+    scale 300ms cubic-bezier(0.34, 1.4, 0.64, 1);
 }
-.catcard__chip-name > span { overflow: hidden; min-width: 0; }
 
-.catcard__chip:hover,
-.catcard__chip:focus-visible {
-  gap: 7px;
-  padding-inline-end: 11px;
-  background: var(--tube);
-  color: var(--brand-ink);
-}
 .catcard__chip:hover .catcard__chip-name,
-.catcard__chip:focus-visible .catcard__chip-name { grid-template-columns: 1fr; }
+.catcard__chip:focus-visible .catcard__chip-name {
+  opacity: 1;
+  scale: 1 1;
+}
+
+/* تراشه‌ی زیرِ نشانگر بالای بقیه می‌آید، وگرنه پیلش زیرِ تراشه‌ی
+   بعدی می‌رود و نصفِ نام پنهان می‌ماند. */
+.catcard__chip:hover,
+.catcard__chip:focus-visible { z-index: 2; }
 
 .catcard__chip:hover .catcard__chip-ic,
 .catcard__chip:focus-visible .catcard__chip-ic {
@@ -953,25 +1110,25 @@
 }
 @media (max-width: 900px) { .trst__row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 480px) {
-  /* ⚠ خودِ گروه وسطِ صفحه می‌نشیند، ولی متن راست‌چین می‌ماند.
+  /* ⚠ روی موبایل راست‌چین است، نه وسط‌چین.
 
-     یک بار متن را هم وسط‌چین کردم و کارفرما گفت منظورش این نبود.
-     تفاوتش مهم است: متنِ فارسی از راست خوانده می‌شود و وسط‌چین
-     کردنش هر سطر را از جای متفاوتی شروع می‌کند. آنچه باید وسط
-     بیاید بلوکِ چهارتایی است، نه خطوطِ داخلش.
+     سیرِ این تکه دو مرحله داشت و هر دو از بازخورد آمد. اول متن
+     را وسط‌چین کردم که غلط بود: متنِ فارسی از راست خوانده
+     می‌شود و وسط‌چین کردن، هر سطر را از جای متفاوتی شروع
+     می‌کند. بعد بلوکِ چهارتایی را وسط نشاندم و متن را راست‌چین
+     گذاشتم — ولی آن هم خواسته نبود.
 
-     پس هر آیتم به اندازه‌ی محتوایش عرض می‌گیرد و در ستون وسط
-     می‌نشیند؛ داخلش آیکون و متن سرِ جای همیشگی‌شان می‌مانند. */
+     حالا هر آیتم تمامِ عرضِ ستون را می‌گیرد و از راست شروع
+     می‌شود، یعنی آیکونِ چهار ردیف روی یک خطِ عمودی می‌افتند و
+     چشم یک لبه‌ی تراز دارد. فاصله‌ی دو طرف هم از گاتِر خودِ
+     ‎.wrap‎ می‌آید (بیست پیکسل)، پس چیزی به لبه‌ی صفحه
+     نمی‌چسبد. */
   .trst__row {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--sp-5);
-    justify-items: center;
+    justify-items: stretch;
   }
-  .trst__item {
-    width: max-content;
-    max-width: 100%;
-    text-align: start;
-  }
+  .trst__item { text-align: start; }
 }
 
 .trst__item {

@@ -49,7 +49,40 @@ export function AiLatest() {
       <div className="wrap">
         <header className="ailx__head">
           <div>
-            <h2>تازه‌های هوش مصنوعی</h2>
+            {/* ⚠ تیتر نشان دارد، و نشان سه‌بعدی است.
+
+                «تازه‌های هوش مصنوعی» کوتاه بود ولی نمی‌گفت محتوایش
+                خبر است؛ کنارِ ریلی که خبر و ابزار را با هم دارد،
+                «خبرهای تازه‌ی دنیای هوش مصنوعی» تکلیف را روشن
+                می‌کند.
+
+                نشان سه ورقِ ایزومتریک است — پشتهٔ خبر — با جرقه‌ی
+                «تازه» روی گوشه‌اش. هر سه ورق و جرقه از رنگ‌های خودِ
+                تم‌اند، پس هیچ رنگِ تازه‌ای وارد سایت نمی‌کند. */}
+            <h2 className="ailx__title">
+              <span className="ailx__title-ic" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none">
+                  <path d="M24 26 L42 35 L24 44 L6 35 Z" fill="var(--blue)" opacity=".4" />
+                  <path d="M24 17 L42 26 L24 35 L6 26 Z" fill="var(--ai)" opacity=".68" />
+                  <path d="M24 8 L42 17 L24 26 L6 17 Z" fill="var(--brand)" />
+                  {/* لبه‌ی روشنِ ورقِ بالا — همان چیزی که حجم می‌سازد */}
+                  <path
+                    d="M6 17 L24 8 L42 17"
+                    stroke="#fff"
+                    strokeOpacity=".32"
+                    strokeWidth="1.3"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M39 3 l1.5 3.6 3.6 1.5 -3.6 1.5 -1.5 3.6 -1.5 -3.6 -3.6 -1.5 3.6 -1.5 Z"
+                    fill="var(--vip)"
+                  />
+                </svg>
+              </span>
+              <span className="ailx__title-txt">
+                خبرهای تازه‌ی <em>دنیای هوش مصنوعی</em>
+              </span>
+            </h2>
             <p className="ailx__lead">
               مدل‌های تازه و کاری که هرکدام راه می‌اندازند.
             </p>

@@ -7,6 +7,7 @@ import { Footer } from '../components/shell/Footer';
 import { Reveal } from '../components/motion/Reveal';
 import { CursorLight } from '../components/motion/CursorLight';
 import { ScrollTop } from '../components/shell/ScrollTop';
+import { SmoothScroll } from '../components/shell/SmoothScroll';
 import { LiveChat } from '../components/shell/LiveChat';
 import { CompareProvider, CompareBar } from '../components/shop/Compare';
 import { CartDrawer } from '../components/cart/CartDrawer';
@@ -160,6 +161,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <LiveChat />
           <Reveal />
           <CursorLight />
+          {/* نرم‌کردنِ چرخِ ماوس — دلیلش در خودِ فایل نوشته شده */}
+          <SmoothScroll />
           </LivePriceProvider>
         </Providers>
       </body>

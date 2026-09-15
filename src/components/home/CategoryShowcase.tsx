@@ -2,12 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BadgePercent, Flame, PiggyBank, Sparkles } from 'lucide-react';
 import {
   CATEGORIES, PRODUCTS, getLowestPrice, type CategorySlug,
 } from '../../data/catalog';
 import { Glyph, type GlyphName } from '../ui/Glyph';
 import { asset } from '../../lib/asset';
+import { isMonoDarkLogo } from '../../lib/logoTone';
 
 /**
  * ویترین دسته‌بندی‌ها.
@@ -51,17 +52,33 @@ const ICONS: Record<string, GlyphName> = {
      گیفت کارت   → کهربایی vip، رنگِ باشگاه و هدیه
      اجتماعی و آموزشی و شماره → آبیِ اعتماد
      طراحی و گیم → تراکوتای برند */
+/* ⚠ ترتیبِ رنگ‌ها چیده شده، نه تصادفی — و دلیلش هست.
+
+   خواسته این بود که نورِ کارت‌ها متنوع باشد و «دو تا کنارِ هم یک
+   رنگ نباشند». قرعه‌ی واقعی هر دو را می‌شکند: هم گاهی دو همسایه
+   را هم‌رنگ می‌کند، هم چون سرور و مرورگر دو قرعه‌ی جدا می‌اندازند،
+   رنگ‌ها لحظه‌ی هیدریشن می‌پرند.
+
+   پس چیدمانِ ثابتی حساب شد که در هر سه اندازه‌ی شبکه شرط را نگه
+   دارد. شبکه چهار ستون است، زیر ۱۱۸۰ دو ستون، زیر ۵۶۰ یک ستون —
+   یعنی همسایه‌ی هر کارت بسته به عرضِ صفحه می‌تواند ‎+۱‎، ‎+۲‎ یا
+   ‎+۴‎ باشد. این ترتیب هر سه فاصله را رعایت می‌کند:
+
+     ai  بنفش │ طراحی تراکوتا │ اجتماعی کهربا │ آموزش آبی
+     گیم تراکوتا │ گیفت کهربا │ شماره آبی │ سایر بنفش
+
+   و از هر چهار رنگ دقیقاً دو بار استفاده می‌شود، پس هیچ رنگی
+   غالب نمی‌شود. جاهایی که معنا داشت هم سرِ جای خودش ماند: هوش
+   مصنوعی بنفشِ ai، گیفت کارت کهربایِ باشگاه، آموزش آبیِ اعتماد. */
 const TUBES: Record<string, string> = {
   ai: 'var(--ai)',
   creative: 'var(--brand)',
-  gaming: 'var(--brand)',
-  social: 'var(--blue)',
+  social: 'var(--vip)',
   education: 'var(--blue)',
+  gaming: 'var(--brand)',
   giftcard: 'var(--vip)',
   numbers: 'var(--blue)',
-  /* کارتِ «سایر» رنگِ خودِ برند را می‌گیرد، نه رنگِ یک دسته —
-     چون به هیچ دسته‌ای تعلق ندارد و بالای همه‌شان است. */
-  all: 'var(--brand)',
+  all: 'var(--ai)',
 };
 
 /** حداکثر چند نام در هر کارت — بیشترش دیوارِ لینک می‌شود.
@@ -73,8 +90,29 @@ const PER_CARD = 6;
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
+/** یک تراشه زیرِ کارت — یا نشانِ یک محصول، یا آیکونِ یک فیلتر */
+type Chip = {
+  slug: string;
+  title: string;
+  logo: string;
+  /** وقتی نشان ندارد؛ جای حرفِ اول می‌نشیند */
+  icon?: React.ReactNode;
+  /** مقصدِ دلخواه — وگرنه به خودِ دسته می‌رود */
+  to?: string;
+};
+
+type Card = {
+  slug: CategorySlug | 'numbers' | 'all';
+  title: string;
+  tagline: string;
+  count: number;
+  from: number;
+  items: Chip[];
+  href: string;
+};
+
 export function CategoryShowcase() {
-  const cards = CATEGORIES.map((c) => {
+  const cards: Card[] = CATEGORIES.map((c) => {
     const items = PRODUCTS.filter((p) => p.category === c.slug);
     const from = items.length ? Math.min(...items.map(getLowestPrice)) : 0;
     return {
@@ -131,18 +169,27 @@ export function CategoryShowcase() {
      شد همان جایی است که کاربر بعد از دیدنِ دسته‌ها می‌خواهد برود. */
   cards.push({
     slug: 'all',
-    title: 'سایر محصولات',
-    tagline: 'باقیِ فهرست، با فیلتر و مرتب‌سازی — هرچه بالا ندیدی این‌جاست',
+    title: 'دسترسی سریع فیلترها',
+    tagline: 'میان‌بر به پرکاربردترین فیلترهای فروشگاه — یک کلیک تا فهرستِ باریک‌شده',
     count: PRODUCTS.length,
     from: PRODUCTS.length ? Math.min(...PRODUCTS.map(getLowestPrice)) : 0,
-    /* ⚠ این‌ها برچسبِ واقعیِ فروشگاه‌اند، نه اسمِ قابلیت.
-       هر کدام در ‎/shop‎ فیلترِ خودش را دارد، پس کلیک روی کارت
-       کاربر را دقیقاً به همان فهرست می‌رساند. */
+    /* ⚠ آیکون می‌گیرند، نه حرفِ اولِ نامشان.
+       و ⚠ هرکدام به فیلترِ خودش در ‎/shop‎ می‌روند.
+
+       تا امروز این چهارتا ‎logo: ''‎ داشتند و به حرفِ اول می‌افتادند:
+       «پ»، «ت»، «ت»، «م» — دو دایره‌ی هم‌شکل که هیچ‌کدام چیزی
+       نمی‌گفتند، آن هم کنارِ هفت کارتی که نشانِ واقعیِ برندها را
+       نشان می‌دهند. حرف در دایره ادایِ لوگو درمی‌آورد، و این‌ها
+       لوگو نیستند؛ فیلترند. پس آیکون، که دقیقاً همان را می‌گوید.
+
+       هر چهارتا هم به ‎/shop‎ی خالی می‌رفتند. حالا برچسبِ واقعیِ
+       کاتالوگ را با خودشان می‌برند و فهرست همان‌طور که وعده داده
+       شده باریک می‌رسد. */
     items: [
-      { slug: '', title: 'پرفروش‌ها', logo: '' },
-      { slug: '', title: 'تخفیف‌دارها', logo: '' },
-      { slug: '', title: 'تازه رسیده‌ها', logo: '' },
-      { slug: '', title: 'مقرون‌به‌صرفه', logo: '' },
+      { slug: '', title: 'پرفروش‌ها',    logo: '', icon: <Flame />,       to: '/shop?tag=bestseller' },
+      { slug: '', title: 'تخفیف‌دارها',  logo: '', icon: <BadgePercent />, to: '/shop?deals=1' },
+      { slug: '', title: 'تازه رسیده‌ها', logo: '', icon: <Sparkles />,    to: '/shop?tag=new-release' },
+      { slug: '', title: 'مقرون‌به‌صرفه', logo: '', icon: <PiggyBank />,   to: '/shop?tag=budget' },
     ],
     href: '/shop',
   });
@@ -156,13 +203,13 @@ export function CategoryShowcase() {
        چون همان نقطه‌ای است که کاربر باید دسته‌اش را انتخاب کند.
 
        جایش یک ته‌رنگِ ثابت و آرام نشست که در CSS تعریف شده. */
-    <section className="catshow reveal">
+    <section className="catshow reveal" id="catshow">
       <div className="wrap catshow__inner">
         <div className="sec-head sec-head--mid">
           <span className="sec-head__kicker">از کجا شروع کنم</span>
           <h2>دسته‌بندی محصولات</h2>
           <p className="sec-head__lead">
-            اسمِ چیزی که دنبالش هستی را همین‌جا بزن — لازم نیست اول دسته را باز کنی.
+            هر چیزی لازم داشتی، از همین‌جا راحت‌تر پیدایش می‌کنی.
           </p>
         </div>
 
@@ -195,7 +242,7 @@ export function CategoryShowcase() {
                   نام نرفته: روی هاور از کنارِ نشان باز می‌شود. */}
               <span className="catcard__chips">
                 {c.items.map((it) => {
-                  const href = it.slug ? `/product/${it.slug}` : c.href;
+                  const href = it.to ?? (it.slug ? `/product/${it.slug}` : c.href);
                   return (
                     <Link
                       key={it.slug || it.title}
@@ -205,8 +252,17 @@ export function CategoryShowcase() {
                     >
                       <span className="catcard__chip-ic" aria-hidden="true">
                         {it.logo
-                          ? <img src={asset(it.logo)} alt="" loading="lazy" />
-                          : <b>{it.title.slice(0, 1)}</b>}
+                          ? (
+                            <img
+                              src={asset(it.logo)}
+                              alt=""
+                              loading="lazy"
+                              /* نشانِ تک‌رنگِ تیره در شب سفید می‌شود —
+                                 دلیلش در logoTone.ts نوشته شده */
+                              data-mono={isMonoDarkLogo(it.logo) ? '' : undefined}
+                            />
+                          )
+                          : it.icon ?? <b>{it.title.slice(0, 1)}</b>}
                       </span>
                       {/* گرید صفر‌کسری → یک‌کسری: بازشدنِ نرم بدونِ
                           پرشِ چیدمان، که با max-width نمی‌شود */}

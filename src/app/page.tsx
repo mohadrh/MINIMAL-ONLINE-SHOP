@@ -2,6 +2,7 @@ import { Hero } from '../components/home/Hero';
 import { HotDeals } from '../components/home/HotDeals';
 import { PopularServices } from '../components/home/PopularServices';
 import { TrustStrip } from '../components/home/TrustStrip';
+import { HeroBridge } from '../components/home/HeroBridge';
 import { CategoryShowcase } from '../components/home/CategoryShowcase';
 import { AiPicker } from '../components/home/AiPicker';
 import { AiLatest } from '../components/home/AiLatest';
@@ -33,13 +34,8 @@ export default function HomePage() {
     <>
       <Hero />
 
-      {/* چهار جوابِ کوتاه، پیش از هر قیمتی.
-
-          سوال‌های اولِ کاربر — چقدر طول می‌کشد، چیزی که
-          می‌خواهم هست، پولم امن است، کسی جواب می‌دهد — همه
-          پیش از دیدن قیمت‌اند. اگر جوابشان پایین صفحه باشد،
-          کسی که به آن اطمینان نیاز داشته تا آن‌جا نرسیده. */}
-      <TrustStrip />
+      {/* پلِ بینِ هیرو و دسته‌ها — دلیلش در خودِ کامپوننت */}
+      <HeroBridge />
 
       {/* دسته‌بندی‌ها بلافاصله بعد از هیرو.
 
@@ -75,6 +71,17 @@ export default function HomePage() {
 
       <WhyPhoenix />
       <Reviews />
+
+      {/* ⚠ چهار جوابِ کوتاه، حالا تهِ صفحه — نه زیرِ هیرو.
+
+          استدلالِ قبلی این بود که سوال‌های اولِ کاربر پیش از
+          دیدنِ قیمت‌اند، پس جوابشان هم باید بالا باشد. کارفرما
+          گفت بیایند آخر، و برای این صفحه بهتر هم هست: بالای
+          صفحه جای «این‌جا چه می‌فروشند» است و این چهارتا آن را
+          عقب می‌انداختند. تهِ صفحه کسی است که همه را دیده و
+          دارد تصمیم می‌گیرد — همان‌جا که یادآوریِ گارانتی و
+          پشتیبانی واقعاً به کار می‌آید. */}
+      <TrustStrip />
     </>
   );
 }

@@ -43,7 +43,7 @@ const EXTRAS: { icon: React.ComponentType<{ className?: string }>; title: string
   { icon: Medal, title: 'باشگاه مشتریان', href: '/club', tube: 'var(--vip)' },
   { icon: Flame, title: 'پرفروش‌ترین محصولات', href: '/shop?sort=hot', tube: 'var(--brand)' },
   { icon: PackageSearch, title: 'پیگیری سفارش', href: '/track', tube: 'var(--blue)' },
-  { icon: BookOpen, title: 'چطور بهتر استفاده کنم', href: '/blog', tube: 'var(--ai)' },
+  { icon: BookOpen, title: 'آموزش استفاده بهتر از AI', href: '/blog', tube: 'var(--ai)' },
   { icon: Handshake, title: 'نمایندگی و همکاری', href: '/reseller', tube: 'var(--brand)' },
 ];
 

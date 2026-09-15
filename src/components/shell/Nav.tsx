@@ -140,7 +140,7 @@ export function Nav() {
               aria-expanded={mega}
               aria-haspopup="true"
             >
-              دسته‌بندی محصولات
+              محصولات
               <ChevronDown aria-hidden="true" />
             </Link>
 
@@ -159,6 +159,15 @@ export function Nav() {
               می‌دهد. */}
           <Link href="/blog">مقالات و آموزش‌ها</Link>
           <Link href="/club">باشگاه مشتریان</Link>
+          <Link href="/contact">تماس با ما</Link>
+
+          {/* ⚠ حالا لینک است، و برچسبِ «به‌زودی» برداشته شد.
+
+              یک دور این‌جا یک ‎<span>‎ بی‌لینک بود با برچسبِ
+              «به‌زودی» کنارش. کارفرما گفت برچسب برود و صفحه‌اش
+              ساخته شود — و صفحه همان را می‌گوید که برچسب
+              می‌گفت، ولی با جا برای توضیح. */}
+          <Link href="/reseller">نمایندگی فروش</Link>
         </nav>
 
         <div className="nav__actions">

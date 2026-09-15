@@ -8,16 +8,27 @@
 
 /* ---------- هیرو ---------- */
 
-.hero { background: var(--tint); padding-bottom: var(--sp-16); }
+.hero {
+  background: var(--tint);
+  /* ⚠ کم شد تا سکشنِ بعدی بالا بیاید — دلیلش پایین‌تر کنارِ
+     ‎.hero__slider‎ در بریک‌پوینتِ ۹۰۱ نوشته شده. */
+  padding-bottom: var(--sp-6);
+}
 
 /* اسلایدر: همه‌ی اسلایدها روی هم، فقط یکی مات.
 
    اولی در جریان عادی می‌ماند تا ارتفاع بنر را تعیین کند؛ بقیه
    absolute روی آن می‌نشینند. اگر همه absolute بودند، ارتفاع صفر
    می‌شد و بنر جمع می‌شد. */
+/* ⚠ فاصله‌ی بالا یک پله بیشتر از قبل.
+
+   نوبار چسبان است و درست بالای هیرو می‌نشیند؛ با ۵۶ پیکسل،
+   تیترِ اسلاید تقریباً زیرِ نوار شروع می‌شد و صفحه از بالا
+   تنگ به نظر می‌رسید. هشتاد، همان نفسی را می‌دهد که کارفرما
+   خواست، بی‌آنکه اسلاید را از قابِ اولِ صفحه بیرون ببرد. */
 .hero__slider {
   position: relative;
-  padding-block: var(--sp-14) var(--sp-20);
+  padding-block: var(--sp-20) var(--sp-20);
 }
 
 .hero__slide {
@@ -1770,47 +1781,75 @@
   stroke: var(--brand);
   stroke-width: 3;
   stroke-dasharray: 1;
-  stroke-dashoffset: calc(1 - var(--done, 0) / 3);
+  /* ‎--lit‎ همان کسری است که جنگنده رویش ایستاده — دلیلش در
+     WhyPhoenix.tsx نوشته شده */
+  stroke-dashoffset: calc(1 - var(--lit, 0));
   transition: stroke-dashoffset 560ms cubic-bezier(0.22, 1, 0.36, 1);
   filter: drop-shadow(0 0 5px color-mix(in srgb, var(--brand) 40%, transparent));
 }
 
-/* ---------- چنگک ----------
+/* قابِ پرواز — همان هندسه، لایه‌ی بالاتر. دلیلش در
+   WhyPhoenix.tsx نوشته شده. */
+.buypath__flight { z-index: 2; }
 
-   روی سیم می‌رود و سرِ هر گام می‌ایستد. حرکتش را animateMotion
-   در خودِ SVG انجام می‌دهد، پس با کشیده شدنِ قاب از مسیر جدا
-   نمی‌شود.
+/* ---------- جنگنده ----------
 
-   ⚠ ‎vector-effect‎ روی هر سه لازم است.
+   همان سوخو-۵۷ِ سبدِ خرید، این‌بار سیلوئت. روی سیم می‌رود و سرِ
+   هر گام می‌ایستد. نقطه و زاویه‌اش در کامپوننت از خودِ مسیر
+   خوانده می‌شود و روی ترنسفرم می‌نشیند؛ نرم‌شدنش کارِ همین
+   ‎transition‎ پایین است. دلیلِ کنار گذاشتنِ ‎animateMotion‎ در
+   WhyPhoenix.tsx نوشته شده. */
+/* ⚠ دیگر ‎non-scaling-stroke‎ لازم نیست.
 
-   قاب ‎preserveAspectRatio="none"‎ دارد و افقی کشیده می‌شود؛
-   بدونِ این، فک‌ها و بازو هم با همان نسبت پهن می‌شدند و چنگک
-   شبیه یک لکه‌ی کش‌آمده می‌شد نه ابزار. */
-.buypath__claw * {
-  vector-effect: non-scaling-stroke;
-}
-.buypath__claw-arm,
-.buypath__claw-jaw {
-  fill: none;
-  stroke: var(--brand);
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.buypath__claw-arm { stroke-width: 1.6; opacity: 0.55; }
-.buypath__claw-hub {
+   قاب قبلاً ‎preserveAspectRatio="none"‎ داشت و افقی کش می‌آمد؛
+   آن ویژگی روی هر خط گذاشته می‌شد تا ضخامتش پهن نشود. حالا
+   viewBox با عرضِ واقعی جلو می‌رود و نسبت یک‌به‌یک است، پس هیچ
+   جبرانی لازم نیست — و مهم‌تر، شکلِ توپُرِ هواپیما هم سالم
+   می‌ماند، که با آن قابِ کشیده ممکن نبود. */
+/* ⚠ با ‎.buypath__wire‎ جلویش نوشته می‌شود، وگرنه توخالی می‌ماند.
+
+   بالاتر یک ‎.buypath__wire path { fill: none }‎ هست که برای
+   خطِ مسیر گذاشته شده. آن انتخابگر دو جزء دارد و کلاسِ تنها یک
+   جزء، پس در تساویِ لایه برنده می‌شود و بدنه‌ی هواپیما
+   ‎fill: none‎ می‌گرفت — یعنی اصلاً دیده نمی‌شد. */
+.buypath__wire .buypath__jet-body {
   fill: var(--brand);
   stroke: var(--paper);
-  stroke-width: 1.5;
+  stroke-width: 1.1;
+  stroke-linejoin: round;
 }
-.buypath__claw {
-  filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--brand) 45%, transparent));
+/* شیشه‌ی کابین — روشن‌تر از بدنه، نه رنگِ تازه */
+.buypath__wire .buypath__jet-glass {
+  fill: color-mix(in srgb, var(--paper) 72%, var(--brand));
+}
+/* شعله — همان کهربای تم، محو به سمتِ بیرون */
+.buypath__wire .buypath__jet-burn {
+  fill: var(--vip);
+  opacity: 0.7;
+  filter: blur(1.4px);
+}
+.buypath__jet {
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--brand) 45%, transparent));
+  /* ⚠ این دو خط لازم‌اند، نه تزئینی.
+
+     ترنسفرمِ CSS روی عنصرِ SVG به‌طور پیش‌فرض حولِ مرکزِ جعبه‌ی
+     خودِ شکل می‌چرخد و مبدأش هم همان‌جاست. با این دو، دقیقاً مثل
+     اتریبیوتِ ‎transform‎ی خودِ SVG رفتار می‌کند: مبدأ گوشه‌ی
+     دستگاهِ viewBox، و ‎translate‎ همان مختصاتِ مسیر. بدونشان
+     هواپیما از سیم می‌پرد. */
+  transform-box: view-box;
+  transform-origin: 0 0;
+  /* نرم‌شدنِ حرکت بین دو ایستگاه — جای کاری که ‎animateMotion‎
+     می‌کرد. منحنی‌اش تند شروع می‌شود و آرام می‌ایستد، مثل
+     رسیدنِ هواپیما. */
+  transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* با کم‌کردنِ حرکت، چنگک همان اول ته مسیر می‌ایستد و تکان
+/* با کم‌کردنِ حرکت، جنگنده همان اول ته مسیر می‌ایستد و تکان
    نمی‌خورد — بودنش اطلاعات است، حرکتش تزئین. */
 @media (prefers-reduced-motion: reduce) {
-  .buypath__claw animateMotion { display: none; }
+  .buypath__jet { transition: none; }
+  .buypath__jet-burn { display: none; }
 }
 
 .buypath__step {
@@ -2405,7 +2444,17 @@
      تصویرِ بالاست — از ۸ پیکسل به ۳۲.
 
      اندازه: ۸۰ منهای ۱۲ پادینگ منهای ۳۶ ارتفاعِ خودِ بولت‌ها. */
-  .hero__slider { padding-block: var(--sp-8) var(--sp-20); }
+  /* ⚠ از ۸۰ به ۶۴ آمد تا سکشنِ بعدی در پرده‌ی اول جا شود.
+
+     کارفرما خواست «رودِ نشان‌ها» کامل در صفحه‌ی اولِ دسکتاپ
+     دیده شود. اندازه‌گیری شد: ته آن سکشن ۲۸ پیکسل بیرونِ
+     پنجره‌ی ۹۰۰ می‌افتاد.
+
+     شانزده پیکسل از این‌جا آمد و بقیه از پادینگِ خودِ سکشن.
+     زیرِ ۶۴ نمی‌شود رفت: بولت‌ها absolute اند و ۱۲ پیکسل از
+     کف فاصله دارند به‌علاوه‌ی ۳۶ ارتفاعِ خودشان — یعنی ۴۸
+     پیکسل اشغال می‌کنند و کمتر از ۶۴، به متنِ بالا می‌چسبند. */
+  .hero__slider { padding-block: var(--sp-8) var(--sp-16); }
   /* ⚠ بولت‌ها باید زیرشان جا داشته باشند.
 
      دوازده پیکسل بالای کفِ اسلایدر بودند و چون جعبه‌ی

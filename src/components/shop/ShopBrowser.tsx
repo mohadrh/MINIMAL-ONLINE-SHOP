@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import {
   CATEGORIES, PRODUCTS, TAGS, TAG_GROUP_LABELS, getLowestPrice,
@@ -49,6 +49,27 @@ export function ShopBrowser() {
   const [cats, setCats] = useState<CategorySlug[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [onlyDeals, setOnlyDeals] = useState(false);
+
+  /* ⚠ فیلتر از آدرس هم خوانده می‌شود، نه فقط از کلیک.
+
+     تا امروز لینک‌هایی مثل ‎/shop?tag=bestseller‎ در سایت بودند —
+     روی کارتِ «سایر محصولات» و در «خدمات محبوب» — ولی این
+     کامپوننت آدرس را نمی‌خواند، پس هر چهارتا به فهرستِ فیلترنشده
+     می‌رسیدند. کاربر روی «تخفیف‌دارها» می‌زد و همه‌ی محصولات را
+     می‌دید.
+
+     خواندن از ‎window‎ است نه ‎useSearchParams‎، چون این صفحه
+     خروجیِ ایستا دارد و آن هوک مرزِ Suspense می‌خواهد. */
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const tag = p.get('tag');
+    if (tag) setTags((t) => (t.includes(tag) ? t : [...t, tag]));
+    const s = p.get('sort');
+    if (s === 'hot' || s === 'new' || s === 'price_asc' || s === 'price_desc' || s === 'rating') {
+      setSort(s);
+    }
+    if (p.get('deals') === '1') setOnlyDeals(true);
+  }, []);
   /** فقط روی موبایل معنی دارد؛ روی دسکتاپ ستون همیشه هست */
   const [openFilters, setOpenFilters] = useState(false);
 

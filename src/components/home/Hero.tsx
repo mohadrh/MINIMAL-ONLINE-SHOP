@@ -51,7 +51,15 @@ export function Hero() {
       if (document.visibilityState !== 'visible') return;
       setI((v) => (v + 1) % n);
     };
-    const id = window.setInterval(tick, 6000);
+    /* سه ثانیه، به خواسته‌ی کارفرما. با هفت اسلاید یعنی یک دورِ
+       کامل در بیست‌ویک ثانیه — پیش از این چهل‌ودو ثانیه بود و
+       کسی تا آخرش نمی‌ماند.
+
+       ⚠ سه قیدِ بالا همچنان برقرارند، و با این عدد مهم‌ترشان هم
+       می‌شوند: چرخشِ تندتر یعنی اگر نایستد، متن را زیرِ دستِ
+       خواننده عوض می‌کند. اولین تعامل همچنان برای همیشه
+       متوقفش می‌کند. */
+    const id = window.setInterval(tick, 3000);
     return () => window.clearInterval(id);
   }, [paused, n]);
 

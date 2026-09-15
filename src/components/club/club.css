@@ -588,3 +588,164 @@
   .gstep { grid-template-columns: auto 1fr; padding: var(--sp-4); }
   .gstep__n { grid-row: 1; }
 }
+
+/* ============================================================
+   پرده‌ی «به‌زودی»
+
+   صفحه‌ی ساخته‌شده پشت می‌ماند و پیام رویش می‌نشیند. دلیلش در
+   ‎app/club/page.tsx‎ نوشته شده.
+   ============================================================ */
+
+.soon {
+  position: relative;
+  isolation: isolate;
+}
+
+/* ⚠ پشت‌صحنه بریده می‌شود، نه اینکه کامل بماند.
+
+   اگر تمامِ صفحه‌ی باشگاه پشتِ پرده بماند، کاربر چند هزار پیکسل
+   محتوایِ مرده را اسکرول می‌کند که هیچ‌کدام کار نمی‌کند. یک
+   پرده‌ی تقریباً تمام‌صفحه کافی است تا استایل دیده شود، و ته آن
+   با محو شدن به رنگِ صفحه تمام می‌شود نه با یک برشِ تیز. */
+.soon__bg {
+  max-height: 80vh;
+  overflow: hidden;
+  pointer-events: none;
+  filter: blur(3px) saturate(0.65);
+  opacity: 0.45;
+  /* ماسک، نه گرادیانتِ روی آن: این‌طور رنگِ صفحه هرچه باشد —
+     روز یا شب — ته پرده به همان می‌رسد. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+}
+
+.soon__front {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-6);
+}
+
+.soon__card {
+  max-width: 44ch;
+  text-align: center;
+  padding: var(--sp-10) var(--sp-8);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  box-shadow: 0 30px 70px -40px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .soon__card {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+[data-theme='dark'] .soon__card {
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.soon__badge {
+  display: inline-block;
+  margin-block-end: var(--sp-4);
+  padding: 4px 12px;
+  border-radius: var(--r-full);
+  background: color-mix(in srgb, var(--vip) 16%, transparent);
+  color: var(--vip);
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+.soon__card h1 {
+  font-size: var(--text-2xl);
+  line-height: 1.4;
+  margin-block-end: var(--sp-3);
+}
+.soon__card p {
+  font-size: var(--text-sm);
+  line-height: 1.9;
+  color: var(--ink-faint);
+  margin: 0;
+}
+
+.soon__acts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-3);
+  margin-block-start: var(--sp-6);
+}
+
+@media (max-width: 480px) {
+  .soon__card { padding: var(--sp-8) var(--sp-5); }
+  .soon__card h1 { font-size: var(--text-xl); }
+}
+
+/* ⚠ نسخه‌ی پهن‌تر، برای صفحه‌ای که فقط یک جمله دارد.
+
+   کارتِ باشگاه یک بند توضیح و دو دکمه دارد. صفحه‌ی نمایندگی فقط
+   یک جمله دارد که بزرگ نوشته می‌شود، پس جای بیشتری می‌خواهد نه
+   کمتر.
+
+   ⚠ واحد ‎rem‎ است نه ‎ch‎، و این را یک‌بار اشتباه کردم.
+
+   ‎ch‎ نسبت به فونتِ *خودِ عنصر* حساب می‌شود، و فونتِ کارت همان
+   اندازه‌ی بدنه است نه تیتر. ‎30ch‎ آن‌جا حدود ۲۱۰ پیکسل شد —
+   یعنی از ‎44ch‎ی پایه باریک‌تر، و تیترِ ۳۸پیکسلی به پنج خط
+   شکست. عددِ مطلق این ابهام را ندارد. */
+.soon__card--wide { max-width: 32rem; }
+.soon__card--wide h1 {
+  font-size: var(--text-3xl);
+  line-height: 1.6;
+  margin-block-end: 0;
+}
+@media (max-width: 560px) {
+  .soon__card--wide h1 { font-size: var(--text-2xl); }
+}
+
+/* ============================================================
+   صفحه‌ی «به‌زودی»ِ بی‌محتوا — نمایندگی فروش
+
+   فرقش با ‎.soon‎ این است که چیزی پشتش تار نمی‌شود: فقط
+   پس‌زمینه‌ی موشن‌دارِ ‎ClubTracks‎ و یک جمله وسطش.
+   دلیلش در ‎app/reseller/page.tsx‎ نوشته شده.
+   ============================================================ */
+
+.soonbare {
+  display: grid;
+  place-items: center;
+  /* ⚠ ارتفاع لازم است، وگرنه پس‌زمینه جایی برای کشیده‌شدن ندارد.
+
+     ‎.ctracks‎ مطلق است و ارتفاعش را از این می‌گیرد. بدونِ این،
+     صفحه به اندازه‌ی همان یک جمله جمع می‌شد و لوله‌ها در نواری
+     صدپیکسلی له می‌شدند.
+
+     ‎svh‎ نه ‎vh‎: روی موبایل، ‎vh‎ نوارِ آدرسِ مرورگر را حساب
+     نمی‌کند و صفحه یک تکه بلندتر از پنجره می‌شود — یعنی اسکرولی
+     که هیچ‌چیز تازه‌ای ندارد. */
+  min-height: min(78svh, 46rem);
+  padding: var(--sp-10) var(--sp-5);
+}
+
+.soonbare__card {
+  position: relative;
+  z-index: 1;
+  max-width: 34rem;
+  text-align: center;
+}
+
+.soonbare__card h1 {
+  margin-block-start: var(--sp-4);
+  font-size: var(--text-3xl);
+  line-height: 1.6;
+  /* متن روی پس‌زمینه‌ی متحرک می‌نشیند و باید بی‌چون‌وچرا خوانده
+     شود — پس مرکبِ کامل، نه رنگِ ملایم. */
+  color: var(--ink);
+}
+
+@media (max-width: 560px) {
+  .soonbare { min-height: min(70svh, 34rem); }
+  .soonbare__card h1 { font-size: var(--text-2xl); }
+}
