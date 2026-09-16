@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
-  AlertCircle, ArrowLeft, CheckCircle2, ChevronDown, Clock,
+  AlertCircle, ArrowLeft, Building2, CheckCircle2, ChevronDown, Clock,
   KeyRound, LifeBuoy, MessageCircle, PackageSearch, Send, ShieldCheck,
 } from 'lucide-react';
 import { HELP_ARTICLES } from '../../data/helpArticles';
@@ -249,6 +249,13 @@ const CHANNELS = [
     when: 'همین حالا',
     d: 'برای سوال‌های کوتاهِ پیش از خرید. اگر جوابش را نداشته باشد، خودش به کارشناس وصل می‌کند.',
     action: 'chat' as const,
+    /* ⚠ تنها کانالی که رنگِ برند می‌گیرد.
+
+       هر سه کارت یک شکل بودند و هیچ‌کدام نمی‌گفت «از این‌جا
+       شروع کن». سریع‌ترینشان — چتی که همین حالا جواب می‌دهد —
+       کنشِ اصلیِ این ردیف است، پس تنها همین پررنگ می‌شود و
+       دو تای دیگر آرام می‌مانند. */
+    lead: true,
   },
   {
     icon: LifeBuoy,
@@ -336,7 +343,7 @@ export function ContactView() {
 
           <div className="ctc__channels">
             {CHANNELS.map((c) => (
-              <div key={c.t} className="ctc__ch">
+              <div key={c.t} className={`ctc__ch ${'lead' in c && c.lead ? 'is-lead' : ''}`}>
                 <span className="ctc__ch-ico" aria-hidden="true"><c.icon /></span>
                 <b>{c.t}</b>
                 <span className="ctc__ch-when">
@@ -347,7 +354,7 @@ export function ContactView() {
                 {c.action === 'chat' ? (
                   <button
                     type="button"
-                    className="btn btn--ghost btn--sm"
+                    className="btn btn--primary btn--sm"
                     onClick={() => window.dispatchEvent(new Event('phoenix:chat-open'))}
                   >
                     باز کردن چت
@@ -410,6 +417,10 @@ export function ContactView() {
               گذاشتنِ جای خالی صادقانه‌تر از ساختنِ شماره‌ی الکی است، و
               همین که رسیدند جایشان معلوم است. */}
           <article className="ctc__note">
+            {/* تنها بلوکِ صفحه بود که آیکون نداشت و کنارِ بقیه ناتمام
+                دیده می‌شد — و همین جای درستی است برای آخرین نارنجیِ
+                صفحه، تا روی یک جعبه‌ی خاکستری تمام نشود. */}
+            <span className="ctc__note-ico" aria-hidden="true"><Building2 /></span>
             <div>
               <h2>اطلاعات ثبتی</h2>
               <p>

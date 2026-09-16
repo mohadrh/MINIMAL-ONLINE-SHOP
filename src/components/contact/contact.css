@@ -5,10 +5,68 @@
    رنگ‌ها همه از توکن‌های تم می‌آیند؛ هیچ هگزِ خامی این‌جا نیست.
    ============================================================ */
 
+/* ⚠ نارنجیِ تم، در چهار جای انتخاب‌شده — نه پاشیده روی صفحه.
+
+   بعد از برداشتنِ کارتِ هشدار، تنها بلوکِ پررنگِ نارنجیِ صفحه هم
+   رفت و صفحه خاکستری‌آبی ماند. کارفرما گفت نارنجیِ تم کم است.
+
+   ولی «نارنجی‌تر کردن» با رنگ‌کردنِ همه‌چیز جواب نمی‌دهد؛ وقتی
+   همه نارنجی باشند هیچ‌کدام دیده نمی‌شود. پس چهار نقطه گرفت،
+   هر کدام جایی که رنگ *معنا* هم دارد:
+
+     ۱ هاله‌ی سرِ صفحه — اولین چیزی که دیده می‌شود، هویتِ صفحه
+     ۲ ریلِ مسیرِ باز — «الان این‌جایی»
+     ۳ کارتِ اولِ تماس — تنها کنشِ اصلیِ آن ردیف
+     ۴ آیکونِ اطلاعاتِ ثبتی — تا صفحه روی یک جعبه‌ی خالی تمام نشود
+
+   بقیه‌ی صفحه عمداً آرام می‌ماند. */
+
 .ctc__head {
+  position: relative;
+  /* ⚠ ‎isolate‎ لازم است، نه تزئینی.
+
+     بی‌آن، ‎position: relative‎ با ‎z-index: auto‎ زمینه‌ی چینش
+     نمی‌سازد و ترتیبِ هاله و متن به بالادست می‌افتد. با آن، هر
+     دو داخلِ همین سکشن مرتب می‌شوند. */
+  isolation: isolate;
   text-align: center;
   padding-block: var(--sp-16) var(--sp-10);
 }
+
+/* هاله‌ی گرمِ پشتِ تیتر — گرادیانتِ رادیالی است نه مستطیلِ رنگی،
+   تا لبه‌ای نداشته باشد که با سکشنِ بعدی مرز بسازد.
+
+   ⚠ ‎inset: 0‎ است، نه نواری پهن‌تر از سکشن.
+
+   اول ‎width: min(760px, 120%)‎ بود و وسط‌چین، تا هاله از دو طرف
+   کمی بیرون بزند و نرم‌تر شود. اندازه‌گیری شد: ‎scrollWidth‎
+   صفحه ۷۳۸ در برابرِ ‎clientWidth‎ ۷۱۶ — یعنی بیست‌ودو پیکسل
+   اسکرولِ افقی که کلِ صفحه را می‌لرزاند، و روی موبایل بدتر
+   می‌شد چون ۱۲۰٪ آن‌جا عددِ بزرگ‌تری است.
+
+   لازم هم نبود: خودِ ‎radial-gradient‎ پیش از لبه‌ها به شفاف
+   می‌رسد، پس نرمی از فرمولِ گرادیانت می‌آید نه از سرریزِ جعبه.
+   ‎inset: 0‎ ضمناً جلوی افتادنِ هاله روی منوی چسبان را هم
+   می‌گیرد. */
+.ctc__head::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 70% 78% at 50% 34%,
+    color-mix(in srgb, var(--brand) 15%, transparent) 0%,
+    transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.ctc__head > .wrap { position: relative; z-index: 1; }
+[data-theme='dark'] .ctc__head::before {
+  background: radial-gradient(
+    ellipse 70% 78% at 50% 34%,
+    color-mix(in srgb, var(--brand) 22%, transparent) 0%,
+    transparent 70%);
+}
+
 .ctc__head h1 {
   font-size: var(--text-3xl);
   margin-block: var(--sp-3) var(--sp-4);
@@ -42,9 +100,24 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 .ctc__route:hover { border-color: color-mix(in srgb, var(--brand) 45%, transparent); }
+
+/* ریلِ نارنجی روی لبه‌ی راست — «الان این‌جایی».
+
+   ⚠ با ‎box-shadow‎ی داخلی، نه ‎border‎: مرزِ ضخیم‌تر عرضِ کارت را
+   عوض می‌کند و ردیفِ باز نسبت به بسته‌ها جابه‌جا می‌شود.
+
+   جابه‌جاییِ منفی روی محورِ افقی یعنی سایه به چپ می‌رود و نوار
+   روی لبه‌ی *راست* می‌ماند — همان لبه‌ای که در راست‌به‌چپ، شروعِ
+   خط است. */
 .ctc__route.is-on {
   border-color: var(--brand);
-  box-shadow: 0 18px 40px -30px color-mix(in srgb, var(--brand) 90%, transparent);
+  box-shadow:
+    inset -3px 0 0 0 var(--brand),
+    0 18px 40px -30px color-mix(in srgb, var(--brand) 90%, transparent);
+}
+.ctc__route.is-on .ctc__route-ico {
+  background: var(--brand);
+  color: var(--brand-ink);
 }
 
 /* ⚠ دکمه‌ی تمام‌عرض، نه فقط متن.
@@ -223,6 +296,19 @@
 }
 .ctc__ch:hover { translate: 0 -3px; border-color: color-mix(in srgb, var(--blue) 50%, transparent); }
 
+/* کارتِ اول — دلیلش در ContactView.tsx نوشته شده.
+   پس‌زمینه‌ی خیلی کم‌رنگ و مرزِ نارنجی، تا از دو تای دیگر جدا
+   باشد بی‌آنکه جیغ شود. */
+.ctc__ch.is-lead {
+  border-color: color-mix(in srgb, var(--brand) 42%, transparent);
+  background: color-mix(in srgb, var(--brand) 5%, var(--paper));
+}
+[data-theme='dark'] .ctc__ch.is-lead {
+  border-color: color-mix(in srgb, var(--brand) 50%, transparent);
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+}
+.ctc__ch.is-lead:hover { border-color: var(--brand); }
+
 .ctc__ch-ico {
   display: grid;
   place-items: center;
@@ -231,6 +317,10 @@
   border-radius: var(--r-lg);
   background: color-mix(in srgb, var(--blue) 12%, transparent);
   color: var(--blue);
+}
+.ctc__ch.is-lead .ctc__ch-ico {
+  background: var(--brand);
+  color: var(--brand-ink);
 }
 .ctc__ch-ico svg { width: 20px; height: 20px; }
 
@@ -326,10 +416,26 @@
   display: flex;
   gap: var(--sp-4);
   padding: var(--sp-6);
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--brand) 28%, var(--line));
   border-radius: var(--r-xl);
+  background: color-mix(in srgb, var(--brand) 4%, transparent);
 }
-[data-theme='dark'] .ctc__note { border-color: rgba(255, 255, 255, 0.1); }
+[data-theme='dark'] .ctc__note {
+  border-color: color-mix(in srgb, var(--brand) 34%, transparent);
+  background: color-mix(in srgb, var(--brand) 9%, transparent);
+}
+
+.ctc__note-ico {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
+  color: var(--brand);
+}
+.ctc__note-ico svg { width: 20px; height: 20px; }
 
 .ctc__note h2 { font-size: var(--text-base); margin-block-end: var(--sp-2); }
 .ctc__note p {

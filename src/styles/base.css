@@ -206,6 +206,7 @@ a { color: inherit; text-decoration: none; }
 #why     { --kicker: var(--blue); }   /* چطور کار می‌کند — اعتماد */
 .arts    { --kicker: var(--ai); }     /* مقالات — همان بنفشِ خواندن */
 .revs    { --kicker: var(--vip); }    /* تجربه‌ی خریداران */
+.ctc__head { --kicker: var(--brand); } /* تماس با ما */
 
 .sec-head__lead {
   margin-top: var(--sp-3);
