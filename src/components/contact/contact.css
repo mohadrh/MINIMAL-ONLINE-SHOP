@@ -309,12 +309,18 @@
 
 /* ---------- یادداشت‌های ته صفحه ---------- */
 
+/* ⚠ یک ستون، نه دو.
+
+   این‌جا دو کارت بود — هشدارِ امنیتی و اطلاعاتِ ثبتی. هشدار
+   برداشته شد (دلیلش در ContactView.tsx) و کارتِ تنها در شبکه‌ی
+   دوستونی نصفِ عرض می‌ماند و کنارش جای خالی — که شبیهِ چیزیِ
+   جاافتاده به نظر می‌رسد، نه یک بلوکِ تمام‌شده. */
 .ctc__notes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sp-4);
+  max-width: 46rem;
+  margin-inline: auto;
 }
-@media (max-width: 780px) { .ctc__notes { grid-template-columns: 1fr; } }
 
 .ctc__note {
   display: flex;
@@ -324,24 +330,6 @@
   border-radius: var(--r-xl);
 }
 [data-theme='dark'] .ctc__note { border-color: rgba(255, 255, 255, 0.1); }
-
-/* هشدارِ امنیتی رنگِ برند می‌گیرد — تنها بلوکِ صفحه که باید
-   بی‌چون‌وچرا خوانده شود. */
-.ctc__note--warn {
-  border-color: color-mix(in srgb, var(--brand) 40%, transparent);
-  background: color-mix(in srgb, var(--brand) 6%, transparent);
-}
-.ctc__note-ico {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--r-lg);
-  background: color-mix(in srgb, var(--brand) 14%, transparent);
-  color: var(--brand);
-}
-.ctc__note-ico svg { width: 20px; height: 20px; }
 
 .ctc__note h2 { font-size: var(--text-base); margin-block-end: var(--sp-2); }
 .ctc__note p {
