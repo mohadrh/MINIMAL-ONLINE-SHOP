@@ -18,7 +18,7 @@
    افزونه‌ها پخش می‌شود و به‌روزرسانیِ بعدی فاجعه است.
    ============================================================ */
 
-import { deflateRawSync, crc32 } from 'node:zlib';
+import { collect, makeZip } from './lib/zip.mjs';
 import { mkdirSync, readFileSync, readdirSync, rmSync, existsSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
@@ -124,90 +124,10 @@ mkdirSync(dist, { recursive: true });
 const out = join(dist, `phoenix-bridge-${version}.zip`);
 if (existsSync(out)) rmSync(out);
 
-/** همه‌ی فایل‌ها، با مسیرِ داخلِ زیپ */
-function collect(dir, prefix, acc = []) {
-  for (const e of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-    const full = join(dir, e.name);
-    /* ⚠ همیشه اسلشِ رو به جلو، هر سیستم‌عاملی که باشیم */
-    const zipPath = `${prefix}/${e.name}`;
-    if (e.isDirectory()) collect(full, zipPath, acc);
-    else acc.push({ full, zipPath });
-  }
-  return acc;
-}
-
 const entries = collect(src, 'phoenix-bridge');
 
-/* ⚠ نگهبانِ همان باگی که یک بار اتفاق افتاد.
-   اگر روزی کسی ساختِ مسیر را عوض کند و بک‌اسلش برگردد، این‌جا
-   می‌ایستد — نه بعد از نصبِ خراب روی هاست. */
-const wrong = entries.filter((e) => e.zipPath.includes('\\'));
-if (wrong.length) {
-  console.error('✗ مسیرِ داخلِ زیپ بک‌اسلش دارد و وردپرس نمی‌تواند بازش کند:');
-  wrong.slice(0, 5).forEach((e) => console.error('   ' + e.zipPath));
-  process.exit(1);
-}
+const zipBytes = makeZip(entries);
 
-const locals = [];
-const central = [];
-let offset = 0;
-
-for (const { full, zipPath } of entries) {
-  const raw = readFileSync(full);
-  const name = Buffer.from(zipPath, 'utf8');
-  const deflated = deflateRawSync(raw, { level: 9 });
-
-  /* اگر فشرده‌سازی کمکی نکرد، خام ذخیره کن */
-  const useStore = deflated.length >= raw.length;
-  const data = useStore ? raw : deflated;
-  const method = useStore ? 0 : 8;
-  const crc = crc32(raw);
-
-  const local = Buffer.alloc(30);
-  local.writeUInt32LE(0x04034b50, 0);   // امضای هدرِ محلی
-  local.writeUInt16LE(20, 4);           // نسخه‌ی لازم
-  local.writeUInt16LE(0x0800, 6);       // پرچمِ UTF-8 برای نام
-  local.writeUInt16LE(method, 8);
-  local.writeUInt16LE(0, 10);           // زمان
-  local.writeUInt16LE(0x21, 12);        // تاریخ (۱۹۸۰) — قطعی، تا زیپ تکرارپذیر بماند
-  local.writeUInt32LE(crc, 14);
-  local.writeUInt32LE(data.length, 18);
-  local.writeUInt32LE(raw.length, 22);
-  local.writeUInt16LE(name.length, 26);
-  local.writeUInt16LE(0, 28);
-
-  locals.push(local, name, data);
-
-  const cen = Buffer.alloc(46);
-  cen.writeUInt32LE(0x02014b50, 0);
-  cen.writeUInt16LE(20, 4);
-  cen.writeUInt16LE(20, 6);
-  cen.writeUInt16LE(0x0800, 8);
-  cen.writeUInt16LE(method, 10);
-  cen.writeUInt16LE(0, 12);
-  cen.writeUInt16LE(0x21, 14);
-  cen.writeUInt32LE(crc, 16);
-  cen.writeUInt32LE(data.length, 20);
-  cen.writeUInt32LE(raw.length, 24);
-  cen.writeUInt16LE(name.length, 28);
-  /* ⚠ ‎>>> 0‎ لازم است: عملگرهای بیتیِ جاوااسکریپت ۳۲بیتیِ
-     علامت‌دارند و ‎0o100644 << 16‎ منفی می‌شود. */
-  cen.writeUInt32LE((0o100644 << 16) >>> 0, 38); // اجازه‌های یونیکس
-  cen.writeUInt32LE(offset, 42);
-
-  central.push(cen, name);
-  offset += local.length + name.length + data.length;
-}
-
-const centralBuf = Buffer.concat(central);
-const end = Buffer.alloc(22);
-end.writeUInt32LE(0x06054b50, 0);
-end.writeUInt16LE(entries.length, 8);
-end.writeUInt16LE(entries.length, 10);
-end.writeUInt32LE(centralBuf.length, 12);
-end.writeUInt32LE(offset, 16);
-
-const zipBytes = Buffer.concat([...locals, centralBuf, end]);
 writeFileSync(out, zipBytes);
 
 /* ⚠ یک نسخه هم داخلِ مخزن، و این عمدی است.
