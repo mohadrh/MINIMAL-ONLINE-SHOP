@@ -1,0 +1,495 @@
+/* ============================================================
+   صفحه‌ی مقاله
+
+   تا پیش از این، استایلِ مقاله لای ‎numbers/pages.css‎ بود —
+   جایی که هیچ‌کس دنبالش نمی‌گشت. حالا کنارِ کامپوننت‌های خودش
+   است.
+
+   ⚠ هیچ هگزِ خامی این‌جا نیست؛ همه از توکن‌های تم می‌آیند. تنها
+   استثنا ‎--pill‎ است که رنگِ موضوعِ خودِ مقاله را از داده
+   می‌گیرد.
+   ============================================================ */
+
+/* ---------- سرِ مقاله ---------- */
+
+.post__head {
+  /* هم‌عرضِ ستونِ متن، نه تمامِ صفحه — تیتری که از متنِ زیرش
+     پهن‌تر باشد، بی‌قرینه دیده می‌شود. */
+  max-width: 46rem;
+  margin-block-end: var(--sp-8);
+}
+.post__head h1 {
+  font-size: var(--text-3xl);
+  line-height: 1.5;
+  margin-block: var(--sp-4) var(--sp-3);
+  text-wrap: balance;
+}
+.post__lead {
+  font-size: var(--text-md);
+  line-height: 2;
+  color: var(--ink-soft);
+  margin-block-end: var(--sp-4);
+}
+.post__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-5);
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+}
+.post__meta span { display: inline-flex; align-items: center; gap: 6px; }
+.post__meta svg { width: 14px; height: 14px; }
+
+.post__cover {
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: var(--tint);
+  margin-block-end: var(--sp-10);
+}
+.post__cover img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ⚠ تصویرِ مربع بریده نمی‌شود، جاگذاری می‌شود.
+   لوگوی مربعِ محصول در قابِ ۱۶:۹ اگر ‎cover‎ شود، از یک نشانِ
+   وسط‌چین فقط نوارِ میانی می‌ماند و کارت بی‌تصویر به نظر
+   می‌رسد در حالی که تصویر آن‌جاست. */
+.post__cover.is-tall img { object-fit: contain; padding: var(--sp-6); }
+
+/* ---------- دو ستون ---------- */
+
+.post__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 17rem;
+  gap: var(--sp-10);
+  align-items: start;
+}
+
+/* ⚠ سایدبار در DOM بعد از متن است (دلیلش در page.tsx) و
+   این‌جا با ‎order‎ به جای درستش می‌رود. */
+.post__main { order: 1; min-width: 0; }
+.post__side { order: 2; }
+
+.post__sticky {
+  position: sticky;
+  /* زیرِ منوی چسبان، نه پشتش */
+  top: calc(var(--nav-h, 64px) + var(--sp-5));
+  display: grid;
+  gap: var(--sp-5);
+  max-height: calc(100svh - var(--nav-h, 64px) - var(--sp-10));
+  overflow-y: auto;
+  /* نوارِ اسکرولِ همیشه‌پیدا در ستونِ باریک زشت است */
+  scrollbar-width: thin;
+}
+
+@media (max-width: 1080px) {
+  /* ⚠ زیرِ این عرض، سایدبار *بالای* متن می‌رود نه پایینش.
+
+     فهرستِ مطالب تنها وقتی به کار می‌آید که پیش از شروعِ
+     خواندن دیده شود. ته صفحه، کسی که تا آن‌جا رسیده دیگر
+     لازمش ندارد. */
+  .post__grid { grid-template-columns: 1fr; gap: var(--sp-8); }
+  .post__main { order: 2; }
+  .post__side { order: 1; }
+  .post__sticky { position: static; max-height: none; overflow: visible; }
+}
+
+/* ---------- متن ---------- */
+
+/* عرض عمداً محدود است — سطرِ بلندتر از ۷۵ نویسه، چشم را موقعِ
+   برگشت به ابتدای خط گم می‌کند. */
+.post__body {
+  max-width: 46rem;
+  font-size: var(--text-md);
+  line-height: 2.05;
+  color: var(--ink-soft);
+}
+
+.post__body h2 {
+  font-size: var(--text-xl);
+  color: var(--ink);
+  margin-block: var(--sp-10) var(--sp-4);
+  /* ⚠ تیتر نباید زیرِ منوی چسبان بیفتد وقتی از فهرست به آن
+     پریده می‌شود. */
+  scroll-margin-top: calc(var(--nav-h, 64px) + var(--sp-5));
+}
+.post__body h3 {
+  font-size: var(--text-lg);
+  color: var(--ink);
+  margin-block: var(--sp-8) var(--sp-3);
+  scroll-margin-top: calc(var(--nav-h, 64px) + var(--sp-5));
+}
+
+.post__body p { margin-block-end: var(--sp-5); }
+
+.post__body ul,
+.post__body ol {
+  margin-block: 0 var(--sp-5);
+  padding-inline-start: var(--sp-6);
+  display: grid;
+  gap: var(--sp-2);
+}
+.post__body ul li { list-style: disc; }
+.post__body ol li { list-style: decimal; }
+
+.post__hr {
+  margin-block: var(--sp-10);
+  border: 0;
+  border-block-start: 1px solid var(--line);
+}
+[data-theme='dark'] .post__hr { border-block-start-color: rgba(255, 255, 255, 0.12); }
+
+/* ---------- جعبه‌ی نکته ---------- */
+
+.post__note {
+  display: grid;
+  gap: var(--sp-2);
+  margin-block: var(--sp-7);
+  padding: var(--sp-5) var(--sp-6);
+  border-inline-start: 3px solid var(--blue);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  background: color-mix(in srgb, var(--blue) 8%, transparent);
+  font-size: var(--text-sm);
+  line-height: 1.95;
+}
+.post__note-h {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--blue);
+}
+.post__note-h svg { width: 15px; height: 15px; }
+.post__note-t { color: var(--ink-soft); }
+
+.post__note.is-tip {
+  border-inline-start-color: var(--ok, var(--brand));
+  background: color-mix(in srgb, var(--ok, var(--brand)) 8%, transparent);
+}
+.post__note.is-tip .post__note-h { color: var(--ok, var(--brand)); }
+
+.post__note.is-warn {
+  border-inline-start-color: var(--vip);
+  background: color-mix(in srgb, var(--vip) 10%, transparent);
+}
+.post__note.is-warn .post__note-h { color: var(--vip); }
+
+/* ---------- نقلِ برجسته ---------- */
+
+.post__quote {
+  position: relative;
+  margin-block: var(--sp-8);
+  padding: var(--sp-6) var(--sp-7);
+  border-radius: var(--r-lg);
+  background: var(--tint);
+}
+[data-theme='dark'] .post__quote { background: rgba(255, 255, 255, 0.04); }
+.post__quote > svg {
+  width: 22px;
+  height: 22px;
+  color: var(--brand);
+  opacity: 0.6;
+  margin-block-end: var(--sp-2);
+}
+.post__quote p {
+  margin: 0;
+  font-size: var(--text-lg);
+  line-height: 1.9;
+  color: var(--ink);
+}
+.post__quote cite {
+  display: block;
+  margin-block-start: var(--sp-3);
+  font-size: var(--text-xs);
+  font-style: normal;
+  color: var(--ink-faint);
+}
+
+/* ---------- تصویر ---------- */
+
+.post__fig { margin-block: var(--sp-8); }
+.post__fig img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--r-lg);
+  display: block;
+}
+.post__fig figcaption {
+  margin-block-start: var(--sp-2);
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+/* ---------- جدول ---------- */
+
+/* ⚠ فقط جدول می‌لغزد، نه صفحه.
+   جدولِ چهارستونی روی موبایل از عرضِ صفحه می‌زند بیرون؛ بدونِ
+   این قاب، کلِ صفحه افقی قابلِ اسکرول می‌شد و متنِ مقاله هم
+   زیرِ انگشت می‌لغزید. */
+.post__tablewrap {
+  margin-block: var(--sp-7);
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+[data-theme='dark'] .post__tablewrap { border-color: rgba(255, 255, 255, 0.12); }
+
+.post__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  /* ارقام در ستون‌ها باید زیرِ هم بنشینند */
+  font-variant-numeric: tabular-nums;
+}
+.post__table th,
+.post__table td {
+  padding: var(--sp-3) var(--sp-4);
+  text-align: start;
+  border-block-start: 1px solid var(--line);
+  line-height: 1.8;
+}
+[data-theme='dark'] .post__table th,
+[data-theme='dark'] .post__table td { border-block-start-color: rgba(255, 255, 255, 0.1); }
+
+.post__table thead th {
+  border-block-start: 0;
+  background: var(--tint);
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+}
+[data-theme='dark'] .post__table thead th { background: rgba(255, 255, 255, 0.05); }
+
+.post__table tbody th { font-weight: 600; color: var(--ink); }
+
+/* ---------- گام‌ها ---------- */
+
+.post__steps {
+  counter-reset: phxstep;
+  margin-block: var(--sp-7);
+  padding: 0;
+  display: grid;
+  gap: var(--sp-4);
+}
+.post__steps li {
+  list-style: none;
+  position: relative;
+  padding-inline-start: var(--sp-10);
+  min-height: 32px;
+}
+.post__steps li::before {
+  counter-increment: phxstep;
+  content: counter(phxstep);
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--brand-ink);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.post__steps b { display: block; color: var(--ink); margin-block-end: 2px; }
+.post__steps span { display: block; font-size: var(--text-sm); }
+
+/* ---------- پرسش و پاسخ ---------- */
+
+.post__faq {
+  margin-block: var(--sp-7);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+[data-theme='dark'] .post__faq { border-color: rgba(255, 255, 255, 0.12); }
+
+.post__faq details + details { border-block-start: 1px solid var(--line); }
+[data-theme='dark'] .post__faq details + details { border-block-start-color: rgba(255, 255, 255, 0.1); }
+
+.post__faq summary {
+  padding: var(--sp-4) var(--sp-5);
+  /* ⚠ ۴۴ پیکسل، حداقلِ ناحیه‌ی لمس */
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+.post__faq summary:hover { background: var(--tint); }
+[data-theme='dark'] .post__faq summary:hover { background: rgba(255, 255, 255, 0.04); }
+.post__faq p {
+  margin: 0;
+  padding: 0 var(--sp-5) var(--sp-5);
+  font-size: var(--text-sm);
+  line-height: 1.95;
+}
+
+/* ---------- کارتِ محصول داخلِ متن ---------- */
+
+.post__cta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  margin-block: var(--sp-8);
+  padding: var(--sp-5) var(--sp-6);
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+  border-radius: var(--r-xl);
+  background: color-mix(in srgb, var(--brand) 5%, transparent);
+}
+[data-theme='dark'] .post__cta { background: color-mix(in srgb, var(--brand) 11%, transparent); }
+
+.post__cta-ic {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  overflow: hidden;
+}
+.post__cta-ic img { width: 70%; height: 70%; object-fit: contain; }
+[data-theme='dark'] .post__cta-ic { background: rgba(255, 255, 255, 0.9); }
+
+.post__cta-txt { flex: 1; min-width: 12rem; }
+.post__cta-txt b { display: block; color: var(--ink); font-size: var(--text-base); }
+.post__cta-txt small {
+  display: block;
+  margin-block-start: 2px;
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  line-height: 1.8;
+}
+
+.post__cta-end {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.post__cta-price { font-size: var(--text-xs); color: var(--ink-faint); white-space: nowrap; }
+.post__cta .btn svg { width: 14px; height: 14px; }
+
+/* ---------- فهرستِ مطالب ---------- */
+
+.toc {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4) var(--sp-5) var(--sp-5);
+}
+[data-theme='dark'] .toc { border-color: rgba(255, 255, 255, 0.12); }
+
+.toc__h {
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  margin-block-end: var(--sp-3);
+}
+
+.toc__list { margin: 0; padding: 0; display: grid; gap: 2px; }
+.toc__list li { list-style: none; }
+.toc__list li.is-sub { padding-inline-start: var(--sp-4); }
+
+.toc__list a {
+  display: block;
+  padding: 5px var(--sp-3);
+  /* ریلِ سمتِ شروع — در راست‌به‌چپ یعنی لبه‌ی راست */
+  border-inline-start: 2px solid transparent;
+  border-radius: 0 var(--r) var(--r) 0;
+  font-size: var(--text-xs);
+  line-height: 1.85;
+  color: var(--ink-faint);
+  text-decoration: none;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.toc__list a:hover { color: var(--ink); }
+
+/* بخشِ فعلی — رنگ *و* ریل، نه فقط رنگ */
+.toc__list a.is-on {
+  color: var(--brand);
+  border-inline-start-color: var(--brand);
+  font-weight: 700;
+}
+
+/* ---------- جعبه‌های سایدبار ---------- */
+
+.sidebox {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4) var(--sp-5) var(--sp-5);
+}
+[data-theme='dark'] .sidebox { border-color: rgba(255, 255, 255, 0.12); }
+
+.sidebox__h {
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  margin-block-end: var(--sp-3);
+}
+
+.sidebox__list { margin: 0; padding: 0; display: grid; gap: 2px; }
+.sidebox__list li { list-style: none; }
+.sidebox__list a {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  /* ⚠ ۴۴ پیکسل — این‌ها روی موبایل هم لمس می‌شوند */
+  min-height: 44px;
+  padding: var(--sp-2) var(--sp-2);
+  border-radius: var(--r);
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.sidebox__list a:hover { background: var(--tint); color: var(--ink); }
+[data-theme='dark'] .sidebox__list a:hover { background: rgba(255, 255, 255, 0.06); }
+.sidebox__list img {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  object-fit: contain;
+  padding: 3px;
+}
+
+.sidebox--cta {
+  border-color: color-mix(in srgb, var(--brand) 35%, transparent);
+  background: color-mix(in srgb, var(--brand) 5%, transparent);
+}
+[data-theme='dark'] .sidebox--cta { background: color-mix(in srgb, var(--brand) 11%, transparent); }
+.sidebox--cta p {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--text-xs);
+  line-height: 1.95;
+  color: var(--ink-soft);
+}
+.sidebox--cta .btn svg { width: 13px; height: 13px; }
+
+/* ---------- کم‌کردنِ حرکت ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .toc__list a,
+  .sidebox__list a { transition: none; }
+}
+
+/* ---------- باریک ---------- */
+
+@media (max-width: 560px) {
+  .post__head h1 { font-size: var(--text-2xl); }
+  .post__body { font-size: var(--text-base); line-height: 1.95; }
+  .post__quote { padding: var(--sp-5); }
+  .post__quote p { font-size: var(--text-base); }
+  .post__cta { padding: var(--sp-4) var(--sp-5); }
+  .post__steps li { padding-inline-start: var(--sp-9); }
+}

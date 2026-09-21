@@ -191,34 +191,6 @@
 .faqpage__group h2 { font-size: var(--text-lg); margin-bottom: var(--sp-5); }
 .faq__a { white-space: pre-line; }
 
-/* ---------- مقاله ---------- */
-
-.post__inner { max-width: 44rem; }
-.post__inner h1 { font-size: var(--text-2xl); margin-block: var(--sp-4) var(--sp-2); }
-.post__meta { font-size: var(--text-xs); color: var(--ink-faint); margin-bottom: var(--sp-6); }
-
-.post__cover { border-radius: var(--r-lg); overflow: hidden; aspect-ratio: 16/9; background: var(--tint); margin-bottom: var(--sp-8); }
-.post__cover img { width: 100%; height: 100%; object-fit: cover; }
-
-/* عرض متن عمداً محدود است — سطر بلندتر از ۷۵ نویسه، چشم را موقع
-   برگشت به ابتدای خط گم می‌کند. */
-.post__body { font-size: var(--text-md); line-height: 2; color: var(--ink-soft); }
-.post__body h2 { font-size: var(--text-lg); margin-block: var(--sp-10) var(--sp-4); }
-.post__body p { margin-bottom: var(--sp-5); }
-.post__body ul { margin-block: 0 var(--sp-5); padding-inline-start: var(--sp-6); display: grid; gap: var(--sp-2); }
-.post__body li { list-style: disc; }
-
-.post__note {
-  display: block;
-  margin-block: var(--sp-6);
-  padding: var(--sp-5) var(--sp-6);
-  border-inline-start: 3px solid var(--blue);
-  border-radius: 0 var(--r-md) var(--r-md) 0;
-  background: var(--blue-wash);
-  font-size: var(--text-sm);
-  color: var(--ink-soft);
-}
-
 /* ---------- اسناد ---------- */
 
 .doc { padding-block: var(--sp-10) var(--sp-24); max-width: 44rem; display: grid; gap: var(--sp-10); }

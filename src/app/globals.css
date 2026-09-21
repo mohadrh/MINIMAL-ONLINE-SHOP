@@ -48,6 +48,7 @@
 @import '../components/account/login.css' layer(components);
 @import '../components/club/club.css' layer(components);
 @import '../components/contact/contact.css' layer(components);
+@import '../components/blog/article.css' layer(components);
 
 /* آخر از همه — دلیلش داخل خود فایل نوشته شده */
 @import '../styles/glass.css' layer(components);

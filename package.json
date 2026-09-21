@@ -15,7 +15,8 @@
     "lint:copy": "node scripts/lint-copy.mjs",
     "lint:contrast": "node scripts/lint-contrast.mjs",
     "rate": "node scripts/fetch-rate.mjs",
-    "test:pricing": "php wp-plugin/tests/pricing-test.php"
+    "test:pricing": "php wp-plugin/tests/pricing-test.php",
+    "pack:plugin": "node scripts/pack-plugin.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
