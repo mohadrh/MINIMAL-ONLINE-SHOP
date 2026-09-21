@@ -46,11 +46,32 @@ if (!defined('ABSPATH')) {
  * روی والد نوشته می‌شود و همه‌ی پلن‌ها می‌گیرندش، مگر آنکه
  * پلنی خودش عددِ دیگری داشته باشد.
  */
+/**
+ * ⚠ ‎cost_usd‎ خوانده می‌شود، نه ‎usd‎ — و این تفاوت، یک فاجعه‌ی
+ *   واقعی را جلو گرفت.
+ *
+ * فیلدِ ‎usd‎ از قبل در داده بود ولی معنایش *قیمتِ تمام‌شده
+ * نیست*: «این سرویس در سایتِ خودش چند است» یا مبلغِ اسمیِ
+ * گیفت‌کارت. کنوا پرو در سایتِ خودش سالی ۱۲۰ دلار است ولی ما
+ * اکانتِ ظرفیتی می‌فروشیم و قیمتمان ۲۰۵٬۰۰۰ تومان است.
+ *
+ * اگر موتور ‎usd‎ را قیمتِ تمام‌شده حساب می‌کرد:
+ *
+ *     ۱۲۰ × ۲۲۶٬۵۰۰ + ٪۱۸  =  حدودِ ۳۲ میلیون تومان
+ *
+ * یعنی محصولِ ۲۰۵ هزار تومانی، صد و سی برابر گران می‌شد — و
+ * این دقیقاً همان اشتباهی است که یک بار در خودِ سایت افتاده و
+ * توضیحش در ‎catalog.ts‎ نوشته شده.
+ *
+ * پس موتور کلیدِ *جدا* دارد. ‎usd‎ مالِ نمایش است و موتور
+ * هیچ‌وقت نگاهش نمی‌کند؛ ‎cost_usd‎ را فقط جایی می‌نویسیم که
+ * واقعاً قیمتِ تمام‌شده‌ی خودمان باشد.
+ */
 function phoenix_cost_of($product_id) {
     $f = phoenix_get_fields($product_id);
 
     $mode   = isset($f['price_mode']) ? (string) $f['price_mode'] : '';
-    $usd    = isset($f['usd']) ? (float) $f['usd'] : 0.0;
+    $usd    = isset($f['cost_usd']) ? (float) $f['cost_usd'] : 0.0;
     $toman  = isset($f['cost_toman']) ? (float) $f['cost_toman'] : 0.0;
     $locked = !empty($f['price_locked']);
 
@@ -61,8 +82,8 @@ function phoenix_cost_of($product_id) {
         if ($mode === '' && isset($pf['price_mode'])) {
             $mode = (string) $pf['price_mode'];
         }
-        if ($usd <= 0 && isset($pf['usd'])) {
-            $usd = (float) $pf['usd'];
+        if ($usd <= 0 && isset($pf['cost_usd'])) {
+            $usd = (float) $pf['cost_usd'];
         }
         if ($toman <= 0 && isset($pf['cost_toman'])) {
             $toman = (float) $pf['cost_toman'];

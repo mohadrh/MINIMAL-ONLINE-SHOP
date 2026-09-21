@@ -206,7 +206,7 @@ is_same('دو دسته → کوچک‌ترین شناسه برنده', phoenix_m
 section('محاسبه‌ی کامل');
 reset_world();
 
-$GLOBALS['fake_meta'][20] = array('price_mode' => 'usd', 'usd' => 12.0);
+$GLOBALS['fake_meta'][20] = array('price_mode' => 'usd', 'cost_usd' => 12.0);
 $GLOBALS['fake_rate'] = 100000;
 $GLOBALS['fake_settings'] = array('margin' => array(
     'percent' => 20.0, 'fixed' => 0, 'min_profit' => 0,
@@ -228,16 +228,58 @@ is_same('قیمت = ۱۵۰٬۰۰۰',                                    $c['regu
 
 /* دستی و قفل */
 reset_world();
-$GLOBALS['fake_meta'][22] = array('price_mode' => 'manual', 'usd' => 12.0);
+$GLOBALS['fake_meta'][22] = array('price_mode' => 'manual', 'cost_usd' => 12.0);
 is_same('دستی → موتور دست نمی‌زند', phoenix_compute_price(22), null);
 
-$GLOBALS['fake_meta'][23] = array('price_mode' => 'usd', 'usd' => 12.0, 'price_locked' => true);
+$GLOBALS['fake_meta'][23] = array('price_mode' => 'usd', 'cost_usd' => 12.0, 'price_locked' => true);
 is_same('قفل → موتور دست نمی‌زند', phoenix_compute_price(23), null);
 
 /* ⚠ نرخِ صفر: قیمت نباید صفر شود، باید دست‌نخورده بماند */
-$GLOBALS['fake_meta'][24] = array('price_mode' => 'usd', 'usd' => 12.0);
+$GLOBALS['fake_meta'][24] = array('price_mode' => 'usd', 'cost_usd' => 12.0);
 $GLOBALS['fake_rate'] = 0;
 is_same('نرخِ صفر → null، نه قیمتِ صفر', phoenix_compute_price(24), null);
+
+/* ============================================================
+   ۵٫۵ ‎usd‎ قیمتِ تمام‌شده نیست — و موتور نباید فکر کند هست
+
+   ⚠ این تست برای جلوگیری از یک فاجعه‌ی مشخص است.
+
+   کاتالوگِ سایت فیلدی به‌نامِ ‎usd‎ دارد که معنایش «این سرویس
+   در سایتِ خودش چند است» یا مبلغِ اسمیِ گیفت‌کارت است — نه
+   قیمتِ تمام‌شده‌ی ما. کنوا پرو سالی ۱۲۰ دلار است و ما اکانتِ
+   ظرفیتی را ۲۰۵ هزار تومان می‌فروشیم.
+
+   اگر موتور ‎usd‎ را قیمتِ تمام‌شده حساب کند:
+
+       ۱۲۰ × ۲۲۶٬۵۰۰ + ٪۱۸ ≈ ۳۲ میلیون تومان
+
+   یعنی محصولِ ۲۰۵ هزار تومانی، صد و سی برابر گران. پس موتور
+   فقط ‎cost_usd‎ را می‌خواند و ‎usd‎ برایش نامرئی است.
+   ============================================================ */
+
+section('usd نباید قیمتِ تمام‌شده حساب شود');
+reset_world();
+
+$GLOBALS['fake_rate'] = 226500;
+
+/* دقیقاً شکلی که ‎push-woo‎ وارد می‌کند */
+$GLOBALS['fake_meta'][50] = array('usd' => 120, 'price_mode' => 'manual');
+is_same('محصولِ واردشده دستِ موتور نیست', phoenix_compute_price(50), null);
+
+/* حتی بدونِ ‎price_mode‎ هم نباید حدس بزند */
+$GLOBALS['fake_meta'][51] = array('usd' => 120);
+is_same('‎usd‎ تنها، موتور را روشن نمی‌کند', phoenix_compute_price(51), null);
+
+/* و وقتی قیمتِ تمام‌شده‌ی واقعی نوشته شود، کار می‌کند */
+$GLOBALS['fake_meta'][52] = array('price_mode' => 'usd', 'cost_usd' => 0.6);
+$GLOBALS['fake_settings'] = array(
+    'margin' => array('percent' => 50.0, 'round_to' => 1000, 'round_mode' => 'up',
+                      'charm' => 0, 'fixed' => 0, 'min_profit' => 0),
+    'floor_percent' => 5,
+);
+$c = phoenix_compute_price(52);
+is_same('‎cost_usd‎ی ۰٫۶ دلار → پایه ۱۳۵٬۹۰۰', $c['base'], 135900);
+is_same('و قیمت نزدیکِ ۲۰۵ هزار درمی‌آید',      $c['regular'], 204000);
 
 /* ============================================================
    ۶ تخفیف: بهترین می‌برد، جمع نمی‌شود

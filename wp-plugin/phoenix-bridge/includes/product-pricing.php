@@ -58,8 +58,8 @@ function phoenix_product_price_fields() {
         'label'             => 'قیمتِ تمام‌شده (دلار)',
         'type'              => 'number',
         'custom_attributes' => array('step' => '0.01', 'min' => '0'),
-        'value'             => isset($f['usd']) ? $f['usd'] : '',
-        'description'       => 'چند دلار برای ما تمام می‌شود. قیمتِ فروش از این ساخته می‌شود.',
+        'value'             => isset($f['cost_usd']) ? $f['cost_usd'] : '',
+        'description'       => 'چند دلار برای *ما* تمام می‌شود — نه قیمتِ سایتِ خودِ سرویس. قیمتِ فروش از این ساخته می‌شود.',
         'desc_tip'          => true,
     ));
 
@@ -160,9 +160,9 @@ function phoenix_save_price_fields($post_id) {
 
     $usd = isset($_POST['phoenix_usd']) ? (float) wp_unslash($_POST['phoenix_usd']) : 0;
     if ($usd > 0) {
-        $f['usd'] = round($usd, 4);
+        $f['cost_usd'] = round($usd, 4);
     } else {
-        unset($f['usd']);
+        unset($f['cost_usd']);
     }
 
     $toman = isset($_POST['phoenix_cost_toman']) ? (int) wp_unslash($_POST['phoenix_cost_toman']) : 0;
