@@ -207,7 +207,21 @@ end.writeUInt16LE(entries.length, 10);
 end.writeUInt32LE(centralBuf.length, 12);
 end.writeUInt32LE(offset, 16);
 
-writeFileSync(out, Buffer.concat([...locals, centralBuf, end]));
+const zipBytes = Buffer.concat([...locals, centralBuf, end]);
+writeFileSync(out, zipBytes);
+
+/* ⚠ یک نسخه هم داخلِ مخزن، و این عمدی است.
+
+   کارفرما گفت افزونه روی گیت‌هاب باشد تا بعداً بشود
+   به‌روزرسانی کرد. کدِ منبع که از اول آن‌جاست، ولی چیزی که
+   روی وردپرس نصب می‌شود زیپ است نه کد — و کسی که می‌خواهد
+   نصبش کند نباید مجبور باشد اول ریپو را کلون و ‎npm‎ نصب کند.
+
+   هشتاد کیلوبایت به‌ازای هر نسخه، بهای کمی است برای اینکه
+   هر نسخه‌ی قدیمی هم همیشه قابلِ دانلود بماند. */
+const repoCopy = join(root, 'wp-plugin', 'releases', `phoenix-bridge-${version}.zip`);
+mkdirSync(join(root, 'wp-plugin', 'releases'), { recursive: true });
+writeFileSync(repoCopy, zipBytes);
 
 const zipKb = Math.round(statSync(out).size / 1024);
 
@@ -217,6 +231,7 @@ console.log('');
 console.log(`  نسخه   ${version}`);
 console.log(`  فایل   ${fileCount} تا، ${Math.round(bytes / 1024)} کیلوبایت`);
 console.log(`  زیپ    dist/phoenix-bridge-${version}.zip (${zipKb} کیلوبایت)`);
+console.log(`  و در مخزن: wp-plugin/releases/phoenix-bridge-${version}.zip`);
 console.log('');
 console.log('  نصب روی وردپرس:');
 console.log('    افزونه‌ها ‹ افزودن ‹ بارگذاری افزونه ‹ همین فایل');
