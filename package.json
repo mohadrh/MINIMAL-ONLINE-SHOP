@@ -14,7 +14,8 @@
     "push": "node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/push-woo.mjs",
     "lint:copy": "node scripts/lint-copy.mjs",
     "lint:contrast": "node scripts/lint-contrast.mjs",
-    "rate": "node scripts/fetch-rate.mjs"
+    "rate": "node scripts/fetch-rate.mjs",
+    "test:pricing": "php wp-plugin/tests/pricing-test.php"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

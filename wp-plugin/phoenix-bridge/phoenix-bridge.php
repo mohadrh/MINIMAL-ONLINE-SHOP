@@ -353,10 +353,71 @@ function phoenix_save_variation($variation_id, $loop) {
    بارگذاری بخش‌ها
    ============================================================ */
 
-require_once plugin_dir_path(__FILE__) . 'includes/rest.php';
-require_once plugin_dir_path(__FILE__) . 'includes/auth.php';
-require_once plugin_dir_path(__FILE__) . 'includes/orders.php';
-require_once plugin_dir_path(__FILE__) . 'includes/rate.php';
+$phoenix_dir = plugin_dir_path(__FILE__);
+
+/* ⚠ ترتیب مهم است، و این‌ها وابستگی دارند:
+     db          پایه‌ی همه — تنظیمات و دفترِ رویداد
+     rate-*      به تنظیمات نیاز دارد
+     discounts   سرِ محاسبه‌ی قیمت صدا زده می‌شود
+     pricing     به نرخ و تخفیف هر دو نیاز دارد
+     بقیه        از این چهارتا استفاده می‌کنند */
+require_once $phoenix_dir . 'includes/db.php';
+require_once $phoenix_dir . 'includes/rate-sources.php';
+require_once $phoenix_dir . 'includes/rate.php';
+require_once $phoenix_dir . 'includes/discounts.php';
+require_once $phoenix_dir . 'includes/pricing.php';
+require_once $phoenix_dir . 'includes/product-pricing.php';
+require_once $phoenix_dir . 'includes/fulfil-queue.php';
+
+require_once $phoenix_dir . 'includes/rest.php';
+require_once $phoenix_dir . 'includes/auth.php';
+require_once $phoenix_dir . 'includes/orders.php';
+
+if (is_admin()) {
+    require_once $phoenix_dir . 'includes/admin/admin.php';
+}
+
+/**
+ * فعال‌سازی — جدول‌ها ساخته می‌شوند و زمان‌بندی‌ها می‌نشینند.
+ *
+ * ⚠ هیچ قیمتی سرِ فعال‌سازی نوشته نمی‌شود.
+ *
+ * افزونه‌ای که به‌محضِ فعال‌شدن قیمتِ کلِ فروشگاه را عوض کند،
+ * ترسناک است — و اگر تنظیماتش هنوز پیش‌فرض باشد، احتمالاً
+ * اشتباه هم هست. موتور خاموش فعال می‌شود و ادمین بعد از
+ * دیدنِ پیش‌نمایش خودش روشنش می‌کند.
+ */
+register_activation_hook(__FILE__, 'phoenix_on_activate');
+function phoenix_on_activate() {
+    phoenix_db_install();
+
+    if (!wp_next_scheduled('phoenix_rate_hourly')) {
+        wp_schedule_event(time() + 60, 'hourly', 'phoenix_rate_hourly');
+    }
+    if (!wp_next_scheduled('phoenix_daily')) {
+        wp_schedule_event(time() + 300, 'daily', 'phoenix_daily');
+    }
+}
+
+/**
+ * غیرفعال‌سازی — زمان‌بندی‌ها برداشته می‌شوند.
+ *
+ * ⚠ جدول‌ها و تنظیمات می‌مانند.
+ *
+ * غیرفعال‌کردن معمولاً موقتی است (عیب‌یابی، به‌روزرسانی). پاک
+ * کردنِ تاریخچه‌ی قیمت و تخفیف‌ها سرِ یک غیرفعال‌سازیِ
+ * ده‌ثانیه‌ای، داده‌ای را می‌برد که برگرداندنش ممکن نیست.
+ */
+register_deactivation_hook(__FILE__, 'phoenix_on_deactivate');
+function phoenix_on_deactivate() {
+    foreach (array('phoenix_rate_hourly', 'phoenix_daily', 'phoenix_reprice_all', 'phoenix_fulfil_tick') as $hook) {
+        $ts = wp_next_scheduled($hook);
+        while ($ts) {
+            wp_unschedule_event($ts, $hook);
+            $ts = wp_next_scheduled($hook);
+        }
+    }
+}
 
 /**
  * ⚠ افزونه بدون ووکامرس فعال نمی‌شود.

@@ -1,0 +1,193 @@
+/* ============================================================
+   پنلِ فونیکس
+
+   ⚠ روی پوسته‌ی پیشخوانِ وردپرس سوار می‌شود، جایگزینش نمی‌شود.
+
+   وسوسه‌اش هست که پنل را از صفر طراحی کنیم. ولی ادمین روزی صد
+   بار در پیشخوانِ وردپرس است و هر چیزی که شبیهِ بقیه‌ی
+   پیشخوان نباشد، یک زبانِ تازه است که باید یاد بگیرد. پس
+   دکمه‌ها و جدول‌ها همان ‎.button‎ و ‎.widefat‎ی خودِ وردپرس‌اند
+   و این فایل فقط چیدمان و رنگِ وضعیت اضافه می‌کند.
+   ============================================================ */
+
+.phx { max-width: 1180px; }
+
+.phx__h1 { margin-bottom: 6px; }
+.phx__lead {
+  margin: 0 0 20px;
+  color: #50575e;
+  font-size: 13px;
+}
+
+/* ---------- هشدارها ---------- */
+
+.phx-alerts { display: grid; gap: 8px; margin-bottom: 20px; }
+
+.phx-alert {
+  padding: 10px 14px;
+  border-radius: 4px;
+  border-inline-start: 4px solid #8c8f94;
+  background: #fff;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.phx-alert.is-red   { border-inline-start-color: #d63638; background: #fcf0f1; }
+.phx-alert.is-amber { border-inline-start-color: #dba617; background: #fcf9e8; }
+.phx-alert.is-blue  { border-inline-start-color: #2271b1; background: #f0f6fc; }
+.phx-alert.is-grey  { border-inline-start-color: #8c8f94; background: #f6f7f7; }
+
+/* ---------- کارتِ آماری ---------- */
+
+.phx-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.phx-stat {
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #dcdcde;
+  border-radius: 4px;
+  /* نوارِ رنگی روی لبه‌ی شروع — رنگ تنها حاملِ معنا نیست،
+     عدد و برچسب هم هستند، ولی نوار در یک نگاه غربال می‌کند. */
+  border-inline-start-width: 4px;
+}
+.phx-stat.is-green { border-inline-start-color: #00a32a; }
+.phx-stat.is-amber { border-inline-start-color: #dba617; }
+.phx-stat.is-red   { border-inline-start-color: #d63638; }
+.phx-stat.is-blue  { border-inline-start-color: #2271b1; }
+.phx-stat.is-grey  { border-inline-start-color: #c3c4c7; }
+
+.phx-stat__k { display: block; font-size: 12px; color: #646970; }
+.phx-stat__v { display: block; font-size: 22px; line-height: 1.4; }
+.phx-stat__h { display: block; font-size: 11px; color: #8c8f94; }
+
+/* ---------- جعبه ---------- */
+
+.phx-box {
+  background: #fff;
+  border: 1px solid #dcdcde;
+  border-radius: 4px;
+  padding: 16px 20px 20px;
+  margin-bottom: 20px;
+}
+.phx-box__h { margin: 0 0 4px; font-size: 15px; }
+.phx-box__note { margin: 0 0 14px; color: #646970; font-size: 12px; line-height: 1.8; }
+
+.phx-h3 { margin: 22px 0 10px; font-size: 13px; text-transform: none; }
+
+/* ---------- فرم ---------- */
+
+.phx-field {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f1;
+}
+.phx-field:last-child { border-bottom: 0; }
+
+.phx-field__l { font-weight: 600; font-size: 13px; padding-top: 5px; }
+.phx-field__h { display: block; margin-top: 4px; color: #646970; font-size: 11px; line-height: 1.8; }
+
+.phx-in { width: 100%; max-width: 360px; }
+/* ⚠ عددها چپ‌چین‌اند حتی در صفحه‌ی راست‌به‌چپ.
+   «12000» با جهتِ راست‌به‌چپ، مکان‌نما را سرِ تایپ می‌پراند. */
+input.phx-in[type='number'],
+input.phx-in[type='datetime-local'] { direction: ltr; text-align: start; }
+
+.phx-check { display: inline-flex; align-items: center; gap: 6px; margin-inline-end: 14px; font-size: 13px; }
+
+.phx-actions { margin-top: 16px; }
+
+.phx-switch { padding: 6px 0 2px; font-size: 14px; }
+
+.phx-danger-link { color: #b32d2e !important; text-decoration: none; }
+.phx-danger-link:hover { color: #8a2424 !important; text-decoration: underline; }
+
+/* ---------- جدول ---------- */
+
+.phx-table { margin-top: 10px; }
+.phx-table td, .phx-table th { vertical-align: top; font-size: 12px; }
+.phx-table code { font-size: 11px; }
+
+.phx-url {
+  display: inline-block;
+  max-width: 340px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+  direction: ltr;
+}
+.phx-note { color: #646970; max-width: 280px; }
+.phx-rowacts { white-space: nowrap; }
+
+/* ---------- نشان ---------- */
+
+.phx-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.8;
+  background: #f0f0f1;
+  color: #50575e;
+}
+.phx-badge.is-green { background: #edfaef; color: #00722b; }
+.phx-badge.is-amber { background: #fcf9e8; color: #8a6116; }
+.phx-badge.is-red   { background: #fcf0f1; color: #b32d2e; }
+.phx-badge.is-blue  { background: #f0f6fc; color: #1d5b96; }
+
+/* ---------- متفرقه ---------- */
+
+.phx-muted  { color: #8c8f94; }
+.phx-empty  { color: #8c8f94; font-style: italic; padding: 10px 0; }
+.phx-why    { color: #50575e; font-size: 13px; margin: -8px 0 16px; }
+.phx-running { color: #8a6116; font-size: 13px; }
+.phx-filters { margin: 14px 0; }
+
+.phx-formula { margin: 0; padding-inline-start: 22px; font-size: 13px; line-height: 2.1; }
+.phx-formula b { font-weight: 700; }
+
+.phx-targets { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.phx-tg {
+  border: 1px solid #dcdcde;
+  border-radius: 4px;
+  padding: 8px 12px 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.phx-tg legend { font-size: 12px; font-weight: 600; padding: 0 4px; }
+.phx-tg .phx-check { display: flex; margin: 0; padding: 2px 0; }
+
+/* ---------- نمودار ---------- */
+
+.phx-chart { width: 100%; height: auto; color: #2271b1; display: block; }
+.phx-chart__legend { margin: 6px 0 0; font-size: 12px; color: #646970; }
+
+/* ---------- روی صفحه‌ی محصول ---------- */
+
+.phoenix-hint {
+  padding: 10px 12px !important;
+  margin: 8px 12px 12px !important;
+  background: #f6f7f7;
+  border-inline-start: 3px solid #2271b1;
+  font-size: 12px;
+  line-height: 1.9;
+}
+.phoenix-hint__muted { color: #8c8f94; }
+.phoenix-hint__sale  { color: #00722b; font-weight: 600; }
+.phoenix-hint__warn  { color: #b32d2e; font-weight: 600; }
+
+/* ---------- باریک ---------- */
+
+@media (max-width: 782px) {
+  .phx-field { grid-template-columns: 1fr; gap: 4px; }
+  .phx-field__l { padding-top: 0; }
+  .phx-in { max-width: 100%; }
+}
