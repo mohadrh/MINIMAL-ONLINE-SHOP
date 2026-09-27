@@ -17,7 +17,8 @@
     "rate": "node scripts/fetch-rate.mjs",
     "test:pricing": "php wp-plugin/tests/pricing-test.php",
     "pack:plugin": "node scripts/pack-plugin.mjs",
-    "pack:site": "node scripts/pack-site.mjs"
+    "pack:site": "node scripts/pack-site.mjs",
+    "check:roundtrip": "node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/check-roundtrip.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

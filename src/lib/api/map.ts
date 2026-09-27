@@ -165,18 +165,29 @@ function toVariant(v: WooVariation, i: number): Variant {
  * دکمه‌ی خرید و سبد همه از آن‌جا می‌خوانند. محصولِ simple در
  * ووکامرس واریاسیون ندارد، پس یکی از خودش می‌سازیم.
  */
-function singleVariant(p: WooProduct): Variant {
+function singleVariant(p: WooProduct, px: PhoenixFields): Variant {
   const price = toPrice(p.price || p.regular_price);
   const regular = toPrice(p.regular_price);
+
+  /* ⚠ برچسب و راهنما از متا می‌آیند، نه ثابتِ «خرید».
+     ووکامرس برای محصولِ ساده جایی برایشان ندارد؛ push-woo آن‌ها
+     را در متا می‌گذارد. بدونش بیست محصولِ تک‌پلنی برچسبِ
+     «Pro — یک ماهه» و راهنمای انتخابشان را گم می‌کردند. */
+  const guide = px.variant_guide;
+  const hasGuide = guide
+    && typeof guide.fit === 'string' && typeof guide.detail === 'string';
+
   return {
     id: String(p.id ?? 'v1'),
-    label: 'خرید',
+    label: px.variant_label || 'خرید',
     price,
     compareAt: p.on_sale && regular > price ? regular : undefined,
+    ...(px.variant_usd ? { usd: Number(px.variant_usd) } : {}),
     stock: p.stock_status === 'outofstock'
       ? 0
       : (p.manage_stock ? (p.stock_quantity ?? null) : null),
     isDefault: true,
+    ...(hasGuide ? { guide: { fit: guide.fit as string, detail: guide.detail as string } } : {}),
   };
 }
 
@@ -190,7 +201,7 @@ export function toProduct(p: WooProduct, variations: WooVariation[] = []): Produ
 
   const variants = variations.length
     ? variations.map(toVariant)
-    : [singleVariant(p)];
+    : [singleVariant(p, px)];
 
   /* اگر هیچ پلنی isDefault نداشت، اولی را پیش‌فرض می‌کنیم —
      وگرنه صفحه‌ی محصول بدون انتخابِ اولیه باز می‌شود. */
@@ -212,10 +223,23 @@ export function toProduct(p: WooProduct, variations: WooVariation[] = []): Produ
     deliveryEstimate: px.delivery_estimate ?? 'در اسرع وقت، توسط سیستم',
     warrantyLabel: px.warranty_label ?? 'گارانتی تمام دوره',
     variants,
+    /* ⚠ مسیرِ خودمان بر گالریِ ووکامرس مقدم است.
+
+       هر دو در دسترس‌اند: ‎px.*‎ مسیرِ فایلِ استاتیکِ خودمان
+       («‎/products/chatgpt-card.webp‎») و ‎images[]‎ نسخه‌ای که
+       ووکامرس دانلود کرده و روی وردپرس نگه داشته.
+
+       اولی بهتر است چون سایت تصویر را از هاستِ خودش می‌دهد —
+       سریع‌تر، و اگر پنل بخوابد سایت بی‌تصویر نمی‌شود. دومی
+       فقط پشتیبان است.
+
+       ⚠ و ‎logo‎ فقط از متا می‌آید: گالریِ ووکامرس فهرستی تخت
+       است و نمی‌داند کدام تصویر نشانِ برند است و کدام کارت. */
     media: {
-      thumbnail: images[0] ?? '',
-      cover: px.cover ?? images[1],
-      cutout: px.cutout,
+      thumbnail: px.thumbnail || images[0] || '',
+      logo: px.logo || undefined,
+      cover: px.cover || images[1],
+      cutout: px.cutout || undefined,
       accent: px.accent ?? '#6340d8',
     },
     platforms: Array.isArray(px.platforms) ? px.platforms : undefined,
@@ -228,9 +252,19 @@ export function toProduct(p: WooProduct, variations: WooVariation[] = []): Produ
         .filter((f) => f && typeof f.q === 'string' && typeof f.a === 'string')
         .map((f) => ({ q: f.q as string, a: f.a as string }))
       : undefined,
-    rating: Number(p.average_rating ?? 0) || 0,
-    reviewsCount: p.rating_count ?? 0,
-    salesCount: p.total_sales ?? 0,
+    /* ⚠ عددِ واقعیِ ووکامرس مقدم است، و عددِ اولیه فقط وقتی
+       می‌آید که هنوز واقعی‌ای وجود نداشته باشد.
+
+       ووکامرس امتیاز را از نظرهای واقعی و فروش را از سفارش‌های
+       واقعی می‌سازد، و فروشگاهِ تازه هر دو را صفر دارد. یعنی
+       بلافاصله بعد از واردات، همه‌ی کارت‌ها بی‌ستاره و بدونِ
+       «۱۸۴۰ فروش» می‌شدند.
+
+       با این ترتیب، عددِ اولیه جای خالی را پر می‌کند و به‌محضِ
+       رسیدنِ اولین نظرِ واقعی کنار می‌رود. */
+    rating: Number(p.average_rating ?? 0) || Number(px.seed_rating ?? 0) || 0,
+    reviewsCount: (p.rating_count || Number(px.seed_reviews ?? 0)) || 0,
+    salesCount: (p.total_sales || Number(px.seed_sales ?? 0)) || 0,
     badges: (px.badges ?? []).filter(
       (b): b is Product['badges'][number] => (BADGES as readonly string[]).includes(b),
     ),

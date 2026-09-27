@@ -104,9 +104,38 @@ export interface PhoenixFields {
   faq?: { q?: string; a?: string }[];
   platforms?: string[];
   accent?: string;
+
+  /* ---------- تصویرها ----------
+     مسیرِ فایلِ استاتیکِ خودمان. گالریِ ووکامرس هم همین‌ها را
+     دارد ولی این‌ها مقدم‌اند — دلیلش در map.ts. */
+  thumbnail?: string;
+  logo?: string;
   cover?: string;
   cutout?: string;
+
   badges?: string[];
+
+  /* ---------- عددهای اولیه ----------
+     تا وقتی ووکامرس نظر و سفارشِ واقعی ندارد، این‌ها جای
+     خالی را پر می‌کنند. دلیلش در map.ts. */
+  seed_rating?: number;
+  seed_reviews?: number;
+  seed_sales?: number;
+
+  /* ---------- موتور قیمت ----------
+     ⚠ ‎cost_usd‎ است نه ‎usd‎. آن یکی «در سایتِ خودش چند است»
+     را می‌گوید و قیمتِ تمام‌شده نیست. */
+  /* ---------- پلنِ محصولِ تک‌پلنی ----------
+     ووکامرس برای محصولِ ساده واریاسیون ندارد؛ این‌ها جایشان را
+     می‌گیرند. دلیلش در singleVariant در map.ts. */
+  variant_label?: string;
+  variant_guide?: { fit?: string; detail?: string };
+  variant_usd?: number;
+
+  price_mode?: 'manual' | 'usd' | 'toman';
+  cost_usd?: number;
+  cost_toman?: number;
+  price_locked?: boolean;
 }
 
 export interface PhoenixVariantFields {
