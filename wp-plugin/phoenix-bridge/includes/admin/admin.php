@@ -37,7 +37,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-const PHOENIX_CAP  = 'manage_woocommerce';
+/* ‎PHOENIX_CAP‎ در db.php تعریف شده — دلیلش همان‌جا. */
 const PHOENIX_MENU = 'phoenix';
 
 /* ============================================================
@@ -46,18 +46,24 @@ const PHOENIX_MENU = 'phoenix';
 
 add_action('admin_menu', 'phoenix_admin_menu');
 function phoenix_admin_menu() {
+    /* ⚠ صفحه‌ی اصلی حالا پنلِ نسخه‌ی ۲ است.
+
+       داشبوردِ نسخه‌ی ۱ از منو رفت چون همه‌ی کارهایش — کلیدِ
+       موتور، وضعیت، هشدار — در داشبوردِ تازه هست. بقیه‌ی صفحه‌های
+       نسخه‌ی ۱ تا وقتی جایگزینشان ساخته نشده می‌مانند، تا هیچ
+       روزی نباشد که کاری از دسترس خارج شده باشد (docs/PANEL-V2.md). */
     add_menu_page(
         'فونیکس',
         'فونیکس',
         PHOENIX_CAP,
         PHOENIX_MENU,
-        'phoenix_page_dashboard',
+        'phoenix_app_page',
         'dashicons-chart-line',
         56
     );
 
     $pages = array(
-        PHOENIX_MENU          => array('داشبورد', 'phoenix_page_dashboard'),
+        PHOENIX_MENU          => array('پنل', 'phoenix_app_page'),
         'phoenix-rate'        => array('نرخ تتر', 'phoenix_page_rate'),
         'phoenix-margins'     => array('حاشیه و قیمت', 'phoenix_page_margins'),
         'phoenix-discounts'   => array('تخفیف‌ها', 'phoenix_page_discounts'),
@@ -436,6 +442,11 @@ function phoenix_admin_assets($hook) {
     if (strpos((string) $hook, 'phoenix') === false) {
         return;
     }
+    /* پنلِ تازه استایلِ خودش را دارد — دو پوسته روی یک صفحه، هر
+       کدام دیگری را خراب می‌کند. */
+    if ($hook === 'toplevel_page_' . PHOENIX_MENU) {
+        return;
+    }
     wp_enqueue_style(
         'phoenix-admin',
         plugins_url('assets/admin.css', dirname(__DIR__) . '/phoenix-bridge.php'),
@@ -448,6 +459,7 @@ function phoenix_admin_assets($hook) {
    بارگذاریِ صفحه‌ها
    ============================================================ */
 
+require_once __DIR__ . '/app.php';
 require_once __DIR__ . '/ui.php';
 require_once __DIR__ . '/page-dashboard.php';
 require_once __DIR__ . '/page-rate.php';

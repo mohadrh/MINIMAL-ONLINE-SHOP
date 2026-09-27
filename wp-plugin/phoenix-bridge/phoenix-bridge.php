@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Phoenix Bridge
  * Description: پلِ میان فروشگاه فونیکس و ووکامرس — فیلدهای دیجیتال، اندپوینت عمومی، و کلید حساب روی شماره‌ی موبایل.
- * Version:     1.1.0
+ * Version:     1.2.0
  * Requires PHP: 7.4
  * Author:      Phoenix Shop
  * Text Domain: phoenix-bridge
@@ -34,7 +34,7 @@ if (!defined('ABSPATH')) {
     exit; // دسترسی مستقیم ممنوع
 }
 
-define('PHOENIX_BRIDGE_VERSION', '1.1.0');
+define('PHOENIX_BRIDGE_VERSION', '1.2.0');
 define('PHOENIX_META_KEY', '_phoenix');
 
 /* ============================================================
@@ -372,6 +372,13 @@ require_once $phoenix_dir . 'includes/fulfil-queue.php';
 require_once $phoenix_dir . 'includes/rest.php';
 require_once $phoenix_dir . 'includes/auth.php';
 require_once $phoenix_dir . 'includes/orders.php';
+
+/* ⚠ APIِ پنل همیشه بار می‌شود، نه فقط در پیشخوان.
+   درخواست‌های REST ‎is_admin()‎ نیستند؛ اگر این‌ها داخلِ شرطِ
+   پایین بودند، پنل به هر درخواستی ۴۰۴ می‌گرفت. نگهبانشان
+   (guard.php) خودش دسترسی را چک می‌کند. */
+require_once $phoenix_dir . 'includes/api/guard.php';
+require_once $phoenix_dir . 'includes/api/dashboard.php';
 
 if (is_admin()) {
     require_once $phoenix_dir . 'includes/admin/admin.php';

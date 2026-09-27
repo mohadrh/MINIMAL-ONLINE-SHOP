@@ -26,6 +26,23 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+/**
+ * قابلیتی که هر کاری در پنل لازم دارد.
+ *
+ * ⚠ این‌جا تعریف می‌شود، نه در admin.php.
+ *
+ * admin.php فقط وقتی بار می‌شود که ‎is_admin()‎ درست باشد، و
+ * درخواست‌های REST — که پنلِ نسخه‌ی ۲ تماماً رویشان سوار است —
+ * ‎is_admin()‎ نیستند. اگر ثابت آن‌جا می‌ماند، نگهبانِ REST با
+ * «ثابتِ تعریف‌نشده» می‌مرد؛ و بدتر، اگر کسی آن را با یک رشته‌ی
+ * خالی «درست» می‌کرد، ‎current_user_can('')‎ برای هر کاربری
+ * نتیجه‌ی غیرقابل‌پیش‌بینی می‌داد.
+ *
+ * ‎manage_woocommerce‎ و نه ‎manage_options‎: کسی که فروشگاه را
+ * می‌چرخاند لزوماً مدیرِ کلِ سایت نیست.
+ */
+const PHOENIX_CAP = 'manage_woocommerce';
+
 /** نسخه‌ی اسکیما — بالا که برود، dbDelta دوباره می‌دود */
 const PHOENIX_DB_VERSION = '1';
 const PHOENIX_DB_VERSION_OPTION = 'phoenix_db_version';

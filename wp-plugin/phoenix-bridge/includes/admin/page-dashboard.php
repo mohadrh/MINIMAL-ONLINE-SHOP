@@ -174,7 +174,7 @@ function phoenix_engine_product_count() {
             AND p.post_status IN ('publish','private')
             AND (pm.meta_value LIKE %s OR pm.meta_value LIKE %s)",
         $key,
-        '%' . $wpdb->esc_like('"usd"') . '%',
+        '%' . $wpdb->esc_like('"cost_usd"') . '%',
         '%' . $wpdb->esc_like('"cost_toman"') . '%'
     ));
 }

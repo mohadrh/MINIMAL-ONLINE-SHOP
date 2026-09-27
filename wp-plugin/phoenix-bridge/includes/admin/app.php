@@ -1,0 +1,137 @@
+<?php
+/**
+ * پنلِ نسخه‌ی ۲ — صفحه‌ی پیشخوان که پنل را بار می‌کند.
+ *
+ * این فایل خودش تقریباً هیچ HTMLی نمی‌سازد: یک ظرفِ خالی، و
+ * جاوااسکریپتِ پنل که همه‌چیز را از REST می‌خواند. دلیل و
+ * ساختارِ کامل در docs/PANEL-V2.md.
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+const PHOENIX_APP_HANDLE = 'phoenix-app';
+
+function phoenix_app_screen_id() {
+    return 'toplevel_page_' . PHOENIX_MENU;
+}
+
+function phoenix_app_page() {
+    if (!current_user_can(PHOENIX_CAP)) {
+        wp_die('دسترسی نداری.', '', array('response' => 403));
+    }
+
+    $theme = phoenix_app_user_theme();
+
+    /* ⚠ حالتِ رنگ همین‌جا روی ظرف نوشته می‌شود، نه بعد از بارِ
+       جاوااسکریپت.
+
+       اگر پنل اول روشن بالا بیاید و بعد جاوااسکریپت تاریکش کند،
+       کسی که تاریک را انتخاب کرده هر بار یک برقِ سفید می‌بیند. */
+    echo '<div id="phx-app" class="phx2" dir="rtl" data-theme="' . esc_attr($theme) . '">';
+    echo '<div class="phx2-boot" role="status" aria-live="polite">';
+    echo '<span class="phx2-boot__dot" aria-hidden="true"></span>';
+    echo '<span>' . esc_html('در حالِ بارگذاریِ پنل…') . '</span>';
+    echo '</div>';
+    echo '<noscript><p class="phx2-noscript">'
+        . esc_html('پنلِ فونیکس بدونِ جاوااسکریپت کار نمی‌کند. صفحه‌های قبلی از منوی کناری در دسترس‌اند.')
+        . '</p></noscript>';
+    echo '</div>';
+}
+
+function phoenix_app_user_theme() {
+    $t = get_user_meta(get_current_user_id(), 'phoenix_theme', true);
+    return in_array($t, array('light', 'dark', 'system'), true) ? $t : 'system';
+}
+
+add_action('admin_enqueue_scripts', 'phoenix_app_assets');
+function phoenix_app_assets($hook) {
+    if ($hook !== phoenix_app_screen_id()) {
+        return;
+    }
+
+    $base = plugins_url('admin/', dirname(__DIR__, 2) . '/phoenix-bridge.php');
+    $ver  = PHOENIX_BRIDGE_VERSION;
+
+    wp_enqueue_style(PHOENIX_APP_HANDLE, $base . 'app.css', array(), $ver);
+    wp_enqueue_script(PHOENIX_APP_HANDLE, $base . 'app.js', array(), $ver, true);
+
+    /* ⚠ هر چیزی که این‌جا می‌رود، در صفحه قابلِ دیدن است.
+
+       nonce این‌جاست چون پنل برای هر درخواست لازمش دارد، و فقط
+       برای همین کاربر و همین نشست معتبر است. ولی هیچ کلیدِ API،
+       هیچ رمز، و هیچ تنظیماتِ حساسی این‌جا نمی‌آید — آن‌ها از
+       REST و فقط به شکلِ «تنظیم شده / نشده» خوانده می‌شوند. */
+    $boot = array(
+        'ver'    => $ver,
+        'root'   => esc_url_raw(rest_url(PHOENIX_API_NS . '/admin')),
+        'nonce'  => wp_create_nonce('wp_rest'),
+        'theme'  => phoenix_app_user_theme(),
+        'user'   => wp_get_current_user()->display_name,
+        'links'  => array(
+            'products'  => admin_url('edit.php?post_type=product'),
+            'rate'      => admin_url('admin.php?page=phoenix-rate'),
+            'margins'   => admin_url('admin.php?page=phoenix-margins'),
+            'discounts' => admin_url('admin.php?page=phoenix-discounts'),
+            'queue'     => admin_url('admin.php?page=phoenix-queue'),
+            'log'       => admin_url('admin.php?page=phoenix-log'),
+        ),
+    );
+
+    wp_add_inline_script(
+        PHOENIX_APP_HANDLE,
+        'window.PHX_BOOT = ' . wp_json_encode($boot, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) . ';',
+        'before'
+    );
+}
+
+/**
+ * ‎type="module"‎ برای پنل.
+ *
+ * ⚠ فقط تگی که ‎src‎ی خودِ پنل را دارد عوض می‌شود.
+ *
+ * وردپرس اسکریپتِ درون‌خطیِ ‎PHX_BOOT‎ را هم در همان رشته
+ * می‌فرستد. اگر همه‌ی ‎<script‎ها ماژول می‌شدند، آن هم ماژول
+ * می‌شد — که کار می‌کرد ولی به‌خاطرِ ترتیبِ اجرای ماژول‌ها، نه
+ * به‌خاطرِ طراحی. این‌جا فقط همان یکی.
+ */
+add_filter('script_loader_tag', 'phoenix_app_module_tag', 10, 3);
+function phoenix_app_module_tag($tag, $handle, $src) {
+    if ($handle !== PHOENIX_APP_HANDLE) {
+        return $tag;
+    }
+    $needle = '<script src="' . esc_url($src) . '"';
+    if (strpos($tag, $needle) !== false) {
+        return str_replace($needle, '<script type="module" src="' . esc_url($src) . '"', $tag);
+    }
+    /* شکلِ تگ در نسخه‌های مختلفِ وردپرس کمی فرق دارد */
+    return preg_replace(
+        '#<script(?![^>]*type=)([^>]*\ssrc=["\']' . preg_quote(esc_url($src), '#') . ')#',
+        '<script type="module"$1',
+        $tag,
+        1
+    );
+}
+
+/** کلاسِ بدنه — فقط روی صفحه‌ی پنل، برای پس‌زمینه و پاورقی */
+add_filter('admin_body_class', 'phoenix_app_body_class');
+function phoenix_app_body_class($classes) {
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    if ($screen && $screen->id === phoenix_app_screen_id()) {
+        $classes .= ' phx2-body phx2-theme-' . phoenix_app_user_theme();
+    }
+    return $classes;
+}
+
+/** پاورقیِ «سپاسگزاریم از وردپرس» روی پنل جا نمی‌گیرد */
+add_filter('admin_footer_text', 'phoenix_app_footer_text', 20);
+function phoenix_app_footer_text($text) {
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    return ($screen && $screen->id === phoenix_app_screen_id()) ? '' : $text;
+}
+add_filter('update_footer', 'phoenix_app_footer_version', 20);
+function phoenix_app_footer_version($text) {
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    return ($screen && $screen->id === phoenix_app_screen_id()) ? '' : $text;
+}

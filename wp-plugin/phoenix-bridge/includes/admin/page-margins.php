@@ -101,7 +101,7 @@ function phoenix_price_preview() {
           ORDER BY pm.post_id DESC
           LIMIT 10",
         $key,
-        '%' . $wpdb->esc_like('"usd"') . '%',
+        '%' . $wpdb->esc_like('"cost_usd"') . '%',
         '%' . $wpdb->esc_like('"cost_toman"') . '%'
     )));
 

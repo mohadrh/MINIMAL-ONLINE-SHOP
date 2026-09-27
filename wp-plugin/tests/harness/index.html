@@ -1,0 +1,96 @@
+<!doctype html>
+<!--
+  صفحه‌ی آزمایشیِ پنلِ فونیکس — بدونِ وردپرس.
+
+  همان app.js ی واقعی بار می‌شود؛ فقط fetch جایگزین شده تا به‌جای
+  سرور، از fixtures.json بخواند — که خودش از توابعِ واقعیِ داشبورد
+  ساخته شده (make-fixtures.php).
+
+    ?s=healthy | trouble | fresh     وضعیت
+    ?theme=light | dark | system     حالتِ رنگ
+
+  این پوشه داخلِ زیپِ افزونه نمی‌رود؛ pack-plugin فقط
+  phoenix-bridge/ را بسته‌بندی می‌کند.
+-->
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>پنلِ فونیکس — آزمایشی</title>
+  <!-- ⚠ با زمان بار می‌شوند، نه نشانیِ ثابت: سرورِ آزمایشی هدرِ
+       کش نمی‌فرستد و مرورگر نسخه‌ی قدیمی را نگه می‌داشت — یک بار
+       همین باعث شد اصلاحی که نوشته شده بود اصلاً به صفحه نرسد. -->
+  <script>
+    document.write('<link rel="stylesheet" href="../../phoenix-bridge/admin/app.css?t=' + Date.now() + '">');
+  </script>
+  <style>
+    /* جای نوارِ مدیریت و منوی وردپرس، تا چیدمان مثلِ پیشخوان باشد */
+    body { margin: 0; min-height: 100vh; }
+    .wpbar { position: fixed; inset: 0 0 auto 0; height: 32px; background: #1d2327; z-index: 30; }
+    .wpmenu { position: fixed; top: 32px; bottom: 0; right: 0; width: 160px; background: #1d2327; }
+    .wpcontent { margin-right: 160px; padding: 32px 20px 0 0; }
+    @media (max-width: 782px) { .wpmenu { display: none; } .wpcontent { margin-right: 0; padding-right: 10px; } }
+  </style>
+</head>
+<body>
+  <div class="wpbar"></div>
+  <div class="wpmenu"></div>
+  <div class="wpcontent">
+    <div id="phx-app" class="phx2" dir="rtl"></div>
+  </div>
+
+  <script>
+    (function () {
+      var q = new URLSearchParams(location.search);
+      var theme = q.get('theme') || 'system';
+      var scenario = q.get('s') || 'healthy';
+
+      document.body.className = 'phx2-body phx2-theme-' + theme;
+      document.getElementById('phx-app').dataset.theme = theme;
+
+      window.PHX_BOOT = {
+        ver: 'dev-' + Date.now(),
+        root: '/__api',
+        nonce: 'test-nonce',
+        theme: theme,
+        user: 'مدیر',
+        links: { products: '#p', rate: '#r', margins: '#m', discounts: '#d', queue: '#q', log: '#l' }
+      };
+
+      var fixtures = null;
+      var realFetch = window.fetch.bind(window);
+      window.__calls = [];
+
+      window.fetch = async function (url, opts) {
+        if (typeof url !== 'string' || url.indexOf('/__api') !== 0) return realFetch(url, opts);
+        if (!fixtures) fixtures = await (await realFetch('./fixtures.json?' + Date.now())).json();
+
+        var path = url.slice('/__api'.length);
+        var method = (opts && opts.method) || 'GET';
+        var body = opts && opts.body ? JSON.parse(opts.body) : null;
+        window.__calls.push({ method: method, path: path, body: body, nonce: opts && opts.headers && opts.headers['X-WP-Nonce'] });
+
+        await new Promise(function (r) { setTimeout(r, 250); });
+
+        var d = fixtures[scenario];
+        var ok = function (data) {
+          return new Response(JSON.stringify({ ok: true, data: data }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+        };
+
+        if (method === 'GET' && path === '/dashboard') return ok(d);
+        if (method === 'POST' && path === '/engine') { d.state.engine.on = !!body.on; return ok(d); }
+        if (method === 'POST' && path === '/rate/refresh') return ok(d);
+        if (method === 'POST' && path === '/prefs') return ok({ theme: body.theme });
+
+        return new Response(JSON.stringify({ code: 'rest_no_route', message: 'مسیر پیدا نشد' }), { status: 404 });
+      };
+    })();
+  </script>
+  <script>
+    var m = document.createElement('script');
+    m.type = 'module';
+    m.src = '../../phoenix-bridge/admin/app.js?t=' + Date.now();
+    document.body.appendChild(m);
+  </script>
+</body>
+</html>

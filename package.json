@@ -18,7 +18,8 @@
     "test:pricing": "php wp-plugin/tests/pricing-test.php",
     "pack:plugin": "node scripts/pack-plugin.mjs",
     "pack:site": "node scripts/pack-site.mjs",
-    "check:roundtrip": "node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/check-roundtrip.mjs"
+    "check:roundtrip": "node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/check-roundtrip.mjs",
+    "test:plugin": "php wp-plugin/tests/pricing-test.php && php wp-plugin/tests/dashboard-test.php"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",
