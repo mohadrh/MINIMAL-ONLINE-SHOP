@@ -147,6 +147,14 @@ is_same('هشدارِ بالا',                              $a[0]['level'], 'h
 is_same('کنش: رفتن به صف',                          $a[0]['action']['go'], 'queue');
 
 /* ============================================================ */
+section('قیمتِ نگه‌داشته‌شده');
+
+$a = phoenix_dash_alerts(healthy(array('products' => array('held' => 2))));
+is_same('قیمتِ نگه‌داشته هشدارِ بالا دارد',        $a[0]['level'], 'high');
+is_same('کنش: رفتن به منابعِ قیمت',                 $a[0]['action']['go'], 'rate');
+is_same('بدونِ نگه‌داشته، هشداری نیست',             count(phoenix_dash_alerts(healthy())), 0);
+
+/* ============================================================ */
 section('نرخِ دستی');
 
 $s = healthy(array('rate' => array('manual' => true, 'manual_until' => 0)));

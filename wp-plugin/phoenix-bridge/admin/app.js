@@ -1,23 +1,27 @@
 /* ============================================================
    پنلِ فونیکس — پوسته.
 
-   سربرگ، منو، حالتِ رنگ، کلاینتِ API، و مسیریاب. هر صفحه یک
-   فایلِ جدا در ‎screens/‎ است که فقط وقتی باز می‌شود بار می‌شود.
+   سربرگ، منو، حالتِ رنگ، کلاینتِ API، مسیریاب، و نگهبانِ
+   تغییراتِ ذخیره‌نشده. هر صفحه یک فایلِ جدا در ‎screens/‎ است که
+   فقط وقتی باز می‌شود بار می‌شود.
 
    ⚠ صفحه‌ها چیزی import نمی‌کنند؛ همه‌چیز را از ‎ctx‎ می‌گیرند.
 
    دلیلش کشِ مرورگر است. ماژولی که ‎import './ui.js'‎ کند، نسخه‌ی
    بی‌پارامتر را می‌گیرد و بعد از به‌روزرسانیِ افزونه، مرورگر
-   همان قدیمی را از کش می‌دهد — یعنی پنلی با نیمی کدِ تازه و
-   نیمی قدیمی. این‌جا هر فایل با ‎?v=نسخه‎ بار می‌شود و فقط یک
-   جا، پس همیشه همه با هم عوض می‌شوند.
+   همان قدیمی را از کش می‌دهد — پنلی با نیمی کدِ تازه و نیمی
+   قدیمی. این‌جا هر فایل با ‎?v=نسخه‎ و فقط یک بار بار می‌شود.
    ============================================================ */
 
 const BOOT = window.PHX_BOOT || {};
 const V = '?v=' + encodeURIComponent(BOOT.ver || '0');
 
 const ui = await import('./ui.js' + V);
-const { h, icon, clear, toast, fa } = ui;
+const { makeKit } = await import('./kit.js' + V);
+const kit = makeKit(ui);
+const { makePricing } = await import('./pricing-kit.js' + V);
+const pricing = makePricing(ui, kit);
+const { h, icon, clear, toast, fa, confirmBox } = ui;
 
 const root = document.getElementById('phx-app');
 
@@ -26,18 +30,18 @@ const root = document.getElementById('phx-app');
    ------------------------------------------------------------ */
 
 class ApiError extends Error {
-  constructor(message, status, code) {
+  constructor(message, status, code, details) {
     super(message);
     this.status = status;
     this.code = code;
+    /** خطاهای هر فیلد — ‎{ 'plans.0.label': 'پیام' }‎ */
+    this.fields = (details && details.errors) || null;
   }
 }
 
 /**
  * ⚠ هر درخواست nonce دارد و کوکی — و هیچ‌چیزِ دیگری.
- *
- * هیچ کلید و رمزی در این فایل نیست و نباید باشد: همه‌چیز در
- * سرور است و پنل فقط نتیجه را می‌بیند.
+ * هیچ کلید و رمزی در این فایل نیست و نباید باشد.
  */
 async function api(method, path, body) {
   let res;
@@ -57,31 +61,26 @@ async function api(method, path, body) {
   }
 
   let data = null;
-  try { data = await res.json(); } catch { /* پاسخِ غیرِ JSON — پایین رسیدگی می‌شود */ }
+  try { data = await res.json(); } catch { /* پاسخِ غیرِ JSON */ }
 
   if (!res.ok) {
-    /* ⚠ nonceِ منقضی یعنی نشست تمام شده، نه خرابی.
-       nonceِ وردپرس یک روز عمر دارد؛ پنلی که از دیروز باز مانده
-       با همین خطا روبه‌رو می‌شود و باید بگوید چه کند. */
-    if (res.status === 401 || data?.code === 'rest_cookie_invalid_nonce') {
-      sessionExpired();
-    }
-    throw new ApiError(data?.message || `خطای سرور (${res.status})`, res.status, data?.code);
+    /* ⚠ nonceِ منقضی یعنی نشست تمام شده، نه خرابی. */
+    if (res.status === 401 || data?.code === 'rest_cookie_invalid_nonce') sessionExpired();
+    throw new ApiError(data?.message || `خطای سرور (${res.status})`, res.status, data?.code, data?.data);
   }
   return data && typeof data === 'object' && 'data' in data ? data.data : data;
 }
 
 function sessionExpired() {
   if (document.querySelector('.phx2-expired')) return;
-  const bar = h('div', { class: 'phx2-card phx2-expired', role: 'alert' },
+  view.prepend(h('div', { class: 'phx2-card phx2-expired', role: 'alert' },
     h('div', { class: 'phx2-alert is-warn' },
       h('div', { class: 'phx2-alert__t' }, 'نشستِ کاری تمام شده'),
-      h('p', { class: 'phx2-alert__x' }, 'برای امنیت، پنل بعد از مدتی بی‌کاری دوباره تأیید می‌خواهد.'),
+      h('p', { class: 'phx2-alert__x' }, 'برای امنیت، پنل بعد از مدتی بی‌کاری دوباره تأیید می‌خواهد. تغییراتِ ذخیره‌نشده را جایی کپی کن، بعد صفحه را تازه کن.'),
       h('button', { class: 'phx2-btn phx2-btn--primary', type: 'button', onclick: () => location.reload() },
         icon('refresh'), 'تازه کردنِ صفحه'),
     ),
-  );
-  view.prepend(bar);
+  ));
 }
 
 /* ------------------------------------------------------------
@@ -108,9 +107,6 @@ async function setTheme(t, seg) {
   try {
     await api('POST', '/prefs', { theme: t });
   } catch (e) {
-    /* ⚠ برگشت به حالتِ قبل، نه ماندن روی حالتِ ذخیره‌نشده.
-       وگرنه صفحه‌ی بعد با حالتِ قبلی باز می‌شود و کاربر فکر
-       می‌کند انتخابش گم شده. */
     applyTheme(prev);
     paintSeg(seg, prev);
     toast('حالتِ رنگ ذخیره نشد: ' + e.message, 'bad');
@@ -118,38 +114,24 @@ async function setTheme(t, seg) {
 }
 
 function paintSeg(seg, t) {
-  for (const b of seg.querySelectorAll('button')) {
-    b.setAttribute('aria-pressed', String(b.dataset.theme === t));
-  }
+  for (const b of seg.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.theme === t));
 }
 
 /* ------------------------------------------------------------
-   منو
-
-   ⚠ صفحه‌هایی که هنوز در نسخه‌ی ۲ ساخته نشده‌اند به صفحه‌ی
-   نسخه‌ی ۱ می‌روند — و برچسب دارند.
-
-   جای خالی («به‌زودی») نمی‌گذاریم: هر مورد در منو باید کاری
-   بکند. ولی کسی که رویش می‌زند باید بداند به صفحه‌ی قدیمی
-   می‌رود، وگرنه ظاهرِ متفاوت شبیهِ خرابی به نظر می‌رسد.
+   منو — همه‌ی بخش‌ها در پنلِ تازه
    ------------------------------------------------------------ */
 
 const NAV = [
-  { id: 'dashboard', label: 'داشبورد',     icon: 'grid',    screen: 'dashboard' },
-  { id: 'products',  label: 'محصولات',     icon: 'box',     legacy: 'ووکامرس' },
-  { id: 'rate',      label: 'منابع قیمت',  icon: 'pulse',   legacy: 'قبلی' },
-  { id: 'margins',   label: 'حاشیه‌ها',    icon: 'percent', legacy: 'قبلی' },
-  { id: 'discounts', label: 'تخفیف‌ها',    icon: 'tag',     legacy: 'قبلی' },
-  { id: 'queue',     label: 'صف تحویل',    icon: 'inbox',   legacy: 'قبلی' },
-  { id: 'log',       label: 'تاریخچه',     icon: 'clock',   legacy: 'قبلی' },
+  { id: 'dashboard', label: 'داشبورد',    icon: 'grid' },
+  { id: 'products',  label: 'محصولات',    icon: 'box' },
+  { id: 'rate',      label: 'منابعِ قیمت', icon: 'pulse' },
+  { id: 'margins',   label: 'حاشیه‌ها',   icon: 'percent' },
+  { id: 'discounts', label: 'تخفیف‌ها',   icon: 'tag' },
+  { id: 'queue',     label: 'صفِ تحویل',  icon: 'inbox' },
+  { id: 'log',       label: 'تاریخچه',    icon: 'clock' },
+  { id: 'settings',  label: 'تنظیمات',    icon: 'sliders' },
 ];
-
-const SCREENS = Object.fromEntries(NAV.filter((n) => n.screen).map((n) => [n.id, n.screen]));
-
-function navHref(item) {
-  if (item.screen) return '#/' + item.id;
-  return (BOOT.links && BOOT.links[item.id]) || '#';
-}
+const IDS = new Set(NAV.map((n) => n.id));
 
 /* ------------------------------------------------------------
    پوسته
@@ -165,17 +147,13 @@ function renderShell() {
   const seg = h('div', { class: 'phx2-seg', role: 'group', 'aria-label': 'حالتِ رنگ' });
   for (const t of THEMES) {
     seg.append(h('button', {
-      type: 'button',
-      'data-theme': t.id,
-      title: t.label,
-      'aria-label': t.label,
-      'aria-pressed': 'false',
+      type: 'button', 'data-theme': t.id, title: t.label, 'aria-label': t.label, 'aria-pressed': 'false',
       onclick: () => setTheme(t.id, seg),
     }, icon(t.icon)));
   }
   paintSeg(seg, root.dataset.theme || 'system');
 
-  rateChip = h('span', { class: 'phx2-ratechip is-neutral', title: 'نرخِ تتر' },
+  rateChip = h('a', { class: 'phx2-ratechip is-neutral', href: '#/rate', title: 'نرخِ تتر' },
     h('span', { class: 'phx2-ratechip__dot', 'aria-hidden': 'true' }),
     h('span', null, 'نرخ'),
     h('b', { class: 'num' }, '…'),
@@ -183,18 +161,12 @@ function renderShell() {
 
   navList = h('ul', { class: 'phx2-nav', role: 'list' });
   for (const item of NAV) {
-    navList.append(h('li', null,
-      h('a', { href: navHref(item), 'data-id': item.id },
-        icon(item.icon),
-        item.label,
-        item.legacy && h('span', { class: 'phx2-nav__legacy' }, item.legacy),
-      ),
-    ));
+    navList.append(h('li', null, h('a', { href: '#/' + item.id, 'data-id': item.id }, icon(item.icon), item.label)));
   }
 
   const head = h('header', { class: 'phx2-head' },
     h('div', { class: 'phx2-head__row' },
-      h('div', { class: 'phx2-brand' },
+      h('a', { class: 'phx2-brand', href: '#/dashboard' },
         h('span', { class: 'phx2-brand__mark', 'aria-hidden': 'true' }, 'ف'),
         h('span', null,
           h('span', { class: 'phx2-brand__t' }, 'فونیکس'),
@@ -210,49 +182,112 @@ function renderShell() {
   root.append(head, view);
 }
 
-/** چیپِ نرخِ سربرگ — هر صفحه‌ای که نرخ را می‌داند صدایش می‌زند */
 function setRate(value, stale) {
   if (!rateChip) return;
-  const b = rateChip.querySelector('b');
-  b.textContent = value ? fa(value) : 'ندارد';
+  rateChip.querySelector('b').textContent = value ? fa(value) : 'ندارد';
   rateChip.className = 'phx2-ratechip ' + (!value ? 'is-bad' : stale ? 'is-warn' : 'is-good');
   rateChip.title = !value ? 'هیچ نرخی گرفته نشده' : stale ? 'نرخ کهنه است' : 'نرخِ تتر، تازه';
 }
 
 /* ------------------------------------------------------------
-   مسیریاب
+   نگهبانِ تغییراتِ ذخیره‌نشده
+
+   ⚠ فرمی که ده دقیقه رویش کار شده، با یک کلیکِ اشتباه روی منو
+   نباید بی‌صدا دور ریخته شود. هم رفتن به بخشِ دیگرِ پنل می‌پرسد،
+   هم بستنِ تب و رفتن به صفحه‌ی دیگرِ وردپرس.
    ------------------------------------------------------------ */
 
-function currentId() {
-  const m = location.hash.match(/^#\/([a-z-]+)/);
-  const id = m ? m[1] : 'dashboard';
-  return SCREENS[id] ? id : 'dashboard';
+let dirty = false;
+let lastHash = location.hash;
+let skipNext = false;
+
+function setDirty(v) {
+  dirty = !!v;
+  root.classList.toggle('is-dirty', dirty);
+}
+
+window.addEventListener('beforeunload', (e) => {
+  if (!dirty) return;
+  e.preventDefault();
+  e.returnValue = '';
+});
+
+async function onHash() {
+  if (skipNext) { skipNext = false; return; }
+  if (dirty) {
+    const target = location.hash;
+    skipNext = true;
+    location.hash = lastHash;
+    const ok = await confirmBox({
+      title: 'تغییرات ذخیره نشده‌اند',
+      text: 'اگر از این صفحه بروی، تغییراتی که ذخیره نکرده‌ای از دست می‌روند.',
+      ok: 'برو، ذخیره نمی‌خواهم',
+      cancel: 'بمان',
+    });
+    if (!ok) return;
+    setDirty(false);
+    location.hash = target;
+    return;
+  }
+  lastHash = location.hash;
+  route();
+}
+
+/* ------------------------------------------------------------
+   مسیریاب —  ‎#/products/42‎  →  صفحه‌ی products با پارامتر 42
+   ------------------------------------------------------------ */
+
+function parse() {
+  const m = location.hash.match(/^#\/([a-z-]+)(?:\/([A-Za-z0-9_-]+))?/);
+  const id = m && IDS.has(m[1]) ? m[1] : 'dashboard';
+  return { id, param: m && IDS.has(m[1]) ? (m[2] || null) : null };
 }
 
 let token = 0;
 
 async function route() {
-  const id = currentId();
+  const { id, param } = parse();
   const my = ++token;
+  setDirty(false);
 
   for (const a of navList.querySelectorAll('a')) {
     if (a.dataset.id === id) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   }
+  syncWpMenu(id);
 
   clear(view);
-  view.append(h('div', { class: 'phx2-skel', style: { height: '140px' } }));
+  view.append(h('div', { class: 'phx2-skel', style: { height: '140px' } }),
+    h('div', { class: 'phx2-skel', style: { height: '320px' } }));
 
   try {
-    const mod = await import(`./screens/${SCREENS[id]}.js${V}`);
-    /* ⚠ اگر کاربر وسطِ بار شدن به صفحه‌ی دیگری رفت، نتیجه‌ی این
-       یکی دور ریخته می‌شود — وگرنه صفحه‌ی کُندتر روی صفحه‌ی
-       جدیدتر می‌نشیند. */
+    const mod = await import(`./screens/${id}.js${V}`);
     if (my !== token) return;
-    await mod.render(ctx);
+    await mod.render({ ...ctx, param, alive: () => my === token });
+    if (my === token) view.focus({ preventScroll: true });
   } catch (e) {
     if (my !== token) return;
     showError(e);
+  }
+}
+
+/**
+ * منوی کناریِ وردپرس هم بخشِ باز را نشان بدهد.
+ *
+ * همه‌ی زیرمنوهای فونیکس یک صفحه‌اند با ‎#‎ متفاوت، پس وردپرس
+ * همیشه اولی («داشبورد») را پررنگ می‌کند — حتی وقتی ادمین در
+ * محصولات است.
+ */
+function syncWpMenu(id) {
+  for (const li of document.querySelectorAll('#toplevel_page_phoenix .wp-submenu li')) {
+    const a = li.querySelector('a');
+    if (!a) continue;
+    const m = (a.getAttribute('href') || '').match(/#\/([a-z-]+)/);
+    const on = (m ? m[1] : 'dashboard') === id;
+    li.classList.toggle('current', on);
+    a.classList.toggle('current', on);
+    if (on) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
   }
 }
 
@@ -272,17 +307,17 @@ function showError(e) {
 
 const ctx = {
   ui,
+  kit,
+  pricing,
   boot: BOOT,
   get view() { return view; },
   api,
+  ApiError,
   setRate,
+  setDirty,
   showError,
-  /** رفتن به بخشی از پنل، یا به صفحه‌ی نسخه‌ی قبلیِ آن */
-  go(id) {
-    if (SCREENS[id]) { location.hash = '#/' + id; return; }
-    const url = BOOT.links && BOOT.links[id];
-    if (url) location.href = url;
-  },
+  reload: route,
+  go(path) { location.hash = '#/' + path; },
 };
 
 /* ------------------------------------------------------------
@@ -291,8 +326,14 @@ const ctx = {
 
 applyTheme(root.dataset.theme || BOOT.theme || 'system');
 renderShell();
-window.addEventListener('hashchange', route);
+window.addEventListener('hashchange', onHash);
 route();
 
-/* ⚠ نشانِ آماده بودن — فقط برای تستِ خودکار؛ روی کار اثری ندارد */
+/* نرخِ سربرگ را داشبورد و صفحه‌ی منابع خودشان پر می‌کنند؛ اگر
+   پنل از صفحه‌ی دیگری باز شد، سربرگ با «…» نماند. */
+if (!['dashboard', 'rate'].includes(parse().id)) {
+  api('GET', '/rate').then((d) => setRate(d.current.value, d.current.stale)).catch(() => {});
+}
+
+/* ⚠ فقط برای تستِ خودکار؛ روی کار اثری ندارد */
 root.dataset.ready = '1';

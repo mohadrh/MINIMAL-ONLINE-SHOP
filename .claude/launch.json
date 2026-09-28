@@ -24,15 +24,13 @@
     },
     {
       "name": "plugin-harness",
-      "runtimeExecutable": "python",
+      "runtimeExecutable": "C:/xampp/php/php.exe",
       "runtimeArgs": [
-        "-m",
-        "http.server",
-        "4330",
-        "--bind",
-        "127.0.0.1",
-        "--directory",
-        "wp-plugin"
+        "-S",
+        "127.0.0.1:4330",
+        "-t",
+        "wp-plugin",
+        "wp-plugin/tests/harness/router.php"
       ],
       "port": 4330
     }

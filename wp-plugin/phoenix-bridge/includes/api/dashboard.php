@@ -157,10 +157,12 @@ function phoenix_dash_product_counts() {
           WHERE pm.meta_key = %s
             AND p.post_type IN ('product', 'product_variation')
             AND p.post_status IN ('publish', 'private')
-            AND (pm.meta_value LIKE %s OR pm.meta_value LIKE %s)",
+            AND (pm.meta_value LIKE %s OR pm.meta_value LIKE %s OR pm.meta_value LIKE %s)",
         PHOENIX_META_KEY,
         '%' . $wpdb->esc_like('"cost_usd"') . '%',
-        '%' . $wpdb->esc_like('"cost_toman"') . '%'
+        '%' . $wpdb->esc_like('"cost_toman"') . '%',
+        /* «چند منبع» هزینه‌اش در متای جداست؛ حالتش این‌جاست */
+        '%' . $wpdb->esc_like('"price_mode";s:7:"sources"') . '%'
     ));
 
     $with_cost = min($with_cost, $total);
@@ -169,6 +171,7 @@ function phoenix_dash_product_counts() {
         'total'   => $total,
         'engine'  => $with_cost,
         'missing' => max(0, $total - $with_cost),
+        'held'    => function_exists('phoenix_psrc_held_count') ? phoenix_psrc_held_count() : 0,
     );
 }
 
@@ -306,6 +309,16 @@ function phoenix_dash_alerts(array $s) {
             'title'  => 'منبعی جواب نمی‌دهد',
             'text'   => 'این‌ها آخرین بار جواب ندادند: ' . implode('، ', $s['sources']['dead']) . '.',
             'action' => array('label' => 'ببین چرا', 'go' => 'rate'),
+        );
+    }
+
+    /* قیمتی که منابعش جهش داشته یا هیچ‌کدام جواب نداده‌اند */
+    if (!empty($s['products']['held'])) {
+        $out[] = array(
+            'level'  => 'high',
+            'title'  => 'قیمتِ محصول نگه داشته شده',
+            'text'   => sprintf('منابعِ قیمتِ %d محصول یا پلن جهشِ بزرگ داشته‌اند یا جواب نداده‌اند؛ قیمتِ قبلی مانده تا تو ببینی.', (int) $s['products']['held']),
+            'action' => array('label' => 'منابعِ قیمت', 'go' => 'rate'),
         );
     }
 

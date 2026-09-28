@@ -251,7 +251,7 @@ function phoenix_shape_product($product) {
         'categories'        => $cats,
         'tags'              => $tags,
         'images'            => $images,
-        'phoenix'           => phoenix_get_fields($id),
+        'phoenix'           => phoenix_public_fields($id),
         '_variants'         => $variants,
     );
 }

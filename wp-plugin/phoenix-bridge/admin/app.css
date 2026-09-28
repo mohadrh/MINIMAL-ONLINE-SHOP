@@ -230,6 +230,9 @@ body.phx2-body #wpfooter { display: none; }
    یک‌سومِ صفحه همیشه پوشیده. آن‌جا جای خواندن مهم‌تر از منوی
    همیشه‌پیداست. */
 @media (max-height: 640px) { .phx2-head { position: static; } }
+/* و روی گوشی هم: با نوارِ وردپرس، سربرگِ چسبان حدودِ یک‌پنجمِ صفحه را
+   همیشه می‌پوشاند — درست روی فهرستی که ادمین دارد می‌خواند. */
+@media (max-width: 600px) { .phx2-head { position: static; } }
 
 .phx2-head__row {
   display: flex;

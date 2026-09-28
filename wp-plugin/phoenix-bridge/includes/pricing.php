@@ -77,10 +77,12 @@ function phoenix_cost_of($product_id) {
 
     /* ارث از والد، فقط برای واریاسیون */
     $parent = (int) wp_get_post_parent_id($product_id);
+    $owner  = $product_id; // پیکربندیِ «چند منبع» روی کدام نوشته شده
     if ($parent) {
         $pf = phoenix_get_fields($parent);
         if ($mode === '' && isset($pf['price_mode'])) {
-            $mode = (string) $pf['price_mode'];
+            $mode  = (string) $pf['price_mode'];
+            $owner = $parent;
         }
         if ($usd <= 0 && isset($pf['cost_usd'])) {
             $usd = (float) $pf['cost_usd'];
@@ -91,6 +93,20 @@ function phoenix_cost_of($product_id) {
         if (!$locked && !empty($pf['price_locked'])) {
             $locked = true;
         }
+    }
+
+    /* ⚠ «چند منبع»: هزینه از آخرین انتخابِ سالمِ منابع
+       (product-sources.php). هنوز عددی نیست؟ مثلِ دستی — موتور
+       دست نمی‌زند، و قیمتِ فعلی می‌ماند. */
+    if ($mode === 'sources') {
+        $c = function_exists('phoenix_psrc_cost') ? phoenix_psrc_cost($owner) : null;
+        return array(
+            'mode'   => $c ? $c['mode'] : 'manual',
+            'usd'    => $c ? $c['usd'] : 0.0,
+            'toman'  => $c ? $c['toman'] : 0.0,
+            'locked' => $locked,
+            'via'    => 'sources',
+        );
     }
 
     /* حدسِ رژیم وقتی صریح نوشته نشده — ولی هیچ‌وقت به سمتِ
@@ -127,7 +143,12 @@ function phoenix_cost_of($product_id) {
  *
  * ترتیب: محصول ← واریاسیون از والدش ← دسته ← پیش‌فرضِ کل
  */
-function phoenix_margin_for($product_id) {
+/**
+ * @param bool $skip_own حاشیه‌ی اختصاصیِ خودِ محصول را نادیده بگیر —
+ *        برای پیش‌نمایشِ ویرایشگر، که نسخه‌ی اختصاصیِ فرم را
+ *        جداگانه دارد و نباید با نسخه‌ی ذخیره‌شده قاطی شود.
+ */
+function phoenix_margin_for($product_id, $skip_own = false) {
     $base = array_merge(phoenix_margin_defaults(), (array) phoenix_setting('margin', array()));
 
     $by_cat  = (array) phoenix_setting('margin_by_cat', array());
@@ -155,6 +176,10 @@ function phoenix_margin_for($product_id) {
             sort($ids);
             $base = array_merge($base, $by_cat[$ids[0]]);
         }
+    }
+
+    if ($skip_own) {
+        return phoenix_margin_sanitize($base);
     }
 
     /* ---------- محصولِ والد ---------- */
@@ -222,9 +247,32 @@ function phoenix_margin_sanitize(array $m) {
  * @return array|null null یعنی این محصول دستِ موتور نیست
  */
 function phoenix_compute_price($product_id, $rate = null) {
-    $cost = phoenix_cost_of($product_id);
+    return phoenix_compute_with(
+        phoenix_cost_of($product_id),
+        phoenix_margin_for($product_id),
+        $product_id,
+        $rate
+    );
+}
 
-    if ($cost['mode'] === 'manual' || $cost['locked']) {
+/**
+ * همان محاسبه، با هزینه و حاشیه‌ای که از بیرون داده می‌شود.
+ *
+ * ⚠ پیش‌نمایشِ ویرایشگرِ محصول از همین تابع استفاده می‌کند، نه از
+ * نسخه‌ی جاوااسکریپتیِ فرمول.
+ *
+ * ادمین پیش از ذخیره می‌خواهد ببیند قیمت چند می‌شود. اگر فرمول در
+ * مرورگر تکرار می‌شد، دو فرمول داشتیم که باید همیشه با هم بخوانند
+ * — و روزی که یکی عوض شود و دیگری نه، پیش‌نمایش یک عدد می‌گوید و
+ * سایت عددِ دیگری می‌نویسد. این‌جا یک فرمول است و پیش‌نمایش فقط
+ * ورودی‌اش را از فرمِ ذخیره‌نشده می‌گیرد.
+ *
+ * @param array $cost   خروجیِ ‎phoenix_cost_of‎ یا همان شکل
+ * @param array $m      نمایه‌ی حاشیه (پاک‌سازی‌شده)
+ * @param int   $product_id برای تخفیف‌ها — دسته و تگِ محصول
+ */
+function phoenix_compute_with(array $cost, array $m, $product_id, $rate = null) {
+    if ($cost['mode'] === 'manual' || !empty($cost['locked'])) {
         return null;
     }
 
@@ -246,7 +294,7 @@ function phoenix_compute_price($product_id, $rate = null) {
     }
 
     /* ---------- سود ---------- */
-    $m      = phoenix_margin_for($product_id);
+    $m      = phoenix_margin_sanitize($m);
     $profit = max($base * ($m['percent'] / 100), (float) $m['min_profit']);
     $raw    = $base + $profit + $m['fixed'];
 
@@ -260,17 +308,34 @@ function phoenix_compute_price($product_id, $rate = null) {
     $discount = phoenix_discount_for($product_id, $regular);
     $sale     = $discount ? (int) $discount['price'] : 0;
 
-    /* ---------- کف ---------- */
+    /* ⚠ قیمتِ تخفیف‌خورده هم رُند می‌شود — و رو به پایین.
+       ۱۰٪ از ۵٬۶۳۸٬۰۰۰ یعنی ۵٬۰۷۴٬۲۰۰؛ قیمتی که روی کارت
+       نیمه‌کاره به نظر می‌رسد. پایین، نه بالا: تخفیفی که اعلام
+       شده دست‌کم همان‌قدر است، هیچ‌وقت کمتر. اگر پله از خودِ قیمت
+       بزرگ‌تر باشد (صفر می‌شد)، همان عددِ دقیق می‌ماند. */
+    if ($sale > 0) {
+        $rounded = phoenix_round_price($sale, $m['round_to'], 'down');
+        if ($rounded > 0) {
+            $sale = $rounded;
+        }
+    }
+
+    /* ---------- کف ----------
+       ⚠ خودِ کف دقیق می‌ماند؛ فقط قیمتی که به کف چسبانده می‌شود
+       رو به *بالا* رُند می‌شود. اولین نسخه خودِ کف را رُند می‌کرد و
+       با پله‌ی یک‌میلیونی، کفِ ۳۰۰ هزاری یک میلیون می‌شد — یعنی
+       برابرِ قیمتِ اصلی، و هیچ تخفیفی دیگر جا نداشت. تست گرفتش. */
     $floor   = phoenix_price_floor($base);
+    $floor_r = phoenix_round_price($floor, $m['round_to'], 'up');
     $under   = false;
     $blocked = null;
 
     if ($sale > 0 && $sale < $floor) {
-        $sale  = $floor;
+        $sale  = $floor_r;
         $under = true;
     }
     if ($regular < $floor) {
-        $regular = $floor;
+        $regular = $floor_r;
         $under   = true;
     }
 

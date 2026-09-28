@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Phoenix Bridge
  * Description: پلِ میان فروشگاه فونیکس و ووکامرس — فیلدهای دیجیتال، اندپوینت عمومی، و کلید حساب روی شماره‌ی موبایل.
- * Version:     1.2.0
+ * Version:     1.3.0
  * Requires PHP: 7.4
  * Author:      Phoenix Shop
  * Text Domain: phoenix-bridge
@@ -34,7 +34,7 @@ if (!defined('ABSPATH')) {
     exit; // دسترسی مستقیم ممنوع
 }
 
-define('PHOENIX_BRIDGE_VERSION', '1.2.0');
+define('PHOENIX_BRIDGE_VERSION', '1.3.0');
 define('PHOENIX_META_KEY', '_phoenix');
 
 /* ============================================================
@@ -67,6 +67,30 @@ function phoenix_set_fields($post_id, $fields) {
 }
 
 /**
+ * ⚠ فقط فیلدهای نمایشی — هر جا که بیرون می‌رود.
+ *
+ * تا ۱٫۲٫۰ اندپوینتِ عمومیِ ‎/catalog‎ کلِ ‎_phoenix‎ را
+ * برمی‌گرداند — یعنی ‎cost_usd‎ و ‎cost_toman‎، قیمتِ تمام‌شده‌ی
+ * خودمان، برای هر کسی که نشانی را باز کند. رقیب حاشیه‌ی سودِ هر
+ * محصول را می‌دید.
+ *
+ * فهرستِ سفید است نه سیاه: فیلدِ تازه‌ای که روزی اضافه شود تا
+ * وقتی این‌جا نوشته نشده بیرون نمی‌رود. فهرست همان چیزی است که
+ * سایت می‌خواند (src/lib/api/wooTypes.ts).
+ */
+const PHOENIX_PUBLIC_FIELDS = array(
+    'english_title', 'brand', 'fulfillment', 'delivery_estimate', 'warranty_label', 'required_inputs',
+    'features', 'notes', 'faq', 'platforms', 'accent', 'thumbnail', 'logo', 'cover', 'cutout', 'badges',
+    'seed_rating', 'seed_reviews', 'seed_sales', 'variant_label', 'variant_guide', 'variant_usd',
+    /* پلن‌ها */
+    'label', 'usd', 'is_default', 'guide',
+);
+
+function phoenix_public_fields($post_id) {
+    return array_intersect_key(phoenix_get_fields($post_id), array_flip(PHOENIX_PUBLIC_FIELDS));
+}
+
+/**
  * فیلدها را به پاسخِ REST ووکامرس اضافه می‌کند.
  *
  * به‌جای اینکه کلاینت meta_data را بگردد، یک کلیدِ phoenix
@@ -75,279 +99,35 @@ function phoenix_set_fields($post_id, $fields) {
  */
 add_filter('woocommerce_rest_prepare_product_object', 'phoenix_add_fields_to_product', 10, 3);
 function phoenix_add_fields_to_product($response, $object, $request) {
-    $response->data['phoenix'] = phoenix_get_fields($object->get_id());
+    $response->data['phoenix'] = phoenix_public_fields($object->get_id());
     return $response;
 }
 
 add_filter('woocommerce_rest_prepare_product_variation_object', 'phoenix_add_fields_to_variation', 10, 3);
 function phoenix_add_fields_to_variation($response, $object, $request) {
-    $response->data['phoenix'] = phoenix_get_fields($object->get_id());
+    $response->data['phoenix'] = phoenix_public_fields($object->get_id());
     return $response;
 }
 
 /* ============================================================
-   ۲ پنل مدیریت — تبِ فونیکس روی صفحه‌ی محصول
+   ۲ ویرایش — در پنلِ فونیکس
    ============================================================ */
 
-add_filter('woocommerce_product_data_tabs', 'phoenix_product_tab');
-function phoenix_product_tab($tabs) {
-    $tabs['phoenix'] = array(
-        'label'    => 'فونیکس',
-        'target'   => 'phoenix_product_data',
-        'class'    => array(),
-        'priority' => 21,
-    );
-    return $tabs;
-}
+/* ⚠ فیلدهای فونیکس دیگر در صفحه‌ی محصولِ ووکامرس ویرایش نمی‌شوند.
 
-add_action('woocommerce_product_data_panels', 'phoenix_product_panel');
-function phoenix_product_panel() {
-    global $post;
-    $f = phoenix_get_fields($post->ID);
+   تا ۱٫۲٫۰ این‌جا یک تبِ «فونیکس» بود با شش جعبه‌ی JSON، و
+   فیلدهای پلن روی هر واریاسیون. حالا همه‌ی این‌ها — و رسانه،
+   محتوا، و قیمت‌گذاریِ هر پلن — در ویرایشگرِ پنل‌اند
+   (includes/api/products.php)، با اعتبارسنجیِ واقعی به‌جای
+   «اگر JSON خراب بود نادیده بگیر».
 
-    echo '<div id="phoenix_product_data" class="panel woocommerce_options_panel">';
+   ⚠ و ذخیره‌کننده‌هایشان هم رفتند، نه فقط فرم‌ها.
 
-    woocommerce_wp_text_input(array(
-        'id'          => 'phoenix_english_title',
-        'label'       => 'نام انگلیسی',
-        'description' => 'زیر عنوان فارسی نشان داده می‌شود.',
-        'desc_tip'    => true,
-        'value'       => isset($f['english_title']) ? $f['english_title'] : '',
-    ));
-
-    woocommerce_wp_text_input(array(
-        'id'    => 'phoenix_brand',
-        'label' => 'برند',
-        'value' => isset($f['brand']) ? $f['brand'] : '',
-    ));
-
-    woocommerce_wp_select(array(
-        'id'          => 'phoenix_fulfillment',
-        'label'       => 'روش تحویل',
-        'description' => 'بعد از پرداخت چه اتفاقی می‌افتد.',
-        'desc_tip'    => true,
-        'value'       => isset($f['fulfillment']) ? $f['fulfillment'] : 'manual',
-        'options'     => array(
-            'stock_code'      => 'کد از انبار',
-            'stock_account'   => 'یوزر و پسورد از انبار',
-            'upgrade_on_user' => 'ارتقای اکانت خود مشتری',
-            'api_topup'       => 'شارژ خودکار',
-            'manual'          => 'دستی',
-        ),
-    ));
-
-    woocommerce_wp_text_input(array(
-        'id'    => 'phoenix_delivery_estimate',
-        'label' => 'زمان تحویل',
-        'value' => isset($f['delivery_estimate']) ? $f['delivery_estimate'] : '',
-    ));
-
-    woocommerce_wp_text_input(array(
-        'id'    => 'phoenix_warranty_label',
-        'label' => 'عنوان گارانتی',
-        'value' => isset($f['warranty_label']) ? $f['warranty_label'] : '',
-    ));
-
-    woocommerce_wp_text_input(array(
-        'id'          => 'phoenix_accent',
-        'label'       => 'رنگ شاخص',
-        'description' => 'کد رنگ مثل ‎#ffa63d‎ — روی کارت محصول استفاده می‌شود.',
-        'desc_tip'    => true,
-        'value'       => isset($f['accent']) ? $f['accent'] : '',
-    ));
-
-    /* آرایه‌ها به‌صورت JSON ویرایش می‌شوند.
-
-       فرمِ تکرارشونده‌ی درست ساختن در پنل ووکامرس کارِ یک روز است
-       و این‌ها را ادمین کم عوض می‌کند. JSON زشت است ولی صادق:
-       ساختار را همان‌طور نشان می‌دهد که هست، و اعتبارسنجی هنگام
-       ذخیره جلوی JSONِ خراب را می‌گیرد. */
-    phoenix_json_field('phoenix_required_inputs', 'ورودی‌های لازم از مشتری', $f, 'required_inputs',
-        '[{"key":"email","label":"ایمیل اکانت","type":"email","example":"you@mail.com"}]');
-    phoenix_json_field('phoenix_features', 'ویژگی‌ها', $f, 'features', '["ویژگی اول","ویژگی دوم"]');
-    phoenix_json_field('phoenix_notes', 'نکته‌ها', $f, 'notes', '["نکته‌ی اول"]');
-    phoenix_json_field('phoenix_faq', 'سوالات متداول', $f, 'faq', '[{"q":"سوال","a":"جواب"}]');
-    phoenix_json_field('phoenix_platforms', 'پلتفرم‌ها', $f, 'platforms', '["Web","iOS","Android"]');
-    phoenix_json_field('phoenix_badges', 'نشان‌ها', $f, 'badges', '["hot","new"]');
-
-    echo '</div>';
-}
-
-function phoenix_json_field($id, $label, $fields, $key, $placeholder) {
-    $value = isset($fields[$key]) ? wp_json_encode($fields[$key], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : '';
-    echo '<div class="options_group"><p class="form-field">';
-    echo '<label for="' . esc_attr($id) . '">' . esc_html($label) . '</label>';
-    echo '<textarea id="' . esc_attr($id) . '" name="' . esc_attr($id) . '" rows="4" style="width:70%;font-family:monospace;direction:ltr" placeholder="' . esc_attr($placeholder) . '">'
-        . esc_textarea($value) . '</textarea>';
-    echo '</p></div>';
-}
-
-/**
- * ذخیره.
- *
- * ⚠ nonce را خودِ ووکامرس چک می‌کند، ولی قابلیت را باید ما چک
- * کنیم: بدون این، هر کاربری که به هر دلیلی بتواند درخواستِ ذخیره
- * بفرستد می‌تواند متای محصول را عوض کند.
- */
-add_action('woocommerce_process_product_meta', 'phoenix_save_fields');
-function phoenix_save_fields($post_id) {
-    if (!current_user_can('edit_product', $post_id)) {
-        return;
-    }
-
-    $f = phoenix_get_fields($post_id);
-
-    $texts = array(
-        'english_title'     => 'phoenix_english_title',
-        'brand'             => 'phoenix_brand',
-        'fulfillment'       => 'phoenix_fulfillment',
-        'delivery_estimate' => 'phoenix_delivery_estimate',
-        'warranty_label'    => 'phoenix_warranty_label',
-        'accent'            => 'phoenix_accent',
-    );
-    foreach ($texts as $key => $field) {
-        if (isset($_POST[$field])) {
-            $f[$key] = sanitize_text_field(wp_unslash($_POST[$field]));
-        }
-    }
-
-    $jsons = array(
-        'required_inputs' => 'phoenix_required_inputs',
-        'features'        => 'phoenix_features',
-        'notes'           => 'phoenix_notes',
-        'faq'             => 'phoenix_faq',
-        'platforms'       => 'phoenix_platforms',
-        'badges'          => 'phoenix_badges',
-    );
-    foreach ($jsons as $key => $field) {
-        if (!isset($_POST[$field])) {
-            continue;
-        }
-        $raw = trim((string) wp_unslash($_POST[$field]));
-        if ($raw === '') {
-            unset($f[$key]);
-            continue;
-        }
-        $decoded = json_decode($raw, true);
-        /* JSONِ خراب بی‌صدا نادیده گرفته نمی‌شود — مقدارِ قبلی
-           می‌ماند و به ادمین هشدار داده می‌شود. بی‌صدا پاک کردن
-           یعنی ادمین فکر می‌کند ذخیره شده. */
-        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-            $f[$key] = phoenix_sanitize_deep($decoded);
-        } else {
-            set_transient('phoenix_json_error_' . $post_id, $field, 60);
-        }
-    }
-
-    phoenix_set_fields($post_id, $f);
-}
-
-/** پاک‌سازی بازگشتی — هیچ رشته‌ای بدون sanitize ذخیره نمی‌شود */
-function phoenix_sanitize_deep($value) {
-    if (is_array($value)) {
-        $out = array();
-        foreach ($value as $k => $v) {
-            $out[sanitize_key((string) $k)] = phoenix_sanitize_deep($v);
-        }
-        return $out;
-    }
-    if (is_string($value)) {
-        return sanitize_textarea_field($value);
-    }
-    if (is_bool($value) || is_numeric($value)) {
-        return $value;
-    }
-    return '';
-}
-
-add_action('admin_notices', 'phoenix_json_error_notice');
-function phoenix_json_error_notice() {
-    global $post;
-    if (!$post) {
-        return;
-    }
-    $bad = get_transient('phoenix_json_error_' . $post->ID);
-    if ($bad) {
-        delete_transient('phoenix_json_error_' . $post->ID);
-        echo '<div class="notice notice-error"><p>فیلد <code>' . esc_html($bad)
-            . '</code> ذخیره نشد چون JSON آن معتبر نبود. مقدار قبلی دست‌نخورده ماند.</p></div>';
-    }
-}
-
-/* ============================================================
-   ۳ فیلدهای پلن روی واریاسیون
-   ============================================================ */
-
-add_action('woocommerce_variation_options_pricing', 'phoenix_variation_fields', 10, 3);
-function phoenix_variation_fields($loop, $variation_data, $variation) {
-    $f = phoenix_get_fields($variation->ID);
-
-    woocommerce_wp_text_input(array(
-        'id'            => "phoenix_var_label_{$loop}",
-        'name'          => "phoenix_var_label[{$loop}]",
-        'label'         => 'برچسب پلن',
-        'value'         => isset($f['label']) ? $f['label'] : '',
-        'wrapper_class' => 'form-row form-row-first',
-    ));
-
-    woocommerce_wp_text_input(array(
-        'id'            => "phoenix_var_usd_{$loop}",
-        'name'          => "phoenix_var_usd[{$loop}]",
-        'label'         => 'مبلغ دلاری',
-        'type'          => 'number',
-        'custom_attributes' => array('step' => '0.01', 'min' => '0'),
-        'value'         => isset($f['usd']) ? $f['usd'] : '',
-        'wrapper_class' => 'form-row form-row-last',
-        'description'   => 'اگر پر باشد، قیمت تومانی از نرخ روز حساب می‌شود.',
-        'desc_tip'      => true,
-    ));
-
-    woocommerce_wp_textarea_input(array(
-        'id'            => "phoenix_var_fit_{$loop}",
-        'name'          => "phoenix_var_fit[{$loop}]",
-        'label'         => 'این پلن مال کیست',
-        'value'         => isset($f['guide']['fit']) ? $f['guide']['fit'] : '',
-        'wrapper_class' => 'form-row form-row-full',
-    ));
-
-    woocommerce_wp_textarea_input(array(
-        'id'            => "phoenix_var_detail_{$loop}",
-        'name'          => "phoenix_var_detail[{$loop}]",
-        'label'         => 'دقیقاً چه می‌گیرد',
-        'value'         => isset($f['guide']['detail']) ? $f['guide']['detail'] : '',
-        'wrapper_class' => 'form-row form-row-full',
-    ));
-}
-
-add_action('woocommerce_save_product_variation', 'phoenix_save_variation', 10, 2);
-function phoenix_save_variation($variation_id, $loop) {
-    if (!current_user_can('edit_product', $variation_id)) {
-        return;
-    }
-
-    $f = phoenix_get_fields($variation_id);
-
-    if (isset($_POST['phoenix_var_label'][$loop])) {
-        $f['label'] = sanitize_text_field(wp_unslash($_POST['phoenix_var_label'][$loop]));
-    }
-    if (isset($_POST['phoenix_var_usd'][$loop])) {
-        $usd = (string) wp_unslash($_POST['phoenix_var_usd'][$loop]);
-        $f['usd'] = $usd === '' ? null : (float) $usd;
-        if ($f['usd'] === null) {
-            unset($f['usd']);
-        }
-    }
-
-    $fit    = isset($_POST['phoenix_var_fit'][$loop]) ? sanitize_textarea_field(wp_unslash($_POST['phoenix_var_fit'][$loop])) : '';
-    $detail = isset($_POST['phoenix_var_detail'][$loop]) ? sanitize_textarea_field(wp_unslash($_POST['phoenix_var_detail'][$loop])) : '';
-    if ($fit !== '' && $detail !== '') {
-        $f['guide'] = array('fit' => $fit, 'detail' => $detail);
-    } else {
-        unset($f['guide']);
-    }
-
-    phoenix_set_fields($variation_id, $f);
-}
+   اگر فقط فرم برداشته می‌شد و ‎woocommerce_process_product_meta‎
+   می‌ماند، هر ذخیره در صفحه‌ی ووکامرس (مثلاً عوض کردنِ موجودی)
+   فیلدهایی را که فرمش دیگر نیست خالی می‌دید و روی داده‌ی پنل
+   می‌نوشت. صفحه‌ی ووکامرس حالا فقط یک پیوند دارد
+   (includes/admin/woo-screen.php) و به ‎_phoenix‎ دست نمی‌زند. */
 
 /* ============================================================
    بارگذاری بخش‌ها
@@ -362,10 +142,13 @@ $phoenix_dir = plugin_dir_path(__FILE__);
      pricing     به نرخ و تخفیف هر دو نیاز دارد
      بقیه        از این چهارتا استفاده می‌کنند */
 require_once $phoenix_dir . 'includes/db.php';
+require_once $phoenix_dir . 'includes/connections.php';
 require_once $phoenix_dir . 'includes/rate-sources.php';
+require_once $phoenix_dir . 'includes/rate-custom.php';
 require_once $phoenix_dir . 'includes/rate.php';
 require_once $phoenix_dir . 'includes/discounts.php';
 require_once $phoenix_dir . 'includes/pricing.php';
+require_once $phoenix_dir . 'includes/product-sources.php';
 require_once $phoenix_dir . 'includes/product-pricing.php';
 require_once $phoenix_dir . 'includes/fulfil-queue.php';
 
@@ -379,6 +162,12 @@ require_once $phoenix_dir . 'includes/orders.php';
    (guard.php) خودش دسترسی را چک می‌کند. */
 require_once $phoenix_dir . 'includes/api/guard.php';
 require_once $phoenix_dir . 'includes/api/dashboard.php';
+require_once $phoenix_dir . 'includes/api/product-input.php';
+require_once $phoenix_dir . 'includes/api/products.php';
+require_once $phoenix_dir . 'includes/api/pricing-board.php';
+require_once $phoenix_dir . 'includes/api/rate-admin.php';
+require_once $phoenix_dir . 'includes/api/rules.php';
+require_once $phoenix_dir . 'includes/api/ops.php';
 
 if (is_admin()) {
     require_once $phoenix_dir . 'includes/admin/admin.php';

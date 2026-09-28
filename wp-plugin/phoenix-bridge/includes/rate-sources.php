@@ -79,8 +79,18 @@ function phoenix_rate_sources() {
             'url'   => PHOENIX_RATE_URL,
             'path'  => defined('PHOENIX_RATE_PATH') ? PHOENIX_RATE_PATH : 'rate',
             'unit'  => defined('PHOENIX_RATE_UNIT') ? PHOENIX_RATE_UNIT : 'toman',
-            'key'   => defined('PHOENIX_RATE_KEY') ? PHOENIX_RATE_KEY : '',
+            /* کلیدِ wp-config هم مثلِ یک اتصال رفتار می‌کند (Bearer) */
+            'conn'  => defined('PHOENIX_RATE_KEY') && PHOENIX_RATE_KEY !== ''
+                ? array('slug' => 'config', 'auth' => 'bearer', 'header' => '', 'key' => (string) PHOENIX_RATE_KEY)
+                : null,
+            'origin' => 'config',
         );
+    }
+
+    /* منابعی که ادمین در پنل ساخته (rate-custom.php) — از همان
+       اعتبارسنجیِ پایین رد می‌شوند، مثلِ بقیه. */
+    if (function_exists('phoenix_custom_sources_runtime')) {
+        $sources = array_merge($sources, phoenix_custom_sources_runtime());
     }
 
     /**
@@ -126,12 +136,20 @@ function phoenix_rate_sources_validate($sources) {
             continue;
         }
 
+        /* ⚠ شکستِ خط در کلید یا نامِ هدر یعنی هدرِ تزریقی */
+        $conn = isset($src['conn']) && is_array($src['conn']) ? $src['conn'] : null;
+        if ($conn !== null && (preg_match('/[\x00-\x1F\x7F]/', (string) $conn['key'] . (string) $conn['header']))) {
+            continue;
+        }
+
         $out[$slug] = array(
-            'label' => isset($src['label']) ? sanitize_text_field((string) $src['label']) : $slug,
-            'url'   => $url,
-            'path'  => $path,
-            'unit'  => $unit,
-            'key'   => isset($src['key']) ? (string) $src['key'] : '',
+            'label'  => isset($src['label']) ? sanitize_text_field((string) $src['label']) : $slug,
+            'url'    => $url,
+            'path'   => $path,
+            'unit'   => $unit,
+            'conn'   => $conn,
+            'origin' => isset($src['origin']) && in_array($src['origin'], array('builtin', 'config', 'panel'), true)
+                ? $src['origin'] : 'builtin',
         );
     }
     return $out;
@@ -158,74 +176,110 @@ function phoenix_rate_sources_enabled() {
    ============================================================ */
 
 /**
- * @return array{rate:?int, ms:int, status:string, note:string}
+ * یک عدد از یک API — مشترکِ نرخِ تتر و قیمتِ محصول.
+ *
+ * @param array|null $conn خروجیِ ‎phoenix_conn_runtime‎، یا null
+ * @return array{value:?float, ms:int, status:string, note:string}
  *
  * ⚠ هیچ‌وقت استثنا پرتاب نمی‌کند و هیچ‌وقت ‎null‎ برنمی‌گرداند.
  *
  * این تابع داخلِ حلقه‌ای صدا زده می‌شود که باید تا آخر برود.
  * اگر یک منبع منفجر شود و حلقه بشکند، منابعِ بعدی هم خوانده
- * نمی‌شوند و «کمتر از دو منبع» فعال می‌شود — یعنی یک منبعِ
- * خراب، کلِ به‌روزرسانی را می‌خواباند.
+ * نمی‌شوند — یعنی یک منبعِ خراب، کلِ به‌روزرسانی را می‌خواباند.
  */
-function phoenix_rate_fetch_one($slug, array $src) {
-    $started = microtime(true);
-
-    $args = array(
-        'timeout'     => 6,
-        'redirection' => 2,
-        'user-agent'  => 'PhoenixBridge/' . PHOENIX_BRIDGE_VERSION . '; ' . home_url('/'),
-        'headers'     => array('Accept' => 'application/json'),
-    );
-    if (!empty($src['key'])) {
-        $args['headers']['Authorization'] = 'Bearer ' . $src['key'];
+function phoenix_source_read($url, $path, $conn = null) {
+    $got = phoenix_http_json($url, $conn);
+    if ($got['data'] === null) {
+        return array('value' => null, 'ms' => $got['ms'], 'status' => $got['status'], 'note' => $got['note']);
     }
 
-    $res = wp_remote_get($src['url'], $args);
-    $ms  = (int) round((microtime(true) - $started) * 1000);
-
-    if (is_wp_error($res)) {
-        return phoenix_rate_result(null, $ms, 'net', $res->get_error_message());
-    }
-
-    $code = (int) wp_remote_retrieve_response_code($res);
-    if ($code !== 200) {
-        return phoenix_rate_result(null, $ms, 'http', 'HTTP ' . $code);
-    }
-
-    /* ⚠ سقفِ حجم.
-       منبعی که به‌جای JSON یک صفحه‌ی HTMLِ چندمگابایتی بدهد،
-       ‎json_decode‎ را روی حافظه می‌برد. */
-    $body = (string) wp_remote_retrieve_body($res);
-    if (strlen($body) > 512 * 1024) {
-        return phoenix_rate_result(null, $ms, 'big', 'پاسخ بیش از ۵۱۲ کیلوبایت');
-    }
-
-    $data = json_decode($body, true);
-    if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
-        return phoenix_rate_result(null, $ms, 'parse', 'JSON نامعتبر');
-    }
-
-    $node = phoenix_rate_dig($data, $src['path']);
+    $node = phoenix_rate_dig($got['data'], $path);
     if ($node === null) {
-        return phoenix_rate_result(null, $ms, 'path', 'مسیر پیدا نشد: ' . $src['path']);
+        /* کلیدهایی که واقعاً هست — تا ادمین مسیر را حدس نزند */
+        $keys = phoenix_rate_dig_hint($got['data'], $path);
+        return array('value' => null, 'ms' => $got['ms'], 'status' => 'path', 'note' => 'مسیر پیدا نشد: ' . $path
+            . ($keys ? ' — کلیدهای موجود: ' . implode('، ', $keys) : ''));
     }
 
     $value = phoenix_rate_to_number($node);
     if ($value === null || $value <= 0) {
-        return phoenix_rate_result(null, $ms, 'value', 'عدد نبود');
+        return array('value' => null, 'ms' => $got['ms'], 'status' => 'value', 'note' => 'عدد نبود');
+    }
+    return array('value' => $value, 'ms' => $got['ms'], 'status' => 'ok', 'note' => '');
+}
+
+/**
+ * GET و JSON — با کشِ همان درخواست.
+ *
+ * ⚠ کش در طولِ یک اجرا، نه بیشتر.
+ * تأمین‌کننده معمولاً یک نشانیِ «فهرستِ قیمت» دارد و ده‌ها محصول از
+ * همان می‌خوانند. بدونِ کش، به‌روزرسانیِ ساعتی ده‌ها بار همان را
+ * می‌گرفت — کُند، و راهِ مطمئنِ بسته شدنِ IP توسطِ تأمین‌کننده.
+ */
+function phoenix_http_json($url, $conn = null) {
+    static $memo = array();
+    $mkey = $url . '|' . (is_array($conn) ? $conn['slug'] : '');
+    if (isset($memo[$mkey])) {
+        return array_merge($memo[$mkey], array('ms' => 0));
     }
 
-    if ($src['unit'] === 'rial') {
-        $value = $value / 10;
+    $started = microtime(true);
+    $args = array(
+        'timeout'     => 6,
+        'redirection' => 2,
+        'user-agent'  => 'PhoenixBridge/' . PHOENIX_BRIDGE_VERSION . '; ' . home_url('/'),
+        'headers'     => array_merge(array('Accept' => 'application/json'), phoenix_conn_headers($conn)),
+    );
+
+    /* ⚠ ‎safe‎: نشانیِ داخلی و خصوصی رد می‌شود — در ریدایرکت هم.
+       نشانی را ادمین در پنل تایپ می‌کند؛ این جلوی استفاده از افزونه
+       برای کاویدنِ شبکه‌ی داخلیِ هاست را می‌گیرد. */
+    $res = wp_safe_remote_get($url, $args);
+    $ms  = (int) round((microtime(true) - $started) * 1000);
+
+    if (is_wp_error($res)) {
+        $out = array('data' => null, 'status' => 'net', 'note' => $res->get_error_message());
+    } else {
+        $code = (int) wp_remote_retrieve_response_code($res);
+        /* ⚠ سقفِ حجم: صفحه‌ی HTMLِ چندمگابایتی ‎json_decode‎ را روی
+           حافظه می‌برد. */
+        $body = (string) wp_remote_retrieve_body($res);
+        if ($code !== 200) {
+            $out = array('data' => null, 'status' => 'http', 'note' => 'HTTP ' . $code);
+        } elseif (strlen($body) > 512 * 1024) {
+            $out = array('data' => null, 'status' => 'big', 'note' => 'پاسخ بیش از ۵۱۲ کیلوبایت');
+        } else {
+            $data = json_decode($body, true);
+            $out  = json_last_error() !== JSON_ERROR_NONE || !is_array($data)
+                ? array('data' => null, 'status' => 'parse', 'note' => 'JSON نامعتبر')
+                : array('data' => $data, 'status' => 'ok', 'note' => '');
+        }
     }
+
+    $memo[$mkey] = $out;
+    return array_merge($out, array('ms' => $ms));
+}
+
+/**
+ * نرخِ تتر از یک منبع: همان خواندن، به‌علاوه‌ی واحد و بازه‌ی معقول.
+ *
+ * @return array{rate:?int, ms:int, status:string, note:string}
+ */
+function phoenix_rate_fetch_one($slug, array $src) {
+    $r = phoenix_source_read($src['url'], $src['path'], isset($src['conn']) ? $src['conn'] : null);
+    if ($r['value'] === null) {
+        return phoenix_rate_result(null, $r['ms'], $r['status'], $r['note']);
+    }
+
+    $value = $src['unit'] === 'rial' ? $r['value'] / 10 : $r['value'];
 
     $min = (int) phoenix_setting('sane_min');
     $max = (int) phoenix_setting('sane_max');
     if ($value < $min || $value > $max) {
-        return phoenix_rate_result(null, $ms, 'range', 'خارج از بازه: ' . round($value));
+        return phoenix_rate_result(null, $r['ms'], 'range', 'خارج از بازه: ' . round($value));
     }
 
-    return phoenix_rate_result((int) round($value), $ms, 'ok', '');
+    return phoenix_rate_result((int) round($value), $r['ms'], 'ok', '');
 }
 
 function phoenix_rate_result($rate, $ms, $status, $note) {
@@ -282,6 +336,44 @@ function phoenix_rate_dig($data, $path) {
     }
 
     return is_scalar($node) ? $node : null;
+}
+
+/**
+ * کلیدهای آخرین جایی که مسیر هنوز درست بود.
+ *
+ * «مسیر پیدا نشد» به‌تنهایی ادمین را وادار به حدس می‌کند؛ «در
+ * ‎data‎ این‌ها هست: symbol، price، stats» راه را نشان می‌دهد.
+ *
+ * ⚠ از پاسخِ بیرونی می‌آید: کوتاه و محدود، و پنل آن را متن
+ * می‌گذارد نه HTML.
+ *
+ * @return string[] حداکثر ۱۵ کلید
+ */
+function phoenix_rate_dig_hint($data, $path) {
+    $node = $data;
+    $parts = explode('.', $path);
+    for ($i = 0; $i < count($parts); $i++) {
+        if ($parts[$i] === '[]') {
+            break; // داخلِ آرایه‌ی جست‌وجو — همین سطح بس است
+        }
+        if (!is_array($node) || !array_key_exists($parts[$i], $node)) {
+            break;
+        }
+        $node = $node[$parts[$i]];
+    }
+    if (!is_array($node)) {
+        return array();
+    }
+    if (array_keys($node) === range(0, count($node) - 1)) {
+        /* فهرست است: کلیدهای عضوِ اولش مفیدتر از ۰، ۱، ۲ */
+        $first = reset($node);
+        $node  = is_array($first) ? $first : array();
+    }
+    $out = array();
+    foreach (array_slice(array_keys($node), 0, 15) as $k) {
+        $out[] = substr(preg_replace('/[^\w\-.:=]/u', '', (string) $k), 0, 30);
+    }
+    return array_values(array_filter($out, 'strlen'));
 }
 
 /**

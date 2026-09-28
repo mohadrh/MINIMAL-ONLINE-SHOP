@@ -35,7 +35,7 @@ function phoenix_app_page() {
     echo '<span>' . esc_html('در حالِ بارگذاریِ پنل…') . '</span>';
     echo '</div>';
     echo '<noscript><p class="phx2-noscript">'
-        . esc_html('پنلِ فونیکس بدونِ جاوااسکریپت کار نمی‌کند. صفحه‌های قبلی از منوی کناری در دسترس‌اند.')
+        . esc_html('پنلِ فونیکس بدونِ جاوااسکریپت کار نمی‌کند. جاوااسکریپتِ مرورگر را روشن کن و صفحه را دوباره باز کن.')
         . '</p></noscript>';
     echo '</div>';
 }
@@ -55,7 +55,15 @@ function phoenix_app_assets($hook) {
     $ver  = PHOENIX_BRIDGE_VERSION;
 
     wp_enqueue_style(PHOENIX_APP_HANDLE, $base . 'app.css', array(), $ver);
+    wp_enqueue_style(PHOENIX_APP_HANDLE . '-pages', $base . 'pages.css', array(PHOENIX_APP_HANDLE), $ver);
     wp_enqueue_script(PHOENIX_APP_HANDLE, $base . 'app.js', array(), $ver, true);
+
+    /* انتخابگرِ رسانه‌ی خودِ وردپرس، برای تبِ «رسانه»ی محصول.
+       بدونش دکمه‌ی «از کتابخانه» پنهان می‌ماند و فقط کادرِ نشانی
+       هست — پس نبودنش چیزی را نمی‌شکند. */
+    if (current_user_can('upload_files')) {
+        wp_enqueue_media();
+    }
 
     /* ⚠ هر چیزی که این‌جا می‌رود، در صفحه قابلِ دیدن است.
 
@@ -70,12 +78,7 @@ function phoenix_app_assets($hook) {
         'theme'  => phoenix_app_user_theme(),
         'user'   => wp_get_current_user()->display_name,
         'links'  => array(
-            'products'  => admin_url('edit.php?post_type=product'),
-            'rate'      => admin_url('admin.php?page=phoenix-rate'),
-            'margins'   => admin_url('admin.php?page=phoenix-margins'),
-            'discounts' => admin_url('admin.php?page=phoenix-discounts'),
-            'queue'     => admin_url('admin.php?page=phoenix-queue'),
-            'log'       => admin_url('admin.php?page=phoenix-log'),
+            'woo_products' => admin_url('edit.php?post_type=product'),
         ),
     );
 

@@ -182,6 +182,8 @@ function phoenix_settings_defaults() {
 
         /* ---------- نرخ ---------- */
         'sources'        => array(), // [slug => bool] خالی یعنی همه روشن
+        'custom_sources' => array(), // [slug => منبعِ نرخِ ساخته‌شده در پنل] — rate-custom.php
+        'connections'    => array(), // [slug => کلیدِ API، رمزنگاری‌شده] — connections.php
         'pick'           => 'lowest', // lowest | median | average
         'min_sources'    => 2,
         'rate_ttl'       => 600,      // ثانیه
@@ -270,6 +272,10 @@ function phoenix_settings_save(array $patch, $note = '') {
         if ($old === $value) {
             continue;
         }
+        if (function_exists('phoenix_audit_redact')) {
+            $old   = phoenix_audit_redact($key, $old);
+            $value = phoenix_audit_redact($key, $value);
+        }
         phoenix_audit('setting', $key, $old, $value, $note);
     }
 
@@ -335,7 +341,7 @@ function phoenix_audit_read($kind = '', $limit = 50) {
 
     $limit = max(1, min(500, (int) $limit));
     $table = phoenix_table_audit();
-    $kinds = array('setting', 'rate', 'price', 'discount', 'queue');
+    $kinds = array('setting', 'rate', 'price', 'discount', 'queue', 'product');
 
     if ($kind !== '' && in_array($kind, $kinds, true)) {
         return $wpdb->get_results($wpdb->prepare(

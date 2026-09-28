@@ -66,7 +66,15 @@ const must = [
   'includes/pricing.php',
   'includes/discounts.php',
   'includes/admin/admin.php',
-  'assets/admin.css',
+  'includes/admin/app.php',
+  'includes/api/guard.php',
+  'includes/connections.php',
+  'includes/product-sources.php',
+  'admin/app.js',
+  'admin/app.css',
+  'admin/pages.css',
+  'admin/pricing-kit.js',
+  'admin/fonts/Vazirmatn-Variable.woff2',
 ];
 
 const missing = must.filter((f) => !existsSync(join(src, f)));

@@ -2,12 +2,15 @@
 <!--
   صفحه‌ی آزمایشیِ پنلِ فونیکس — بدونِ وردپرس.
 
-  همان app.js ی واقعی بار می‌شود؛ فقط fetch جایگزین شده تا به‌جای
-  سرور، از fixtures.json بخواند — که خودش از توابعِ واقعیِ داشبورد
-  ساخته شده (make-fixtures.php).
+  همان app.js ی واقعی بار می‌شود و به ‎/__api‎ درخواست می‌دهد، که
+  router.php آن را به fake-api.php می‌دهد: انبارش ساختگی است ولی
+  اعتبارسنجی و قیمت‌گذاری‌اش توابعِ واقعیِ افزونه‌اند.
 
-    ?s=healthy | trouble | fresh     وضعیت
+    php -S 127.0.0.1:4330 -t wp-plugin wp-plugin/tests/harness/router.php
+
+    ?s=healthy | trouble | fresh     وضعیتِ داشبورد
     ?theme=light | dark | system     حالتِ رنگ
+    ?reset=1                         انبار از نو
 
   این پوشه داخلِ زیپِ افزونه نمی‌رود؛ pack-plugin فقط
   phoenix-bridge/ را بسته‌بندی می‌کند.
@@ -17,24 +20,35 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>پنلِ فونیکس — آزمایشی</title>
-  <!-- ⚠ با زمان بار می‌شوند، نه نشانیِ ثابت: سرورِ آزمایشی هدرِ
-       کش نمی‌فرستد و مرورگر نسخه‌ی قدیمی را نگه می‌داشت — یک بار
-       همین باعث شد اصلاحی که نوشته شده بود اصلاً به صفحه نرسد. -->
-  <script>
-    document.write('<link rel="stylesheet" href="../../phoenix-bridge/admin/app.css?t=' + Date.now() + '">');
-  </script>
+  <link rel="stylesheet" href="../../phoenix-bridge/admin/app.css">
+  <link rel="stylesheet" href="../../phoenix-bridge/admin/pages.css">
   <style>
     /* جای نوارِ مدیریت و منوی وردپرس، تا چیدمان مثلِ پیشخوان باشد */
     body { margin: 0; min-height: 100vh; }
     .wpbar { position: fixed; inset: 0 0 auto 0; height: 32px; background: #1d2327; z-index: 30; }
-    .wpmenu { position: fixed; top: 32px; bottom: 0; right: 0; width: 160px; background: #1d2327; }
+    .wpmenu { position: fixed; top: 32px; bottom: 0; right: 0; width: 160px; background: #1d2327; font: 13px/1.4 Tahoma, sans-serif; }
+    .wpmenu ul { list-style: none; margin: 0; padding: 6px 0; }
+    .wpmenu a { display: block; padding: 6px 12px; color: #c3c4c7; text-decoration: none; }
+    .wpmenu li.current a { color: #fff; font-weight: 700; background: #2c3338; }
     .wpcontent { margin-right: 160px; padding: 32px 20px 0 0; }
     @media (max-width: 782px) { .wpmenu { display: none; } .wpcontent { margin-right: 0; padding-right: 10px; } }
   </style>
 </head>
 <body>
   <div class="wpbar"></div>
-  <div class="wpmenu"></div>
+  <div class="wpmenu" id="toplevel_page_phoenix">
+    <ul class="wp-submenu">
+      <li class="wp-submenu-head" aria-hidden="true">فونیکس</li>
+      <li class="current"><a href="?#/dashboard" class="current">داشبورد</a></li>
+      <li><a href="#/products">محصولات</a></li>
+      <li><a href="#/rate">منابعِ قیمت</a></li>
+      <li><a href="#/margins">حاشیه‌ها</a></li>
+      <li><a href="#/discounts">تخفیف‌ها</a></li>
+      <li><a href="#/queue">صفِ تحویل</a></li>
+      <li><a href="#/log">تاریخچه</a></li>
+      <li><a href="#/settings">تنظیمات</a></li>
+    </ul>
+  </div>
   <div class="wpcontent">
     <div id="phx-app" class="phx2" dir="rtl"></div>
   </div>
@@ -48,49 +62,33 @@
       document.body.className = 'phx2-body phx2-theme-' + theme;
       document.getElementById('phx-app').dataset.theme = theme;
 
+      /* داشبورد اولین «مسیرِ بدونِ #» را همان داشبورد می‌داند */
+      document.querySelector('.wp-submenu a').setAttribute('href', location.pathname + location.search);
+
       window.PHX_BOOT = {
         ver: 'dev-' + Date.now(),
         root: '/__api',
         nonce: 'test-nonce',
         theme: theme,
         user: 'مدیر',
-        links: { products: '#p', rate: '#r', margins: '#m', discounts: '#d', queue: '#q', log: '#l' }
+        links: { woo_products: '#woo' }
       };
 
-      var fixtures = null;
+      /* فقط برای دیدنِ درخواست‌ها و شبیه‌سازیِ تأخیرِ شبکه */
       var realFetch = window.fetch.bind(window);
+      var resetOnce = q.get('reset') === '1';
       window.__calls = [];
-
       window.fetch = async function (url, opts) {
         if (typeof url !== 'string' || url.indexOf('/__api') !== 0) return realFetch(url, opts);
-        if (!fixtures) fixtures = await (await realFetch('./fixtures.json?' + Date.now())).json();
-
-        var path = url.slice('/__api'.length);
-        var method = (opts && opts.method) || 'GET';
-        var body = opts && opts.body ? JSON.parse(opts.body) : null;
-        window.__calls.push({ method: method, path: path, body: body, nonce: opts && opts.headers && opts.headers['X-WP-Nonce'] });
-
-        await new Promise(function (r) { setTimeout(r, 250); });
-
-        var d = fixtures[scenario];
-        var ok = function (data) {
-          return new Response(JSON.stringify({ ok: true, data: data }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-        };
-
-        if (method === 'GET' && path === '/dashboard') return ok(d);
-        if (method === 'POST' && path === '/engine') { d.state.engine.on = !!body.on; return ok(d); }
-        if (method === 'POST' && path === '/rate/refresh') return ok(d);
-        if (method === 'POST' && path === '/prefs') return ok({ theme: body.theme });
-
-        return new Response(JSON.stringify({ code: 'rest_no_route', message: 'مسیر پیدا نشد' }), { status: 404 });
+        opts = Object.assign({}, opts);
+        opts.headers = Object.assign({}, opts.headers, { 'X-Harness-Scenario': scenario });
+        window.__calls.push({ method: opts.method || 'GET', path: url.slice(6), body: opts.body ? JSON.parse(opts.body) : null });
+        if (resetOnce) { url += (url.indexOf('?') < 0 ? '?' : '&') + 'reset=1'; resetOnce = false; }
+        await new Promise(function (r) { setTimeout(r, 200); });
+        return realFetch(url, opts);
       };
     })();
   </script>
-  <script>
-    var m = document.createElement('script');
-    m.type = 'module';
-    m.src = '../../phoenix-bridge/admin/app.js?t=' + Date.now();
-    document.body.appendChild(m);
-  </script>
+  <script type="module" src="../../phoenix-bridge/admin/app.js"></script>
 </body>
 </html>

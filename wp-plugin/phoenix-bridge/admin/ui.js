@@ -54,7 +54,17 @@ function applyProps(el, props) {
       continue;
     }
     if (k === 'class') { el.className = v; continue; }
-    if (k === 'style' && typeof v === 'object') { Object.assign(el.style, v); continue; }
+    /* ⚠ ‎setProperty‎ و نه ‎Object.assign‎: متغیرِ CSS (‎--acc‎) با
+       ‎Object.assign‎ بی‌صدا نادیده گرفته می‌شد — هاله‌ی رنگِ برند
+       روی تصویرِ محصول هیچ‌وقت نمی‌نشست. */
+    if (k === 'style' && typeof v === 'object') {
+      for (const [p, val] of Object.entries(v)) {
+        if (val === null || val === undefined) continue;
+        if (p.startsWith('--')) el.style.setProperty(p, String(val));
+        else el.style[p] = val;
+      }
+      continue;
+    }
     if (k === 'text') { el.textContent = String(v); continue; }
     /* ⚠ نشانیِ ‎javascript:‎ هرگز در ‎href‎ نمی‌نشیند */
     if ((k === 'href' || k === 'src') && /^\s*javascript:/i.test(String(v))) continue;
@@ -62,11 +72,32 @@ function applyProps(el, props) {
   }
 }
 
+/**
+ * ⚠ عددِ خام هیچ‌وقت فرزند نمی‌شود.
+ *
+ * ‎cond && h(…)‎ وقتی ‎cond‎ صفر باشد خودِ صفر را برمی‌گرداند، و
+ * اولین بار همین یک «0»ی تنها زیرِ هر قیمتِ پیش‌نمایش نشاند. عدد
+ * در این پنل همیشه با ‎fa()‎ رشته می‌شود؛ عددِ خام یا از همین
+ * الگوست یا ارقامِ لاتین را نشان می‌دهد — هر دو اشتباه.
+ */
 function append(el, kids) {
   for (const k of kids.flat(Infinity)) {
-    if (k === null || k === undefined || k === false) continue;
+    if (k === null || k === undefined || typeof k === 'boolean' || typeof k === 'number') continue;
     el.append(k instanceof Node ? k : document.createTextNode(String(k)));
   }
+}
+
+/**
+ * خالی کن و بچین — با همان قاعده‌ی ‎h()‎ برای ‎null‎ و ‎false‎.
+ *
+ * ⚠ ‎Element.append()‎ی خودِ مرورگر ‎null‎ را متنِ «null» می‌کند.
+ * ‎clear(x).append(cond && …)‎ دقیقاً همین را روی کارتِ آزمایشِ
+ * منبع نشان داد. هر جا فرزندِ شرطی هست، ‎put‎ — نه ‎append‎.
+ */
+export function put(el, ...kids) {
+  clear(el);
+  append(el, kids);
+  return el;
 }
 
 export function clear(el) {
@@ -105,6 +136,26 @@ const ICONS = {
     ['path', { d: 'M9 18h6M10 22h4' }]],
   info: [['circle', { cx: 12, cy: 12, r: 10 }], ['path', { d: 'M12 16v-4M12 8h.01' }]],
   spark: [['path', { d: 'M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8' }]],
+  plus: [['path', { d: 'M12 5v14M5 12h14' }]],
+  up: [['path', { d: 'm18 15-6-6-6 6' }]],
+  down: [['path', { d: 'm6 9 6 6 6-6' }]],
+  trash: [['path', { d: 'M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2' }]],
+  x: [['path', { d: 'M18 6 6 18M6 6l12 12' }]],
+  arrowRight: [['path', { d: 'm12 5 7 7-7 7' }], ['path', { d: 'M5 12h14' }]],
+  eye: [['path', { d: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z' }], ['circle', { cx: 12, cy: 12, r: 3 }]],
+  image: [['rect', { x: 3, y: 3, width: 18, height: 18, rx: 2 }], ['circle', { cx: 9, cy: 9, r: 2 }], ['path', { d: 'm21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21' }]],
+  save: [['path', { d: 'M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z' }],
+    ['path', { d: 'M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7M7 3v4a1 1 0 0 0 1 1h7' }]],
+  search: [['circle', { cx: 11, cy: 11, r: 8 }], ['path', { d: 'm21 21-4.3-4.3' }]],
+  sliders: [['path', { d: 'M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M2 14h4M10 8h4M18 16h4' }]],
+  lock: [['rect', { x: 3, y: 11, width: 18, height: 11, rx: 2 }], ['path', { d: 'M7 11V7a5 5 0 0 1 10 0v4' }]],
+  dollar: [['path', { d: 'M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' }]],
+  bolt: [['path', { d: 'M13 2 3 14h9l-1 8 10-12h-9l1-8z' }]],
+  flask: [['path', { d: 'M9 3h6M10 3v7l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3' }]],
+  text: [['path', { d: 'M4 7V4h16v3M9 20h6M12 4v16' }]],
+  truck: [['path', { d: 'M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2M15 18H9M19 18h2a1 1 0 0 0 1-1v-3.6a1 1 0 0 0-.2-.6l-3.5-4.4A1 1 0 0 0 17.5 8H14' }],
+    ['circle', { cx: 17, cy: 18, r: 2 }], ['circle', { cx: 7, cy: 18, r: 2 }]],
+  layers: [['path', { d: 'm12 2 10 5-10 5L2 7l10-5z' }], ['path', { d: 'm2 17 10 5 10-5M2 12l10 5 10-5' }]],
 };
 
 export function icon(name, extra) {

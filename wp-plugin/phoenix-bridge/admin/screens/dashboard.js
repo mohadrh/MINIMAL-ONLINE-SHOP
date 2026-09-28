@@ -448,7 +448,7 @@ function recentCard(ctx, d) {
   const rows = d.recent || [];
 
   const c = card('آخرین اتفاق‌ها', 'هر تغییر، با زمان و نامِ کسی که انجامش داد.');
-  const all = h('a', { class: 'phx2-btn phx2-btn--sm phx2-btn--ghost', href: (ctx.boot.links || {}).log || '#' },
+  const all = h('a', { class: 'phx2-btn phx2-btn--sm phx2-btn--ghost', href: '#/log' },
     'تاریخچه‌ی کامل', icon('arrow'));
   c.querySelector('.phx2-card__head').append(all);
 

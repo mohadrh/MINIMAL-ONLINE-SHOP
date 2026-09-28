@@ -425,6 +425,46 @@ is_same('با حاشیه‌ی ۲۰۰٪ تخفیفِ ۵۰٪ کامل اعمال �
 is_same('و دیگر مسدود نیست',                             $c['blocked'], null);
 
 /* ============================================================
+   ۷٫۵ رُندِ قیمتِ تخفیف‌خورده و کف
+   ============================================================ */
+
+section('رُندِ تخفیف و کف');
+
+/* همان حالتی که در سرورِ آزمایشیِ پنل دیده شد:
+   ۱۰٪ از ۵٬۶۳۸٬۰۰۰ = ۵٬۰۷۴٬۲۰۰ — قیمتِ نیمه‌کاره روی کارت */
+reset_world();
+$GLOBALS['fake_meta'][42] = array('price_mode' => 'toman', 'cost_toman' => 4620600);
+$GLOBALS['fake_settings'] = array(
+    'margin' => array('percent' => 22.0, 'round_to' => 1000, 'round_mode' => 'up',
+                      'charm' => 0, 'fixed' => 0, 'min_profit' => 0),
+    'floor_percent' => 5,
+    'discounts' => array(array('id' => 'p', 'title' => 'پاییز', 'enabled' => true,
+        'scope' => 'all', 'type' => 'percent', 'value' => 10)),
+);
+$c = phoenix_compute_price(42);
+is_same('قیمتِ اصلی رُند است',                       $c['regular'], 5638000);
+is_same('تخفیف‌خورده رو به پایین رُند می‌شود',        $c['sale'], 5074000);
+is_same('تخفیفِ واقعی دست‌کم همان ۱۰٪ است',           $c['regular'] - $c['sale'] >= 563800, true);
+
+/* پله‌ای بزرگ‌تر از خودِ قیمت: رُند صفر می‌داد، پس عددِ دقیق می‌ماند */
+$GLOBALS['fake_meta'][43] = array('price_mode' => 'toman', 'cost_toman' => 300000);
+$GLOBALS['fake_settings']['margin']['round_to'] = 1000000;
+$GLOBALS['fake_settings']['floor_percent'] = 0;
+$c = phoenix_compute_price(43);
+is_same('پله‌ی بزرگ‌تر از قیمت → تخفیف صفر نمی‌شود',  $c['sale'] > 0, true);
+
+/* کف: ۱٬۰۰۰٬۰۰۰ × ۱٫۰۵ = ۱٬۰۵۰٬۰۰۰ دقیق می‌ماند؛ قیمتی که به آن
+   چسبانده شود با پله‌ی ۱۰۰ هزار رو به بالا → ۱٬۱۰۰٬۰۰۰ */
+$GLOBALS['fake_meta'][44] = array('price_mode' => 'toman', 'cost_toman' => 1000000);
+$GLOBALS['fake_settings']['margin'] = array('percent' => 1.0, 'round_to' => 100000, 'round_mode' => 'down',
+                                            'charm' => 0, 'fixed' => 0, 'min_profit' => 0);
+$GLOBALS['fake_settings']['floor_percent'] = 5;
+$GLOBALS['fake_settings']['discounts'] = array();
+$c = phoenix_compute_price(44);
+is_same('کف خودش دقیق است',                           $c['floor'], 1050000);
+is_same('قیمتِ چسبیده به کف رو به بالا رُند می‌شود',    $c['regular'], 1100000);
+
+/* ============================================================
    ۸ پاک‌سازیِ قاعده‌ی تخفیف
    ============================================================ */
 
