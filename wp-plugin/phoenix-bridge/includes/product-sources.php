@@ -332,7 +332,7 @@ function phoenix_psrc_fetch(array $cfg) {
  * که انتخاب سالم و بی‌جهش باشد؛ وگرنه آخرین عددِ سالم می‌ماند و
  * پیشنهادِ تازه در ‎candidate‎ منتظرِ تأیید می‌نشیند.
  */
-function phoenix_psrc_refresh($post_id) {
+function phoenix_psrc_refresh($post_id, $reason = '') {
     $cfg = phoenix_psrc_config($post_id);
     if (!$cfg) {
         return null;
@@ -358,7 +358,7 @@ function phoenix_psrc_refresh($post_id) {
     $before = isset($prev['use']['value']) ? $prev['use']['value'] . ' ' . $prev['use']['unit'] : null;
     $after  = isset($state['use']['value']) ? $state['use']['value'] . ' ' . $state['use']['unit'] : null;
     if ($before !== $after) {
-        phoenix_audit('price', (string) $post_id, $before, $after, 'منابعِ قیمت: ' . $pick['why']);
+        phoenix_audit('price', (string) $post_id, $before, $after, ($reason !== '' ? $reason . ' — ' : '') . 'منابعِ قیمت: ' . $pick['why']);
     }
     return $state;
 }
@@ -493,4 +493,123 @@ function phoenix_psrc_store($post_id, $cfg) {
         return;
     }
     update_post_meta($post_id, PHOENIX_PSRC_META, $cfg);
+}
+
+/* ============================================================
+   سرِ خرید
+   ============================================================ */
+
+/**
+ * وضعیت کهنه است؟ — خالص.
+ *
+ * @param array|null $state خروجیِ ‎phoenix_psrc_state‎
+ */
+function phoenix_psrc_is_stale($state, $now, $minutes) {
+    if (!is_array($state) || empty($state['at'])) {
+        return true;
+    }
+    $at = strtotime((string) $state['at']);
+    return !$at || ($now - $at) > max(1, (int) $minutes) * 60;
+}
+
+/**
+ * «صاحبِ» قیمتِ یک محصول یا پلن، اگر از چند منبع می‌آید.
+ * همان قاعده‌ی ارثِ ‎phoenix_cost_of‎: پلنی که حالتِ خودش را ندارد
+ * از محصول می‌گیرد.
+ *
+ * @return int ‎0‎ یعنی این قیمت از منابع نیست
+ */
+function phoenix_psrc_owner_of($product_id) {
+    $f    = phoenix_get_fields($product_id);
+    $mode = isset($f['price_mode']) ? (string) $f['price_mode'] : '';
+    if ($mode === 'sources') {
+        return (int) $product_id;
+    }
+    $parent = (int) wp_get_post_parent_id($product_id);
+    if ($mode === '' && $parent) {
+        $pf = phoenix_get_fields($parent);
+        if (isset($pf['price_mode']) && $pf['price_mode'] === 'sources') {
+            return $parent;
+        }
+    }
+    return 0;
+}
+
+/**
+ * سرِ خرید: منابعِ کهنه‌ی همین اقلام را همان لحظه تازه کن.
+ *
+ * ============================================================
+ * ⚠ سه سقف، چون این‌جا مشتری منتظر است:
+ *
+ *   ۱ فقط کهنه‌ها — اگر در ده دقیقه‌ی اخیر (قابلِ تنظیم) خوانده
+ *     شده، دوباره خوانده نمی‌شود. بیشترِ خریدها هیچ درخواستِ
+ *     بیرونی نمی‌زنند.
+ *   ۲ حداکثر پنج ثانیه برای همه، سه ثانیه برای هر درخواست. سایت
+ *     بعد از دوازده ثانیه قطع می‌کند؛ این باید خیلی زودتر تمام شود.
+ *   ۳ قفلِ سی‌ثانیه‌ای برای هر محصول. ده خریدِ هم‌زمان یعنی یک
+ *     درخواست به تأمین‌کننده، نه ده.
+ *
+ * ⚠ شکست هیچ‌وقت جلوی خرید را نمی‌گیرد: منبعی که جواب ندهد یا
+ * جهش داشته باشد، قیمتِ قبلی را نگه می‌دارد (همان محافظ‌های
+ * ‎phoenix_psrc_pick‎).
+ * ============================================================
+ *
+ * @param int[] $ids شناسه‌ی محصول یا پلنِ اقلامِ سفارش
+ * @return int[] صاحب‌هایی که تازه شدند
+ */
+function phoenix_psrc_refresh_for_purchase(array $ids) {
+    if (!phoenix_setting('psrc_checkout', true)) {
+        return array();
+    }
+    $owners = array();
+    foreach ($ids as $id) {
+        $o = phoenix_psrc_owner_of((int) $id);
+        if ($o) {
+            $owners[$o] = true;
+        }
+    }
+    if (!$owners) {
+        return array();
+    }
+
+    $minutes = (int) phoenix_setting('psrc_fresh_min', 10);
+    $started = microtime(true);
+    $done    = array();
+    $GLOBALS['phoenix_http_timeout'] = 3;
+
+    foreach (array_keys($owners) as $o) {
+        if (microtime(true) - $started > 5) {
+            break;
+        }
+        if (!phoenix_psrc_is_stale(phoenix_psrc_state($o), time(), $minutes)) {
+            continue;
+        }
+        $lock = 'phoenix_psrc_lock_' . $o;
+        if (get_transient($lock)) {
+            continue; // خریدِ دیگری همین حالا دارد می‌خواندش
+        }
+        set_transient($lock, 1, 30);
+        phoenix_psrc_refresh($o, 'سرِ خرید');
+        if (phoenix_setting('engine_on')) {
+            phoenix_psrc_apply_tree($o, phoenix_rate_value());
+        }
+        delete_transient($lock);
+        $done[] = $o;
+    }
+
+    unset($GLOBALS['phoenix_http_timeout']);
+    return $done;
+}
+
+/**
+ * خریدِ مستقیم از سبدِ ووکامرس (اگر کسی از خودِ ووکامرس بخرد):
+ * همان تازه‌سازی پیش از افزودن به سبد، تا قفلِ قیمتِ سبد
+ * (‎phoenix_cart_lock_stamp‎) عددِ تازه را مهر کند.
+ */
+add_filter('woocommerce_add_to_cart_validation', 'phoenix_psrc_before_cart', 5, 4);
+function phoenix_psrc_before_cart($passed, $product_id, $qty = 1, $variation_id = 0) {
+    if ($passed) {
+        phoenix_psrc_refresh_for_purchase(array($variation_id ? $variation_id : $product_id));
+    }
+    return $passed;
 }

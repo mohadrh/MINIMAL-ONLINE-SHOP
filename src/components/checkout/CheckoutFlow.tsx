@@ -10,7 +10,7 @@ import {
 import { newOrderCode, saveOrder, scheduleFulfilment, type Order } from '../../lib/orders';
 import { Loader } from '../ui/Loader';
 import {
-  BRIDGE_READY, createOrder as createLiveOrder, storedToken,
+  BRIDGE_READY, BridgeError, createOrder as createLiveOrder, storedToken,
 } from '../../lib/api/bridge';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
@@ -47,6 +47,16 @@ export function CheckoutFlow() {
 
   /* کد پیگیریِ همین سفارش. تا وقتی پرداخت تأیید نشده null است. */
   const [code, setCode] = useState<string | null>(null);
+
+  /* ⚠ جمعی که سرور سرِ خرید گفته، وقتی با سبد فرق داشت.
+
+     قیمتِ «چند منبع» لحظه‌ی خرید دوباره خوانده می‌شود. اگر عوض شده
+     باشد سرور سفارش نمی‌سازد و عددِ تازه را برمی‌گرداند؛ دکمه همان
+     عدد را نشان می‌دهد و کلیکِ بعدی دقیقاً همان را تأیید می‌کند.
+     سبد که عوض شود، این عدد دیگر معتبر نیست. */
+  const [confirmTotal, setConfirmTotal] = useState<number | null>(null);
+  useEffect(() => { setConfirmTotal(null); }, [subtotal, count]);
+  const payTotal = confirmTotal ?? subtotal;
 
   const [step, setStep] = useState<Step>('form');
 
@@ -496,19 +506,24 @@ export function CheckoutFlow() {
                         qty: l.quantity,
                         inputs: withExtra(l),
                       })),
+                      expected_total: payTotal,
                     });
                     /* پرداخت روی خودِ ووکامرس انجام می‌شود، پس هر
                        درگاهی که آن‌جا نصب باشد بدون تغییرِ کد کار
                        می‌کند. */
                     window.location.href = res.pay_url;
                   } catch (e) {
+                    if (e instanceof BridgeError && e.code === 'phoenix_price_changed'
+                        && typeof e.data.total === 'number' && e.data.total > 0) {
+                      setConfirmTotal(e.data.total);
+                    }
                     setError(e instanceof Error ? e.message : 'ثبت سفارش انجام نشد.');
                     setBusy(false);
                   }
                 }}
               >
                 <Lock aria-hidden="true" />
-                پرداخت <span className="num">{fmt(subtotal)}</span> تومان
+                پرداخت <span className="num">{fmt(payTotal)}</span> تومان
               </button>
 
               {!canPay && (phone || name) && (

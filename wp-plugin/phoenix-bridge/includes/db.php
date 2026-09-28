@@ -184,6 +184,8 @@ function phoenix_settings_defaults() {
         'sources'        => array(), // [slug => bool] خالی یعنی همه روشن
         'custom_sources' => array(), // [slug => منبعِ نرخِ ساخته‌شده در پنل] — rate-custom.php
         'connections'    => array(), // [slug => کلیدِ API، رمزنگاری‌شده] — connections.php
+        'psrc_checkout'  => true,    // منابعِ قیمتِ محصول سرِ خرید هم تازه شوند
+        'psrc_fresh_min' => 10,      // دقیقه — تازه‌تر از این دوباره خوانده نمی‌شود
         'pick'           => 'lowest', // lowest | median | average
         'min_sources'    => 2,
         'rate_ttl'       => 600,      // ثانیه

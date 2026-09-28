@@ -865,6 +865,7 @@ if ($path === '/log') {
 function h_settings_payload() {
     return array(
         'auto_fulfil' => (bool) phoenix_setting('auto_fulfil'), 'fulfil_fail_stop' => (int) phoenix_setting('fulfil_fail_stop', 3),
+        'psrc_checkout' => (bool) phoenix_setting('psrc_checkout', true), 'psrc_fresh_min' => (int) phoenix_setting('psrc_fresh_min', 10),
         'provider' => false, 'fail_streak' => 2,
         'system' => array('version' => PHOENIX_BRIDGE_VERSION, 'php' => PHP_VERSION, 'wordpress' => '6.8.2', 'woo' => '10.1.2',
                           'real_cron' => false, 'site' => 'https://phonixmarket.com', 'db' => true),
@@ -879,8 +880,11 @@ function h_settings_payload() {
 if ($path === '/settings' && $method === 'GET') h_ok(h_settings_payload());
 if ($path === '/settings' && $method === 'POST') {
     if (!empty($body['auto_fulfil'])) h_fail('phoenix_no_provider', 'هنوز هیچ تأمین‌کننده‌ای وصل نشده؛ روشن کردنِ خریدِ خودکار کاری نمی‌کند.', 409);
-    $patch = array('auto_fulfil' => false);
+    $patch = array();
+    if (array_key_exists('auto_fulfil', $body)) $patch['auto_fulfil'] = false;
     if (isset($body['fulfil_fail_stop'])) $patch['fulfil_fail_stop'] = max(1, min(20, (int) $body['fulfil_fail_stop']));
+    if (array_key_exists('psrc_checkout', $body)) $patch['psrc_checkout'] = (bool) $body['psrc_checkout'];
+    if (isset($body['psrc_fresh_min'])) $patch['psrc_fresh_min'] = max(1, min(240, (int) $body['psrc_fresh_min']));
     phoenix_settings_save($patch, 'از پنل');
     h_ok(h_settings_payload());
 }

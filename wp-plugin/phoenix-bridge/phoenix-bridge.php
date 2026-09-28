@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Phoenix Bridge
  * Description: پلِ میان فروشگاه فونیکس و ووکامرس — فیلدهای دیجیتال، اندپوینت عمومی، و کلید حساب روی شماره‌ی موبایل.
- * Version:     1.3.0
+ * Version:     1.4.0
  * Requires PHP: 7.4
  * Author:      Phoenix Shop
  * Text Domain: phoenix-bridge
@@ -34,7 +34,7 @@ if (!defined('ABSPATH')) {
     exit; // دسترسی مستقیم ممنوع
 }
 
-define('PHOENIX_BRIDGE_VERSION', '1.3.0');
+define('PHOENIX_BRIDGE_VERSION', '1.4.0');
 define('PHOENIX_META_KEY', '_phoenix');
 
 /* ============================================================

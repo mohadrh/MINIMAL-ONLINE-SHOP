@@ -225,7 +225,8 @@ function phoenix_http_json($url, $conn = null) {
 
     $started = microtime(true);
     $args = array(
-        'timeout'     => 6,
+        /* سرِ خرید کوتاه‌تر (‎phoenix_psrc_refresh_for_purchase‎) */
+        'timeout'     => isset($GLOBALS['phoenix_http_timeout']) ? (int) $GLOBALS['phoenix_http_timeout'] : 6,
         'redirection' => 2,
         'user-agent'  => 'PhoenixBridge/' . PHOENIX_BRIDGE_VERSION . '; ' . home_url('/'),
         'headers'     => array_merge(array('Accept' => 'application/json'), phoenix_conn_headers($conn)),

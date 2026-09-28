@@ -49,6 +49,24 @@ function paint(ctx, d) {
     h('div', { class: 'phx2-row phx2-row--end' }, save),
   );
 
+  /* ---------- قیمتِ سرِ خرید ---------- */
+  const ck = kit.toggle({ checked: d.psrc_checkout, label: 'لحظه‌ی خرید، منابعِ قیمت دوباره خوانده شوند' });
+  const fresh = kit.money({ value: d.psrc_fresh_min, unit: 'دقیقه' });
+  const ckSave = h('button', { class: 'phx2-btn phx2-btn--primary', type: 'button' }, icon('save'), 'ذخیره');
+  ckSave.addEventListener('click', busyButton(ckSave, async () => {
+    try {
+      paint(ctx, await ctx.api('POST', '/settings', { psrc_checkout: ck.get(), psrc_fresh_min: fresh.get() || 10 }));
+      toast('ذخیره شد.', 'good');
+    } catch (e) { toast(e.message, 'bad'); }
+  }));
+  const buy = card('قیمت سرِ خرید', 'برای محصولاتی که قیمتشان «از چند منبع» است.',
+    h('div', { class: 'phx2-form' },
+      kit.field({ label: 'وضعیت', wide: true, hint: 'مشتری «پرداخت» را می‌زند، و پیش از ساختنِ سفارش منابعِ همان محصول خوانده می‌شوند. اگر قیمت عوض شده باشد، عددِ تازه را می‌بیند و یک بار دیگر تأیید می‌کند — هیچ‌وقت عددِ دیگری از آنچه دیده نمی‌پردازد.' }, ck.el),
+      kit.field({ label: 'تازه‌تر از این، دوباره خوانده نشود', hint: 'بیشترِ خریدها هیچ درخواستِ بیرونی نمی‌زنند. و سرِ خرید حداکثر پنج ثانیه صبر می‌شود؛ منبعی که جواب ندهد، قیمتِ قبلی را نگه می‌دارد.' }, fresh.el),
+    ),
+    h('div', { class: 'phx2-row phx2-row--end' }, ckSave),
+  );
+
   /* ---------- وضعیتِ سیستم ---------- */
   const row = (k, v, ok) => h('div', { class: 'phx2-kv' },
     h('dt', null, k),
@@ -75,8 +93,8 @@ function paint(ctx, d) {
     h('p', { class: 'phx2-card__s' }, 'حالتِ «مثلِ سیستم» از تنظیماتِ دستگاهت پیروی می‌کند.'));
 
   put(ctx.view, 
-    kit.pageHead({ title: 'تنظیمات', sub: 'خریدِ خودکار و وضعیتِ سیستم.' }),
-    h('div', { class: 'phx2-grid phx2-grid--2' }, fulfil, h('div', { class: 'phx2-grid' }, look, schedule)),
+    kit.pageHead({ title: 'تنظیمات', sub: 'قیمتِ سرِ خرید، خریدِ خودکار و وضعیتِ سیستم.' }),
+    h('div', { class: 'phx2-grid phx2-grid--2' }, h('div', { class: 'phx2-grid' }, buy, fulfil), h('div', { class: 'phx2-grid' }, look, schedule)),
     system,
   );
 }

@@ -25,6 +25,8 @@ function phoenix_ops_routes() {
     phoenix_api_route('/settings', 'POST', 'phoenix_api_settings_save', array(
         'auto_fulfil'      => array('type' => 'boolean'),
         'fulfil_fail_stop' => array('type' => 'integer', 'minimum' => 1, 'maximum' => 20),
+        'psrc_checkout'    => array('type' => 'boolean'),
+        'psrc_fresh_min'   => array('type' => 'integer', 'minimum' => 1, 'maximum' => 240),
     ));
 }
 
@@ -164,6 +166,8 @@ function phoenix_settings_payload() {
     return array(
         'auto_fulfil'      => (bool) phoenix_setting('auto_fulfil'),
         'fulfil_fail_stop' => (int) phoenix_setting('fulfil_fail_stop', 3),
+        'psrc_checkout'    => (bool) phoenix_setting('psrc_checkout', true),
+        'psrc_fresh_min'   => (int) phoenix_setting('psrc_fresh_min', 10),
         /* ⚠ خریدِ خودکار فقط وقتی قابلِ روشن کردن است که کسی
            تأمین‌کننده را وصل کرده باشد. بدونش، کلید روشن می‌شد و
            هیچ اتفاقی نمی‌افتاد — بدترین نوعِ کلید. */
@@ -202,6 +206,12 @@ function phoenix_api_settings_save(WP_REST_Request $r) {
     }
     if ($r->has_param('fulfil_fail_stop')) {
         $patch['fulfil_fail_stop'] = (int) $r['fulfil_fail_stop'];
+    }
+    if ($r->has_param('psrc_checkout')) {
+        $patch['psrc_checkout'] = (bool) $r['psrc_checkout'];
+    }
+    if ($r->has_param('psrc_fresh_min')) {
+        $patch['psrc_fresh_min'] = (int) $r['psrc_fresh_min'];
     }
     if ($patch) {
         phoenix_settings_save($patch, 'از پنل');

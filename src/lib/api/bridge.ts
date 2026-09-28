@@ -19,7 +19,14 @@ const BASE = (process.env.NEXT_PUBLIC_BRIDGE_URL ?? '').replace(/\/$/, '');
 export const BRIDGE_READY = BASE !== '';
 
 export class BridgeError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+    /** کدِ خطای سرور — مثلاً ‎phoenix_price_changed‎ */
+    public code = '',
+    /** بخشِ ‎data‎ی خطای وردپرس — مثلاً جمعِ تازه وقتی قیمت عوض شده */
+    public data: Record<string, unknown> = {},
+  ) {
     super(message);
     this.name = 'BridgeError';
   }
@@ -44,13 +51,14 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     const data = (await res.json().catch(() => ({}))) as {
       message?: string;
       code?: string;
+      data?: Record<string, unknown>;
     } & T;
 
     if (!res.ok) {
       /* پیامِ خودِ سرور را نشان می‌دهیم چون فارسی و برای کاربر
          نوشته شده — ولی اگر نبود، یک جمله‌ی عمومی. جزئیاتِ فنی
          هیچ‌وقت به کاربر نمی‌رسد. */
-      throw new BridgeError(res.status, data.message || 'درخواست انجام نشد.');
+      throw new BridgeError(res.status, data.message || 'درخواست انجام نشد.', data.code || '', data.data || {});
     }
     return data;
   } catch (e) {
@@ -123,6 +131,12 @@ export async function createOrder(params: {
   email?: string;
   note?: string;
   items: OrderItem[];
+  /**
+   * جمعی که مشتری روی دکمه‌ی «پرداخت» دیده. اگر قیمت سرِ خرید عوض
+   * شده باشد، سرور سفارش نمی‌سازد و ‎409 phoenix_price_changed‎ با
+   * جمعِ تازه برمی‌گرداند — مشتری هیچ‌وقت عددِ دیگری نمی‌پردازد.
+   */
+  expected_total?: number;
 }): Promise<OrderResult> {
   const token = storedToken();
   if (!token) {

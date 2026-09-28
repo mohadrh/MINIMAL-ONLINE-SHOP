@@ -172,5 +172,16 @@ is_same('پیش‌نمایشِ مرورگر: رشته رد', phoenix_psrc_try_pi
 is_same('پیش‌نمایشِ مرورگر: درست',    phoenix_psrc_try_pick(array('value' => '19.5', 'unit' => 'usd', 'why' => '<b>کمترین</b>')),
     array('value' => 19.5, 'unit' => 'usd', 'why' => 'کمترین'));
 
+/* ============================================================ */
+section('سرِ خرید — کهنگی');
+
+$now = strtotime('2026-09-28T12:00:00Z');
+is_same('هیچ‌وقت خوانده نشده → کهنه',        phoenix_psrc_is_stale(array(), $now, 10), true);
+is_same('وضعیتِ خالی → کهنه',                phoenix_psrc_is_stale(null, $now, 10), true);
+is_same('پنج دقیقه پیش، پنجره‌ی ده → تازه',   phoenix_psrc_is_stale(array('at' => '2026-09-28T11:55:00Z'), $now, 10), false);
+is_same('یازده دقیقه پیش → کهنه',            phoenix_psrc_is_stale(array('at' => '2026-09-28T11:49:00Z'), $now, 10), true);
+is_same('تاریخِ خراب → کهنه',                phoenix_psrc_is_stale(array('at' => 'دیروز'), $now, 10), true);
+is_same('پنجره‌ی صفر مثلِ یک دقیقه',          phoenix_psrc_is_stale(array('at' => '2026-09-28T11:59:30Z'), $now, 0), false);
+
 printf("\n%d قبول، %d مردود\n", $GLOBALS['pass'], $GLOBALS['fail']);
 exit($GLOBALS['fail'] ? 1 : 0);

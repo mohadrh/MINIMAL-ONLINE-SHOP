@@ -212,8 +212,12 @@ define('DISABLE_WP_CRON', true);
 WORDPRESS_URL=https://panel.phonixmarket.com
 WOO_CONSUMER_KEY=ck_...
 WOO_CONSUMER_SECRET=cs_...
-NEXT_PUBLIC_BRIDGE_URL=https://panel.phonixmarket.com/wp-json/phoenix/v1
+NEXT_PUBLIC_BRIDGE_URL=https://panel.phonixmarket.com
 ```
+
+⚠ فقط نشانیِ خودِ وردپرس، **بدونِ** ‎/wp-json/phoenix/v1‎ — سایت آن را
+خودش اضافه می‌کند. با مسیرِ کامل، سفارش و قیمتِ زنده به نشانیِ
+دوتاشده می‌روند و «درخواست انجام نشد» می‌دهند.
 
 ⚠ **این فایل هیچ‌وقت به گیت نمی‌رود.** سه تای اول فقط سرِ بیلد
 روی کامپیوترِ خودت خوانده می‌شوند. فقط `NEXT_PUBLIC_BRIDGE_URL`

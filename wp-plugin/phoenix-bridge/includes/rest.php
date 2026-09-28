@@ -350,6 +350,15 @@ function phoenix_rest_create_order(WP_REST_Request $request) {
         return new WP_Error('phoenix_too_many', 'تعداد اقلام بیش از حد است.', array('status' => 400));
     }
 
+    /* ⚠ قیمتِ «چند منبع» همین لحظه تازه می‌شود — پیش از آنکه
+       ووکامرس قیمت را روی سفارش بنویسد. سقفِ زمان و قفل و «فقط
+       کهنه‌ها» در ‎phoenix_psrc_refresh_for_purchase‎. */
+    if (function_exists('phoenix_psrc_refresh_for_purchase')) {
+        phoenix_psrc_refresh_for_purchase(array_map(function ($raw) {
+            return is_array($raw) && isset($raw['id']) ? absint($raw['id']) : 0;
+        }, $items));
+    }
+
     $order = wc_create_order();
 
     foreach ($items as $raw) {
@@ -404,13 +413,36 @@ function phoenix_rest_create_order(WP_REST_Request $request) {
     }
 
     $order->calculate_totals();
+
+    /* ⚠ مشتری روی دکمه‌ی «پرداخت» عددی دیده. اگر قیمت همین حالا
+       عوض شده (منبعِ تازه، نرخِ تازه، یا کاتالوگِ کهنه‌ی سایت)، به
+       صفحه‌ی پرداختِ عددِ دیگری فرستاده نمی‌شود: سفارش ساخته نمی‌شود،
+       عددِ تازه برمی‌گردد، و با یک کلیکِ دیگر همان را تأیید می‌کند.
+       ‎expected_total‎ نیامده (سایتِ قدیمی)؟ رفتارِ قبلی. */
+    $total    = (int) round((float) $order->get_total());
+    $expected = isset($body['expected_total']) ? (int) $body['expected_total'] : 0;
+    if ($expected > 0 && $total !== $expected) {
+        $prices = array();
+        foreach ($order->get_items() as $it) {
+            $vid = $it->get_variation_id() ? $it->get_variation_id() : $it->get_product_id();
+            $prices[(string) $vid] = (int) round((float) $it->get_subtotal() / max(1, (int) $it->get_quantity()));
+        }
+        $order->delete(true);
+        $fa = function_exists('phoenix_fa_digits') ? 'phoenix_fa_digits' : 'strval';
+        return new WP_Error(
+            'phoenix_price_changed',
+            'قیمت همین حالا به‌روز شد. جمعِ تازه ' . $fa(number_format($total, 0, '.', '٬')) . ' تومان است — اگر موافقی، دوباره «پرداخت» را بزن.',
+            array('status' => 409, 'total' => $total, 'prices' => $prices)
+        );
+    }
+
     $order->update_status('pending', 'ثبت از فروشگاه فونیکس');
 
     return rest_ensure_response(array(
         'id'     => $order->get_id(),
         'number' => $order->get_order_number(),
         'key'    => $order->get_order_key(),
-        'total'  => (int) round((float) $order->get_total()),
+        'total'  => $total,
         'pay_url'=> $order->get_checkout_payment_url(),
     ));
 }
