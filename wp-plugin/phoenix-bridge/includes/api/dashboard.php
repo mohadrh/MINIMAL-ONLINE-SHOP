@@ -271,6 +271,35 @@ function phoenix_dash_health(array $s) {
  *
  * @return array[] {level: high|medium|low, title, text, action?}
  */
+/**
+ * هشدارهای خودِ Bridge به‌علاوه‌ی افزونه‌های دیگر (مثلاً «حالتِ آزمایشیِ
+ * پیامک روشن است» از Phoenix Account).
+ *
+ * ⚠ هشدارِ بیرونی هم از همان الگو رد می‌شود: فقط سه سطح، متنِ
+ * ساده، و کنشِ «برو به بخش» — نه نشانیِ دلخواه.
+ */
+function phoenix_dash_alerts_all(array $s) {
+    $out = phoenix_dash_alerts($s);
+    foreach ((array) apply_filters('phoenix_dash_alerts_extra', array()) as $a) {
+        if (!is_array($a) || empty($a['title'])) {
+            continue;
+        }
+        $alert = array(
+            'level' => in_array($a['level'] ?? '', array('high', 'medium', 'low'), true) ? $a['level'] : 'medium',
+            'title' => sanitize_text_field((string) $a['title']),
+            'text'  => sanitize_text_field((string) ($a['text'] ?? '')),
+        );
+        if (!empty($a['action']['go']) && preg_match('/^[a-z][a-z0-9-]{1,30}$/', $a['action']['go'])) {
+            $alert['action'] = array('label' => sanitize_text_field((string) ($a['action']['label'] ?? 'برو')), 'go' => $a['action']['go']);
+        }
+        $out[] = $alert;
+    }
+    /* بالاها اول، همان ترتیبی که ‎phoenix_dash_alerts‎ دارد */
+    $rank = array('high' => 0, 'medium' => 1, 'low' => 2);
+    usort($out, function ($a, $b) use ($rank) { return $rank[$a['level']] <=> $rank[$b['level']]; });
+    return $out;
+}
+
 function phoenix_dash_alerts(array $s) {
     $out = array();
 
@@ -466,7 +495,7 @@ function phoenix_api_dashboard(WP_REST_Request $request) {
         'state'       => $s,
         'health'      => $health,
         'summary'     => phoenix_dash_summary($s, $health),
-        'alerts'      => phoenix_dash_alerts($s),
+        'alerts'      => phoenix_dash_alerts_all($s),
         'suggestions' => phoenix_dash_suggestions($s),
         'series'      => phoenix_dash_series(168),
         'recent'      => $recent,

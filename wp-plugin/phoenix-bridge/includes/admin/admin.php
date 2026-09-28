@@ -75,6 +75,54 @@ function phoenix_admin_menu() {
         }
         add_submenu_page(PHOENIX_MENU, $label, $label, PHOENIX_CAP, 'admin.php?page=' . PHOENIX_MENU . '#/' . $id);
     }
+    foreach (phoenix_admin_extensions() as $ext) {
+        add_submenu_page(PHOENIX_MENU, $ext['label'], $ext['label'], PHOENIX_CAP, 'admin.php?page=' . PHOENIX_MENU . '#/' . $ext['id']);
+    }
+}
+
+/**
+ * بخش‌هایی که افزونه‌های دیگر (مثلاً Phoenix Account) به همین پنل
+ * اضافه می‌کنند — به‌جای پنلِ دوم.
+ *
+ *   add_filter('phoenix_admin_extensions', function ($list) {
+ *       $list[] = array('id' => 'sms', 'label' => 'پیامک', 'icon' => 'bell',
+ *                       'module' => plugins_url('admin/screens/sms.js', __FILE__));
+ *       return $list;
+ *   });
+ *
+ * ⚠ هر بخش سخت بررسی می‌شود، چون ماژولش در پنلِ مدیر اجرا می‌شود:
+ * شناسه از الگوی ثابت، و نشانیِ ماژول فقط از پوشه‌ی افزونه‌های همین
+ * سایت و با پسوندِ ‎.js‎. نشانیِ بیرونی یعنی کدِ دیگران با دسترسیِ
+ * مدیر — رد می‌شود.
+ *
+ * @return array[] ‎{id, label, icon, module}‎
+ */
+function phoenix_admin_extensions() {
+    $core = array_keys(phoenix_admin_sections());
+    $base = trailingslashit(plugins_url());
+    $out  = array();
+    foreach ((array) apply_filters('phoenix_admin_extensions', array()) as $e) {
+        if (!is_array($e)) {
+            continue;
+        }
+        $id     = isset($e['id']) ? (string) $e['id'] : '';
+        $module = isset($e['module']) ? (string) $e['module'] : '';
+        if (!preg_match('/^[a-z][a-z0-9-]{1,30}$/', $id) || in_array($id, $core, true) || isset($out[$id])) {
+            continue;
+        }
+        if (strpos($module, $base) !== 0 || !preg_match('#^[^?\#]+\.js$#', $module) || strpos($module, '..') !== false) {
+            continue;
+        }
+        $out[$id] = array(
+            'id'     => $id,
+            'label'  => sanitize_text_field(isset($e['label']) ? (string) $e['label'] : $id),
+            'icon'   => isset($e['icon']) && preg_match('/^[a-zA-Z]{2,20}$/', $e['icon']) ? $e['icon'] : 'box',
+            'module' => esc_url_raw($module),
+            /* نسخه‌ی خودِ آن افزونه — برای شکستنِ کشِ مرورگر بعد از به‌روزرسانی‌اش */
+            'ver'    => isset($e['ver']) && preg_match('/^[0-9a-z.\-]{1,20}$/', $e['ver']) ? $e['ver'] : PHOENIX_BRIDGE_VERSION,
+        );
+    }
+    return array_values($out);
 }
 
 /**

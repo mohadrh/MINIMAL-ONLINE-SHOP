@@ -80,6 +80,8 @@ function phoenix_app_assets($hook) {
         'links'  => array(
             'woo_products' => admin_url('edit.php?post_type=product'),
         ),
+        /* بخش‌های افزونه‌های دیگر — بررسی‌شده در ‎phoenix_admin_extensions‎ */
+        'extensions' => phoenix_admin_extensions(),
     );
 
     wp_add_inline_script(

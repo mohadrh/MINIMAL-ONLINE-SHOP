@@ -103,7 +103,17 @@ function phoenix_otp_request(WP_REST_Request $request) {
      *   }, 10, 3);
      */
     $text = 'کد ورود فونیکس شاپ: ' . $code;
-    $sent = apply_filters('phoenix_send_sms', false, $phone, $text);
+
+    /* ⚠ اول «فقط کد»، بعد «متنِ کامل».
+       سامانه‌های پیامکِ ایرانی کد را با الگوی ازپیش‌تأییدشده
+       می‌فرستند (خطِ خدماتی)، نه متنِ آزاد؛ پس خودِ کد لازم است، نه
+       جمله‌ای که باید دوباره از آن بیرون کشیده شود. افزونه‌ی
+       Phoenix Account این‌جا وصل می‌شود. ‎null‎ یعنی «کسی گوش
+       نمی‌دهد» و نوبتِ فیلترِ قدیمی است. */
+    $sent = apply_filters('phoenix_send_otp', null, $phone, $code);
+    if ($sent === null) {
+        $sent = apply_filters('phoenix_send_sms', false, $phone, $text);
+    }
 
     if (!$sent) {
         if (defined('WP_DEBUG') && WP_DEBUG) {

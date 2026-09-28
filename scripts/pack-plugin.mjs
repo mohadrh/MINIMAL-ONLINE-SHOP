@@ -22,23 +22,58 @@ import { collect, makeZip } from './lib/zip.mjs';
 import { mkdirSync, readFileSync, readdirSync, rmSync, existsSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
+/* ---------- کدام افزونه ----------
+   ‎npm run pack:plugin‎            → phoenix-bridge
+   ‎npm run pack:account‎           → phoenix-account */
+
+const PLUGINS = {
+  'phoenix-bridge': {
+    constant: 'PHOENIX_BRIDGE_VERSION',
+    must: [
+      'phoenix-bridge.php', 'CHANGELOG.md',
+      'includes/db.php', 'includes/rate.php', 'includes/pricing.php', 'includes/discounts.php',
+      'includes/admin/admin.php', 'includes/admin/app.php', 'includes/api/guard.php',
+      'includes/connections.php', 'includes/product-sources.php',
+      'admin/app.js', 'admin/app.css', 'admin/pages.css', 'admin/pricing-kit.js',
+      'admin/fonts/Vazirmatn-Variable.woff2',
+    ],
+  },
+  'phoenix-account': {
+    constant: 'PHOENIX_ACC_VERSION',
+    must: [
+      'phoenix-account.php', 'CHANGELOG.md',
+      'includes/core.php', 'includes/db.php', 'includes/sessions.php', 'includes/sms.php',
+      'includes/api-customer.php', 'includes/api-admin.php', 'admin/screens/sms.js',
+    ],
+  },
+};
+
+const name = process.argv[2] || 'phoenix-bridge';
+const plugin = PLUGINS[name];
+if (!plugin) {
+  console.error(`✗ افزونه‌ی «${name}» تعریف نشده. یکی از: ${Object.keys(PLUGINS).join('، ')}`);
+  process.exit(1);
+}
+
 const root = resolve(import.meta.dirname, '..');
-const src = join(root, 'wp-plugin', 'phoenix-bridge');
+const src = join(root, 'wp-plugin', name);
 const dist = join(root, 'dist');
 
 /* ---------- نسخه ---------- */
 
-const main = readFileSync(join(src, 'phoenix-bridge.php'), 'utf8');
+const main = readFileSync(join(src, `${name}.php`), 'utf8');
 
 const header = main.match(/^\s*\*\s*Version:\s*([0-9]+\.[0-9]+\.[0-9]+)\s*$/m);
-const constant = main.match(/define\('PHOENIX_BRIDGE_VERSION',\s*'([0-9]+\.[0-9]+\.[0-9]+)'\)/);
+/* ‎String.raw‎: در رشته‌ی معمولیِ جاوااسکریپت ‎\s‎ و ‎\(‎ بی‌صدا «s» و «(»
+   می‌شدند و عبارت هیچ‌وقت نمی‌خورد. */
+const constant = main.match(new RegExp(String.raw`define\('${plugin.constant}',\s*'([0-9]+\.[0-9]+\.[0-9]+)'\)`));
 
 if (!header) {
-  console.error('✗ هدرِ Version در phoenix-bridge.php پیدا نشد.');
+  console.error(`✗ هدرِ Version در ${name}.php پیدا نشد.`);
   process.exit(1);
 }
 if (!constant) {
-  console.error('✗ ثابتِ PHOENIX_BRIDGE_VERSION پیدا نشد.');
+  console.error(`✗ ثابتِ ${plugin.constant} پیدا نشد.`);
   process.exit(1);
 }
 
@@ -50,7 +85,7 @@ if (!constant) {
    مرورگرِ ادمین هنوز CSSِ قدیمی را کش کرده. */
 if (header[1] !== constant[1]) {
   console.error(`✗ نسخه‌ها یکی نیستند: هدر ${header[1]} ولی ثابت ${constant[1]}`);
-  console.error('  هر دو را در phoenix-bridge.php برابر کن.');
+  console.error(`  هر دو را در ${name}.php برابر کن.`);
   process.exit(1);
 }
 
@@ -58,24 +93,7 @@ const version = header[1];
 
 /* ---------- سلامتِ فایل‌ها ---------- */
 
-const must = [
-  'phoenix-bridge.php',
-  'CHANGELOG.md',
-  'includes/db.php',
-  'includes/rate.php',
-  'includes/pricing.php',
-  'includes/discounts.php',
-  'includes/admin/admin.php',
-  'includes/admin/app.php',
-  'includes/api/guard.php',
-  'includes/connections.php',
-  'includes/product-sources.php',
-  'admin/app.js',
-  'admin/app.css',
-  'admin/pages.css',
-  'admin/pricing-kit.js',
-  'admin/fonts/Vazirmatn-Variable.woff2',
-];
+const must = plugin.must;
 
 const missing = must.filter((f) => !existsSync(join(src, f)));
 if (missing.length) {
@@ -129,10 +147,10 @@ const { n: fileCount, bytes } = walk(src);
 
 mkdirSync(dist, { recursive: true });
 
-const out = join(dist, `phoenix-bridge-${version}.zip`);
+const out = join(dist, `${name}-${version}.zip`);
 if (existsSync(out)) rmSync(out);
 
-const entries = collect(src, 'phoenix-bridge');
+const entries = collect(src, name);
 
 const zipBytes = makeZip(entries);
 
@@ -147,7 +165,7 @@ writeFileSync(out, zipBytes);
 
    هشتاد کیلوبایت به‌ازای هر نسخه، بهای کمی است برای اینکه
    هر نسخه‌ی قدیمی هم همیشه قابلِ دانلود بماند. */
-const repoCopy = join(root, 'wp-plugin', 'releases', `phoenix-bridge-${version}.zip`);
+const repoCopy = join(root, 'wp-plugin', 'releases', `${name}-${version}.zip`);
 mkdirSync(join(root, 'wp-plugin', 'releases'), { recursive: true });
 writeFileSync(repoCopy, zipBytes);
 
@@ -158,8 +176,8 @@ console.log('✓ بسته آماده شد.');
 console.log('');
 console.log(`  نسخه   ${version}`);
 console.log(`  فایل   ${fileCount} تا، ${Math.round(bytes / 1024)} کیلوبایت`);
-console.log(`  زیپ    dist/phoenix-bridge-${version}.zip (${zipKb} کیلوبایت)`);
-console.log(`  و در مخزن: wp-plugin/releases/phoenix-bridge-${version}.zip`);
+console.log(`  زیپ    dist/${name}-${version}.zip (${zipKb} کیلوبایت)`);
+console.log(`  و در مخزن: wp-plugin/releases/${name}-${version}.zip`);
 console.log('');
 console.log('  نصب روی وردپرس:');
 console.log('    افزونه‌ها ‹ افزودن ‹ بارگذاری افزونه ‹ همین فایل');

@@ -151,6 +151,10 @@ const ICONS = {
   lock: [['rect', { x: 3, y: 11, width: 18, height: 11, rx: 2 }], ['path', { d: 'M7 11V7a5 5 0 0 1 10 0v4' }]],
   dollar: [['path', { d: 'M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' }]],
   bolt: [['path', { d: 'M13 2 3 14h9l-1 8 10-12h-9l1-8z' }]],
+  message: [['path', { d: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' }]],
+  users: [['path', { d: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2' }], ['circle', { cx: 9, cy: 7, r: 4 }],
+    ['path', { d: 'M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75' }]],
+  phone: [['rect', { x: 5, y: 2, width: 14, height: 20, rx: 2 }], ['path', { d: 'M12 18h.01' }]],
   flask: [['path', { d: 'M9 3h6M10 3v7l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3' }]],
   text: [['path', { d: 'M4 7V4h16v3M9 20h6M12 4v16' }]],
   truck: [['path', { d: 'M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2M15 18H9M19 18h2a1 1 0 0 0 1-1v-3.6a1 1 0 0 0-.2-.6l-3.5-4.4A1 1 0 0 0 17.5 8H14' }],
@@ -183,6 +187,12 @@ export function icon(name, extra) {
 
 const NF = new Intl.NumberFormat('fa-IR');
 export const fa = (n) => NF.format(Number(n) || 0);
+
+/**
+ * فقط ارقام به فارسی، بدونِ جداکننده — برای شماره‌ی موبایل و کد.
+ * ‎fa('09121234567')‎ صفرِ اول را می‌انداخت و سه‌رقمی جدا می‌کرد.
+ */
+export const digits = (s) => String(s ?? '').replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
 
 const RTF = typeof Intl.RelativeTimeFormat === 'function'
   ? new Intl.RelativeTimeFormat('fa', { numeric: 'auto' })

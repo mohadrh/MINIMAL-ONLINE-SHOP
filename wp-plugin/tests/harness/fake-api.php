@@ -194,6 +194,7 @@ require_once $inc . 'product-sources.php';
 require_once $inc . 'api/dashboard.php';
 require_once $inc . 'api/product-input.php';
 require_once $inc . 'api/products.php';
+require_once __DIR__ . '/../../phoenix-account/includes/core.php';
 
 /* ============================================================
    انبار
@@ -1043,6 +1044,47 @@ if ($path === '/connections' || preg_match('#^/connections/(k_[a-f0-9]{6})$#', $
     $res = phoenix_conn_save($slug, $c['data']);
     if (is_wp_error($res)) h_fail($res->get_error_code(), $res->get_error_message(), 422);
     h_ok(h_rate_payload());
+}
+
+/* ---------- Phoenix Account: پیامک و ورود ---------- */
+
+function h_acc_payload() {
+    $s = array_merge(phoenix_acc_defaults(), $GLOBALS['S']['acc'] ?? array());
+    $conns = array();
+    foreach (phoenix_connections() as $slug => $row) {
+        $conns[] = array('slug' => $slug, 'label' => $row['label'], 'key' => phoenix_conn_key_state($row));
+    }
+    return array('settings' => $s, 'connections' => $conns,
+        'devlog' => $s['sms_provider'] === 'dev' ? phoenix_acc_log_fresh($GLOBALS['S']['acc_dev'] ?? array(), 1800, time()) : array(),
+        'log' => $GLOBALS['S']['acc_log'] ?? array(), 'bridge_debug' => false);
+}
+if ($path === '/account/sms' && $method === 'GET') h_ok(h_acc_payload());
+if ($path === '/account/sms' && $method === 'POST') {
+    $c = phoenix_acc_settings_clean($body, array_keys(phoenix_connections()));
+    if (!$c['ok']) h_fail('phoenix_invalid', 'بعضی فیلدها درست نیستند.', 422, array('errors' => $c['errors']));
+    $GLOBALS['S']['acc'] = $c['data'];
+    /* شبیه‌سازیِ چند درخواستِ ورود، تا کدهای حالتِ آزمایشی دیده شوند */
+    if ($c['data']['sms_provider'] === 'dev' && empty($GLOBALS['S']['acc_dev'])) {
+        $GLOBALS['S']['acc_dev'] = array(array('at' => time() - 40, 'phone' => '09121234567', 'code' => '482913'),
+                                         array('at' => time() - 400, 'phone' => '09351112233', 'code' => '104577'));
+    }
+    h_ok(h_acc_payload());
+}
+if ($path === '/account/sms/test') {
+    $phone = preg_match('/^09\d{9}$/', (string) ($body['phone'] ?? '')) ? $body['phone'] : '';
+    if ($phone === '') h_fail('phoenix_invalid', 'شماره‌ی موبایل معتبر نیست.', 422, array('errors' => array('phone' => 'مثلاً ۰۹۱۲۱۲۳۴۵۶۷')));
+    $s = array_merge(phoenix_acc_defaults(), $GLOBALS['S']['acc'] ?? array());
+    if (!in_array($s['sms_provider'], array('kavenegar', 'smsir'), true)) h_fail('phoenix_no_sms', 'اول یک سامانه‌ی پیامک انتخاب و ذخیره کن.', 409);
+    $conn = phoenix_conn_runtime($s['sms_conn']);
+    $req = phoenix_acc_sms_request($s['sms_provider'], $conn['key'], $s, $phone, '123456');
+    /* سامانه‌ی ساختگی: فقط کلیدِ «demo-key-b» را قبول دارد */
+    $good = $conn['key'] === 'demo-key-b';
+    $res = $s['sms_provider'] === 'kavenegar'
+        ? phoenix_acc_sms_result('kavenegar', $good ? 200 : 403, $good ? '{"return":{"status":200,"message":"تایید شد"}}' : '{"return":{"status":403,"message":"کد شناسایی API-Key معتبر نمی‌باشد"}}')
+        : phoenix_acc_sms_result('smsir', $good ? 200 : 401, $good ? '{"status":1,"message":"موفق"}' : '{"status":0,"message":"کلید نامعتبر"}');
+    $GLOBALS['S']['acc_log'] = phoenix_acc_log_push($GLOBALS['S']['acc_log'] ?? array(),
+        array('at' => time(), 'phone' => phoenix_acc_mask_phone($phone), 'ok' => $res['ok'], 'note' => $res['note']), 20, 604800, time());
+    h_ok(array_merge(h_acc_payload(), array('test' => $res, 'request_url' => strtok($req['url'], '?'))));
 }
 
 h_fail('rest_no_route', 'مسیر پیدا نشد: ' . $method . ' ' . $path, 404);

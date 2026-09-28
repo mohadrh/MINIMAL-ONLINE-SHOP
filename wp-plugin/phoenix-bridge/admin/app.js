@@ -131,6 +131,12 @@ const NAV = [
   { id: 'log',       label: 'تاریخچه',    icon: 'clock' },
   { id: 'settings',  label: 'تنظیمات',    icon: 'sliders' },
 ];
+
+/* بخش‌های افزونه‌های دیگر (Phoenix Account، …) — سرور بررسی‌شان کرده
+   (‎phoenix_admin_extensions‎): شناسه‌ی سالم، ماژول فقط از پوشه‌ی
+   افزونه‌های همین سایت. */
+const EXT = new Map((BOOT.extensions || []).map((e) => [e.id, e]));
+for (const e of EXT.values()) NAV.splice(NAV.length - 1, 0, { id: e.id, label: e.label, icon: e.icon });
 const IDS = new Set(NAV.map((n) => n.id));
 
 /* ------------------------------------------------------------
@@ -261,7 +267,10 @@ async function route() {
     h('div', { class: 'phx2-skel', style: { height: '320px' } }));
 
   try {
-    const mod = await import(`./screens/${id}.js${V}`);
+    const ext = EXT.get(id);
+    const mod = ext
+      ? await import(ext.module + '?v=' + encodeURIComponent(ext.ver))
+      : await import(`./screens/${id}.js${V}`);
     if (my !== token) return;
     await mod.render({ ...ctx, param, alive: () => my === token });
     if (my === token) view.focus({ preventScroll: true });

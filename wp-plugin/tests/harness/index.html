@@ -46,6 +46,7 @@
       <li><a href="#/discounts">تخفیف‌ها</a></li>
       <li><a href="#/queue">صفِ تحویل</a></li>
       <li><a href="#/log">تاریخچه</a></li>
+      <li><a href="#/sms">پیامک و ورود</a></li>
       <li><a href="#/settings">تنظیمات</a></li>
     </ul>
   </div>
@@ -71,7 +72,9 @@
         nonce: 'test-nonce',
         theme: theme,
         user: 'مدیر',
-        links: { woo_products: '#woo' }
+        links: { woo_products: '#woo' },
+        /* همان چیزی که ‎phoenix_admin_extensions‎ برای Phoenix Account می‌فرستد */
+        extensions: [{ id: 'sms', label: 'پیامک و ورود', icon: 'message', module: '/phoenix-account/admin/screens/sms.js', ver: 'dev-' + Date.now() }]
       };
 
       /* فقط برای دیدنِ درخواست‌ها و شبیه‌سازیِ تأخیرِ شبکه */
