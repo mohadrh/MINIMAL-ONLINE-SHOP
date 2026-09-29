@@ -37,6 +37,19 @@ function phoenix_acc_cors_headers($headers) {
     return $headers;
 }
 
+/**
+ * ثبتِ سفارش در Bridge با نشستِ حساب، بی‌کدِ پیامکیِ تازه.
+ * خالی یعنی «نشستِ معتبری نیست» و Bridge همان ژتونِ کد را می‌خواهد.
+ */
+add_filter('phoenix_verified_phone', 'phoenix_acc_verified_phone', 10, 2);
+function phoenix_acc_verified_phone($phone, $request) {
+    if ($phone !== '' || !($request instanceof WP_REST_Request)) {
+        return $phone;
+    }
+    $row = phoenix_acc_session_row((string) $request->get_header(PHOENIX_ACC_HEADER));
+    return $row ? (string) $row->phone : '';
+}
+
 function phoenix_acc_session_create($phone, $ua) {
     global $wpdb;
     $t    = phoenix_acc_table_sessions();

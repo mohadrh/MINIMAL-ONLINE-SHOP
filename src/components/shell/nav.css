@@ -1041,3 +1041,7 @@
   display: inline-flex;
   align-items: center;
 }
+
+/* سایتِ وصل به پنل، کاربرِ واردنشده: پیوندِ ورود زیرِ عنوان */
+.amenu__head a { color: var(--blue); font-size: var(--text-sm); font-weight: 600; }
+.amenu__head a:hover { text-decoration: underline; text-underline-offset: 3px; }

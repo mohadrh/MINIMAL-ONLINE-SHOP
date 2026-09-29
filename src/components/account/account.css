@@ -696,3 +696,98 @@
 
 /* توریِ پس‌زمینه چند پیکسل از قاب می‌زد بیرون */
 .acc__mesh { max-width: 100%; }
+
+
+/* ============================================================
+   پنلِ وصل به فروشگاه (LiveAccount) — جزئیاتِ سفارش، تحویل، فرم‌ها،
+   تیکت و دستگاه‌ها. همان نشانه‌ها و همان شیشه.
+   ============================================================ */
+
+.acc__form {
+  --glass-rim:  rgba(255, 255, 255, 0.9);
+  --glass-rim2: rgba(255, 255, 255, 0.4);
+  --glass-edge: rgba(18, 19, 28, 0.10);
+  display: grid; gap: var(--sp-4);
+  padding: var(--sp-5) var(--sp-6);
+  background: color-mix(in oklab, #ffffff 34%, transparent);
+  border: 1px solid var(--glass-edge);
+  border-radius: 18px;
+  box-shadow: inset 0 1px 0 var(--glass-rim), inset 0 -1px 0 var(--glass-rim2), 0 24px 48px -30px rgba(30, 26, 60, 0.34);
+}
+[data-theme='dark'] .acc__form {
+  --glass-rim:  rgba(255, 255, 255, 0.16);
+  --glass-rim2: rgba(255, 255, 255, 0.05);
+  --glass-edge: rgba(255, 255, 255, 0.16);
+  background: color-mix(in oklab, #ffffff 13%, transparent);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .acc__form { -webkit-backdrop-filter: blur(24px) saturate(160%); backdrop-filter: blur(24px) saturate(160%); }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .acc__form { background: var(--paper); }
+}
+.acc__form h2 { font-size: var(--text-lg); margin: 0; }
+.acc__form select, .acc__form textarea { font: inherit; }
+.acc__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--sp-2) var(--sp-3); }
+.acc__out { color: var(--danger); }
+
+.acc__badge {
+  margin-inline-start: auto; padding: 1px 8px; border-radius: var(--r-full);
+  background: var(--warn-wash); color: var(--warn); font-size: var(--text-xs); font-weight: 700;
+}
+.acc__dot { display: inline-block; width: 8px; height: 8px; margin-inline-end: 6px; border-radius: 50%; background: var(--brand); vertical-align: middle; }
+.acc__pager { display: flex; align-items: center; justify-content: center; gap: var(--sp-3); font-size: var(--text-sm); }
+
+/* ---------- جزئیاتِ سفارش ---------- */
+.acc__detail { display: grid; gap: var(--sp-4); margin-top: var(--sp-4); }
+.acc__kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px var(--sp-4); margin: 0; font-size: var(--text-sm); }
+.acc__kv dt { color: var(--ink-faint); }
+.acc__kv dd { margin: 0; color: var(--ink); overflow-wrap: anywhere; }
+.acc__kv code { font-family: ui-monospace, monospace; font-size: var(--text-xs); }
+.acc__item { display: grid; gap: var(--sp-3); padding: var(--sp-4); border: 1px solid var(--glass-edge, var(--line)); border-radius: var(--r-lg); }
+.acc__item-h { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-2) var(--sp-3); }
+.acc__item-h b, .acc__item-h h2 { font-size: var(--text-md); }
+
+.acc__deliv { display: grid; gap: var(--sp-3); }
+.acc__deliv-row { display: grid; gap: var(--sp-2); padding-top: var(--sp-3); border-top: 1px dashed var(--line); }
+.acc__deliv-row:first-child { border-top: 0; padding-top: 0; }
+.acc__deliv-h { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); }
+.acc__note { margin: 0; font-size: var(--text-sm); color: var(--ink-soft); white-space: pre-line; line-height: 1.9; }
+.acc__note.is-warn { padding: var(--sp-3) var(--sp-4); border-radius: var(--r); background: var(--warn-wash); color: var(--ink); }
+.acc__fix { display: grid; gap: var(--sp-3); }
+.acc__fix .btn { justify-self: start; }
+
+/* ---------- تیکت ---------- */
+.acc__ticket { width: 100%; font: inherit; color: inherit; text-align: start; cursor: pointer; }
+.acc__ticket header { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+.acc__thread { display: grid; gap: var(--sp-3); }
+.acc__msg { display: grid; gap: 4px; max-width: min(34rem, 92%); }
+.acc__msg p {
+  margin: 0; padding: var(--sp-3) var(--sp-4); border-radius: 16px;
+  font-size: var(--text-sm); line-height: 1.95; white-space: pre-line; overflow-wrap: anywhere;
+  background: color-mix(in srgb, var(--ink) 5%, transparent); color: var(--ink);
+}
+.acc__msg.is-customer { justify-self: start; }
+.acc__msg.is-customer p { border-start-start-radius: 4px; }
+.acc__msg.is-staff { justify-self: end; }
+.acc__msg.is-staff p { border-start-end-radius: 4px; background: var(--brand-wash); }
+.acc__msg.is-staff .acc__date { text-align: end; }
+.acc__reply { display: grid; gap: var(--sp-3); padding-top: var(--sp-4); border-top: 1px solid var(--line); }
+
+/* ---------- امنیت ---------- */
+.acc__devices { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+.acc__devices li {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) 0; border-bottom: 1px solid var(--line);
+}
+.acc__devices li:last-child { border-bottom: 0; }
+.acc__devices svg { width: 20px; height: 20px; color: var(--ink-faint); }
+.acc__code-row { display: grid; gap: var(--sp-3); justify-items: start; }
+.acc__code-row .pdp-input { width: 100%; }
+
+@media (max-width: 640px) {
+  .acc__form { padding: var(--sp-4); border-radius: var(--r-lg); }
+  .acc__devices li { grid-template-columns: auto minmax(0, 1fr); }
+  .acc__devices li .btn { grid-column: 2; justify-self: start; }
+  .acc__msg { max-width: 100%; }
+}

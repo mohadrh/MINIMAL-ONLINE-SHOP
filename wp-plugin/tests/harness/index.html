@@ -73,8 +73,19 @@
         theme: theme,
         user: 'مدیر',
         links: { woo_products: '#woo' },
-        /* همان چیزی که ‎phoenix_admin_extensions‎ برای Phoenix Account می‌فرستد */
-        extensions: [{ id: 'sms', label: 'پیامک و ورود', icon: 'message', module: '/phoenix-account/admin/screens/sms.js', ver: 'dev-' + Date.now() }]
+        extensions: [],
+        /* ‎?world=customers‎ — همان چیزی که ‎phoenix_admin_worlds‎ برای Phoenix Account می‌فرستد */
+        world: q.get('world') === 'customers' ? {
+          id: 'customers', menu: 'phoenix-customers', title: 'مشتریان', sub: 'سفارش‌ها، مشتریان و پشتیبانی', mark: 'م',
+          sections: ['overview:نمای کلی:grid', 'orders:سفارش‌ها:box', 'customers:مشتریان:users', 'tickets:تیکت‌ها:message', 'sms:پیامک و ورود:lock'].map(function (x) {
+            var p = x.split(':');
+            return { id: p[0], label: p[1], icon: p[2], module: '/phoenix-account/admin/screens/' + p[0] + '.js', ver: 'dev-' + Date.now() };
+          })
+        } : null,
+        worlds: [
+          { id: 'store', label: 'فروشگاه', icon: 'grid', url: location.pathname + '?theme=' + theme },
+          { id: 'customers', label: 'مشتریان', icon: 'users', url: location.pathname + '?world=customers&theme=' + theme }
+        ]
       };
 
       /* فقط برای دیدنِ درخواست‌ها و شبیه‌سازیِ تأخیرِ شبکه */

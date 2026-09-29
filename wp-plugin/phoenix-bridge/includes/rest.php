@@ -111,7 +111,7 @@ function phoenix_rate_limit_orders(WP_REST_Request $request) {
     if ($n >= 10) {
         return new WP_Error(
             'phoenix_rate_limited',
-            'تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کن.',
+            'تعداد درخواست‌ها زیاد است. لطفاً کمی بعد دوباره تلاش کنید.',
             array('status' => 429)
         );
     }
@@ -335,12 +335,24 @@ function phoenix_rest_create_order(WP_REST_Request $request) {
        برای همان شماره معتبر است، پس ژتونِ یک نفر برای شماره‌ی
        دیگری کار نمی‌کند. */
     $token_phone = phoenix_token_phone(isset($body['token']) ? (string) $body['token'] : '');
+    if ($token_phone === '') {
+        /* مشتریِ واردشده (Phoenix Account) مالکیتِ شماره را قبلاً ثابت
+           کرده — با کد یا رمز. افزونه نشستش را می‌سنجد و شماره‌ی همان
+           نشست را برمی‌گرداند؛ خالی یعنی نه. */
+        $token_phone = (string) apply_filters('phoenix_verified_phone', '', $request);
+    }
     if ($token_phone === '' || !hash_equals($token_phone, $phone)) {
         return new WP_Error(
             'phoenix_unverified',
-            'شماره تأیید نشده. اول کد یک‌بارمصرف را بگیر و وارد کن.',
+            'شماره‌ی موبایل تأیید نشده است. لطفاً ابتدا کد تأیید را دریافت و وارد کنید.',
             array('status' => 401)
         );
+    }
+
+    /* حسابی که مدیر بسته (Phoenix Account) با کدِ پیامکی هم سفارش نمی‌دهد */
+    $blocked = (string) apply_filters('phoenix_order_blocked', '', $phone);
+    if ($blocked !== '') {
+        return new WP_Error('phoenix_blocked', $blocked, array('status' => 403));
     }
 
     if (empty($items)) {
@@ -383,14 +395,17 @@ function phoenix_rest_create_order(WP_REST_Request $request) {
         $item_id = $order->add_product($product, $qty);
 
         /* ورودی‌هایی که مشتری داده — روی همان قلم می‌نشینند تا
-           اپراتور موقع تحویل ببیندشان */
-        if (!empty($raw['inputs']) && is_array($raw['inputs']) && $item_id) {
+           اپراتور موقع تحویل ببیندشان.
+
+           ⚠ کلید از مرورگر می‌آید و متای قلمِ سفارش می‌شود. کلیدِ
+           «‎_…‎» متای داخلیِ ووکامرس و خودِ ما است (مثلاً تحویل‌ها در
+           ‎_phoenix_delivery‎)؛ ‎phoenix_order_inputs_clean‎ فقط کلیدِ
+           ساده و کوتاه را می‌گذارد. */
+        $clean = phoenix_order_inputs_clean(isset($raw['inputs']) ? $raw['inputs'] : array());
+        if ($clean && $item_id) {
             $item = $order->get_item($item_id);
-            foreach ($raw['inputs'] as $k => $v) {
-                if (!is_string($k) || !is_scalar($v)) {
-                    continue;
-                }
-                $item->add_meta_data(sanitize_text_field($k), sanitize_text_field((string) $v), true);
+            foreach ($clean as $k => $v) {
+                $item->add_meta_data(sanitize_text_field($k), sanitize_text_field($v), true);
             }
             $item->save();
         }
@@ -431,12 +446,13 @@ function phoenix_rest_create_order(WP_REST_Request $request) {
         $fa = function_exists('phoenix_fa_digits') ? 'phoenix_fa_digits' : 'strval';
         return new WP_Error(
             'phoenix_price_changed',
-            'قیمت همین حالا به‌روز شد. جمعِ تازه ' . $fa(number_format($total, 0, '.', '٬')) . ' تومان است — اگر موافقی، دوباره «پرداخت» را بزن.',
+            'قیمت همین حالا به‌روز شد. مبلغ جدید ' . $fa(number_format($total, 0, '.', '٬')) . ' تومان است؛ در صورت موافقت، لطفاً دوباره «پرداخت» را بزنید.',
             array('status' => 409, 'total' => $total, 'prices' => $prices)
         );
     }
 
     $order->update_status('pending', 'ثبت از فروشگاه فونیکس');
+    do_action('phoenix_order_created', $order, $phone);
 
     return rest_ensure_response(array(
         'id'     => $order->get_id(),
@@ -506,20 +522,18 @@ function phoenix_rest_track(WP_REST_Request $request) {
         return new WP_Error('phoenix_not_found', 'سفارشی با این مشخصات پیدا نشد.', array('status' => 404));
     }
 
+    /* ⚠ کدِ تحویل این‌جا برنمی‌گردد — فقط در حسابِ مشتری.
+       شماره‌ی موبایل راز نیست (دوست، همکار، هر فرمی) و شماره‌ی سفارش
+       پشتِ سرِ هم است؛ «شماره‌ی سفارش + موبایل» برای دیدنِ وضعیت بس
+       است، نه برای برداشتنِ کدِ خریده‌شده‌ی کسِ دیگر. */
     $items = array();
     foreach ($order->get_items() as $item) {
-        $codes = array();
-        foreach ($item->get_meta_data() as $m) {
-            $d = $m->get_data();
-            if (isset($d['key']) && $d['key'] === 'کد تحویل') {
-                $codes[] = $d['value'];
-            }
-        }
         $items[] = array(
-            'title'    => $item->get_name(),
-            'quantity' => $item->get_quantity(),
-            'total'    => (int) round((float) $item->get_total()),
-            'codes'    => $codes,
+            'title'     => $item->get_name(),
+            'quantity'  => $item->get_quantity(),
+            'total'     => (int) round((float) $item->get_total()),
+            'codes'     => array(),
+            'has_codes' => (bool) $item->get_meta('کد تحویل', true) || (bool) $item->get_meta(PHOENIX_DELIVERY_META, true),
         );
     }
 

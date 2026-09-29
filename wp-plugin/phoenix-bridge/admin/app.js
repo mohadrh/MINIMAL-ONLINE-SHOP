@@ -121,7 +121,12 @@ function paintSeg(seg, t) {
    منو — همه‌ی بخش‌ها در پنلِ تازه
    ------------------------------------------------------------ */
 
-const NAV = [
+/* ⚠ پنلِ جدا (‎BOOT.world‎، مثلاً «مشتریان»): همین پوسته، ولی فقط
+   بخش‌های خودش — نه منوی فروشگاه. هر پنل منوی خودش را در پیشخوان
+   دارد و از سربرگ به دیگری می‌رود. */
+const WORLD = BOOT.world || null;
+
+const NAV = WORLD ? [] : [
   { id: 'dashboard', label: 'داشبورد',    icon: 'grid' },
   { id: 'products',  label: 'محصولات',    icon: 'box' },
   { id: 'rate',      label: 'منابعِ قیمت', icon: 'pulse' },
@@ -135,9 +140,14 @@ const NAV = [
 /* بخش‌های افزونه‌های دیگر (Phoenix Account، …) — سرور بررسی‌شان کرده
    (‎phoenix_admin_extensions‎): شناسه‌ی سالم، ماژول فقط از پوشه‌ی
    افزونه‌های همین سایت. */
-const EXT = new Map((BOOT.extensions || []).map((e) => [e.id, e]));
-for (const e of EXT.values()) NAV.splice(NAV.length - 1, 0, { id: e.id, label: e.label, icon: e.icon });
+const EXT = new Map((WORLD ? WORLD.sections : (BOOT.extensions || [])).map((e) => [e.id, e]));
+for (const e of EXT.values()) {
+  if (WORLD) NAV.push({ id: e.id, label: e.label, icon: e.icon });
+  else NAV.splice(NAV.length - 1, 0, { id: e.id, label: e.label, icon: e.icon });
+}
 const IDS = new Set(NAV.map((n) => n.id));
+const HOME = NAV[0] ? NAV[0].id : 'dashboard';
+const MENU = WORLD ? WORLD.menu : 'phoenix';
 
 /* ------------------------------------------------------------
    پوسته
@@ -159,11 +169,17 @@ function renderShell() {
   }
   paintSeg(seg, root.dataset.theme || 'system');
 
-  rateChip = h('a', { class: 'phx2-ratechip is-neutral', href: '#/rate', title: 'نرخِ تتر' },
+  rateChip = WORLD ? null : h('a', { class: 'phx2-ratechip is-neutral', href: '#/rate', title: 'نرخِ تتر' },
     h('span', { class: 'phx2-ratechip__dot', 'aria-hidden': 'true' }),
     h('span', null, 'نرخ'),
     h('b', { class: 'num' }, '…'),
   );
+
+  /* رفتن به پنلِ دیگر — «فروشگاه» ↔ «مشتریان» */
+  const here = WORLD ? WORLD.id : 'store';
+  const others = (BOOT.worlds || []).filter((w) => w.id !== here);
+  const switcher = others.length ? h('div', { class: 'phx2-worlds' }, others.map((w) =>
+    h('a', { class: 'phx2-worldlink', href: w.url }, icon(w.icon || 'grid'), w.label))) : null;
 
   navList = h('ul', { class: 'phx2-nav', role: 'list' });
   for (const item of NAV) {
@@ -172,14 +188,14 @@ function renderShell() {
 
   const head = h('header', { class: 'phx2-head' },
     h('div', { class: 'phx2-head__row' },
-      h('a', { class: 'phx2-brand', href: '#/dashboard' },
-        h('span', { class: 'phx2-brand__mark', 'aria-hidden': 'true' }, 'ف'),
+      h('a', { class: 'phx2-brand' + (WORLD ? ' is-world' : ''), href: '#/' + HOME },
+        h('span', { class: 'phx2-brand__mark', 'aria-hidden': 'true' }, WORLD ? (WORLD.mark || 'ف') : 'ف'),
         h('span', null,
-          h('span', { class: 'phx2-brand__t' }, 'فونیکس'),
-          h('span', { class: 'phx2-brand__s' }, 'پنلِ مدیریتِ فروشگاه'),
+          h('span', { class: 'phx2-brand__t' }, WORLD ? WORLD.title : 'فونیکس'),
+          h('span', { class: 'phx2-brand__s' }, WORLD ? (WORLD.sub || 'فونیکس') : 'پنلِ مدیریتِ فروشگاه'),
         ),
       ),
-      h('div', { class: 'phx2-tools' }, rateChip, seg),
+      h('div', { class: 'phx2-tools' }, switcher, rateChip, seg),
     ),
     h('nav', { 'aria-label': 'بخش‌های پنل' }, navList),
   );
@@ -245,7 +261,7 @@ async function onHash() {
 
 function parse() {
   const m = location.hash.match(/^#\/([a-z-]+)(?:\/([A-Za-z0-9_-]+))?/);
-  const id = m && IDS.has(m[1]) ? m[1] : 'dashboard';
+  const id = m && IDS.has(m[1]) ? m[1] : HOME;
   return { id, param: m && IDS.has(m[1]) ? (m[2] || null) : null };
 }
 
@@ -288,11 +304,11 @@ async function route() {
  * محصولات است.
  */
 function syncWpMenu(id) {
-  for (const li of document.querySelectorAll('#toplevel_page_phoenix .wp-submenu li')) {
+  for (const li of document.querySelectorAll('#toplevel_page_' + MENU + ' .wp-submenu li')) {
     const a = li.querySelector('a');
     if (!a) continue;
     const m = (a.getAttribute('href') || '').match(/#\/([a-z-]+)/);
-    const on = (m ? m[1] : 'dashboard') === id;
+    const on = (m ? m[1] : HOME) === id;
     li.classList.toggle('current', on);
     a.classList.toggle('current', on);
     if (on) a.setAttribute('aria-current', 'page');
@@ -327,6 +343,11 @@ const ctx = {
   showError,
   reload: route,
   go(path) { location.hash = '#/' + path; },
+  /** نشانیِ یک بخش در پنلِ دیگر — مثلاً ‎worldUrl('customers', 'orders/12')‎ */
+  worldUrl(id, path = '') {
+    const w = (BOOT.worlds || []).find((x) => x.id === id);
+    return w ? w.url + (path ? '#/' + path : '') : null;
+  },
 };
 
 /* ------------------------------------------------------------
@@ -340,7 +361,7 @@ route();
 
 /* نرخِ سربرگ را داشبورد و صفحه‌ی منابع خودشان پر می‌کنند؛ اگر
    پنل از صفحه‌ی دیگری باز شد، سربرگ با «…» نماند. */
-if (!['dashboard', 'rate'].includes(parse().id)) {
+if (!WORLD && !['dashboard', 'rate'].includes(parse().id)) {
   api('GET', '/rate').then((d) => setRate(d.current.value, d.current.stale)).catch(() => {});
 }
 

@@ -290,7 +290,17 @@ function phoenix_dash_alerts_all(array $s) {
             'text'  => sanitize_text_field((string) ($a['text'] ?? '')),
         );
         if (!empty($a['action']['go']) && preg_match('/^[a-z][a-z0-9-]{1,30}$/', $a['action']['go'])) {
-            $alert['action'] = array('label' => sanitize_text_field((string) ($a['action']['label'] ?? 'برو')), 'go' => $a['action']['go']);
+            $label = sanitize_text_field((string) ($a['action']['label'] ?? 'برو'));
+            $world = (string) ($a['action']['world'] ?? '');
+            /* بخشی در پنلِ جدا (مثلاً «مشتریان») — نشانیِ همان پنل، نه ‎#‎ی این یکی.
+               ⚠ ‎admin.php‎ی Bridge (و ‎phoenix_admin_worlds‎) روی REST بار نمی‌شود؛
+               شناسه با الگو سنجیده و نشانی مستقیم ساخته می‌شود. */
+            if ($world !== '' && preg_match('/^[a-z]{2,20}$/', $world)) {
+                $alert['action'] = array('label' => $label,
+                    'link' => admin_url('admin.php?page=phoenix-' . $world . '#/' . $a['action']['go']));
+            } elseif ($world === '') {
+                $alert['action'] = array('label' => $label, 'go' => $a['action']['go']);
+            }
         }
         $out[] = $alert;
     }
@@ -448,6 +458,145 @@ function phoenix_dash_summary(array $s, array $health) {
     return 'مهم‌ترین مشکلِ الان: ' . $worst[0]['label'] . '.';
 }
 
+/* ============================================================
+   فروش — خالص؛ ‎phoenix_dash_sales()‎ سفارش‌ها را جمع می‌کند
+   ============================================================ */
+
+/**
+ * خلاصه‌ی فروش از سفارش‌های پرداخت‌شده.
+ *
+ * ⚠ روز با ساعتِ خودِ سایت (تهران) بریده می‌شود، نه UTC. بدونِ
+ * ‎$offset‎ فروشِ سه و نیمِ بامداد تا نیمه‌شب «دیروز» شمرده می‌شد.
+ *
+ * ⚠ «هفته» هفت روزِ آخر است (امروز هم)، و روندش در برابرِ هفت روزِ
+ * پیش از آن — نه «این هفته‌ی تقویمی»، که شنبه‌ها همیشه افت نشان
+ * می‌داد.
+ *
+ * @param array[] $rows ‎{ts, total, phone, items:[{name, qty, total}]}‎
+ * @param int     $offset ثانیه‌ی اختلافِ منطقه‌ی زمانیِ سایت با UTC
+ */
+function phoenix_sales_summary(array $rows, $now, $offset, $days = 30) {
+    $days  = max(14, (int) $days);
+    $dayOf = function ($ts) use ($offset) { return (int) floor(((int) $ts + (int) $offset) / 86400); };
+    $today = $dayOf($now);
+    $blank = function () { return array('count' => 0, 'revenue' => 0); };
+
+    $daily = array();
+    for ($i = $days - 1; $i >= 0; $i--) {
+        $d = $today - $i;
+        $daily[$d] = array('date' => gmdate('Y-m-d', $d * 86400), 'count' => 0, 'revenue' => 0);
+    }
+    $t = $blank(); $y = $blank(); $w = $blank(); $pw = $blank(); $m = $blank();
+    $buyers = array();
+    $top    = array();
+
+    foreach ($rows as $r) {
+        $age = $today - $dayOf($r['ts'] ?? 0);
+        if ($age < 0 || $age >= $days) {
+            continue;
+        }
+        $rev = (int) ($r['total'] ?? 0);
+        $add = function (&$b) use ($rev) { $b['count']++; $b['revenue'] += $rev; };
+        if ($age === 0) { $add($t); }
+        if ($age === 1) { $add($y); }
+        if ($age < 7) { $add($w); } elseif ($age < 14) { $add($pw); }
+        $add($m);
+        $daily[$today - $age]['count']++;
+        $daily[$today - $age]['revenue'] += $rev;
+        if (!empty($r['phone'])) {
+            $buyers[(string) $r['phone']] = true;
+        }
+        foreach ((array) ($r['items'] ?? array()) as $it) {
+            $k = (string) ($it['name'] ?? '');
+            if ($k === '') {
+                continue;
+            }
+            if (!isset($top[$k])) {
+                $top[$k] = array('name' => $k, 'qty' => 0, 'revenue' => 0);
+            }
+            $top[$k]['qty']     += (int) ($it['qty'] ?? 0);
+            $top[$k]['revenue'] += (int) ($it['total'] ?? 0);
+        }
+    }
+
+    usort($top, function ($a, $b) { return $b['revenue'] <=> $a['revenue'] ?: $b['qty'] <=> $a['qty']; });
+    $w['trend'] = $pw['revenue'] > 0 ? round(($w['revenue'] - $pw['revenue']) / $pw['revenue'] * 100, 1) : null;
+    $m['avg']    = $m['count'] ? (int) round($m['revenue'] / $m['count']) : 0;
+    $m['buyers'] = count($buyers);
+
+    return array(
+        'today'     => $t,
+        'yesterday' => $y,
+        'week'      => $w,
+        'prev_week' => $pw,
+        'month'     => $m,
+        'daily'     => array_values($daily),
+        'top'       => array_slice($top, 0, 5),
+    );
+}
+
+/**
+ * سفارش‌های پرداخت‌شده‌ی یک ماهِ اخیر → ‎phoenix_sales_summary‎.
+ * دو دقیقه کش؛ هر تغییرِ وضعیتِ سفارش کش را می‌پراند.
+ */
+function phoenix_dash_sales() {
+    if (!function_exists('wc_get_orders')) {
+        return null;
+    }
+    $cached = get_transient('phoenix_dash_sales');
+    if (is_array($cached)) {
+        return $cached;
+    }
+    $now    = time();
+    $orders = wc_get_orders(array(
+        'type'      => 'shop_order',
+        'status'    => array('processing', 'completed'),
+        'date_paid' => '>' . ($now - 32 * DAY_IN_SECONDS),
+        'limit'     => 3000,
+    ));
+    $rows = array();
+    foreach ($orders as $o) {
+        $paid = $o->get_date_paid();
+        if (!$paid) {
+            continue;
+        }
+        $items = array();
+        foreach ($o->get_items() as $it) {
+            $items[] = array('name' => $it->get_name(), 'qty' => (int) $it->get_quantity(), 'total' => (int) round((float) $it->get_total()));
+        }
+        $rows[] = array(
+            'id'     => $o->get_id(),
+            'number' => (string) $o->get_order_number(),
+            'name'   => trim($o->get_billing_first_name() . ' ' . $o->get_billing_last_name()),
+            'ts'     => $paid->getTimestamp(),
+            'total'  => (int) round((float) $o->get_total()),
+            'phone'  => phoenix_normalize_phone((string) $o->get_billing_phone()),
+            'items'  => $items,
+            'edit'   => $o->get_edit_order_url(),
+        );
+    }
+    $offset = (int) wp_timezone()->getOffset(new DateTime('now'));
+    $out    = phoenix_sales_summary($rows, $now, $offset, 30);
+
+    usort($rows, function ($a, $b) { return $b['ts'] <=> $a['ts']; });
+    $out['recent'] = array_map(function ($r) {
+        return array(
+            'id' => $r['id'], 'number' => $r['number'], 'name' => $r['name'], 'phone' => $r['phone'],
+            'total' => $r['total'], 'paid' => gmdate('c', $r['ts']), 'edit_url' => $r['edit'],
+            'items' => implode('، ', array_column($r['items'], 'name')),
+        );
+    }, array_slice($rows, 0, 6));
+    $out['waiting'] = array('pending' => (int) wc_orders_count('pending'), 'on_hold' => (int) wc_orders_count('on-hold'));
+
+    set_transient('phoenix_dash_sales', $out, 2 * MINUTE_IN_SECONDS);
+    return $out;
+}
+
+add_action('woocommerce_order_status_changed', 'phoenix_dash_sales_flush');
+function phoenix_dash_sales_flush() {
+    delete_transient('phoenix_dash_sales');
+}
+
 /** سریِ نرخ برای نمودار — حداکثر ۲۰۰ نقطه */
 function phoenix_dash_series($hours = 168) {
     $rows = phoenix_rate_series($hours);
@@ -499,6 +648,7 @@ function phoenix_api_dashboard(WP_REST_Request $request) {
         'suggestions' => phoenix_dash_suggestions($s),
         'series'      => phoenix_dash_series(168),
         'recent'      => $recent,
+        'sales'       => phoenix_dash_sales(),
     ));
 }
 

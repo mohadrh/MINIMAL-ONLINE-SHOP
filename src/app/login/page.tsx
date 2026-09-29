@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { LoginFlow } from '../../components/account/LoginFlow';
+import { LiveLogin } from '../../components/account/LiveLogin';
+import { ACCOUNT_READY } from '../../lib/api/account';
 
 export const metadata: Metadata = {
   title: 'ورود به حساب | فونیکس شاپ',
@@ -7,5 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return <LoginFlow />;
+  return ACCOUNT_READY ? <LiveLogin /> : <LoginFlow />;
 }

@@ -155,3 +155,10 @@
   .login { padding-block: var(--sp-8) var(--sp-12); }
   .login__box { padding: var(--sp-5); border-radius: var(--r-lg); }
 }
+
+/* بعد از اولین ورود با کد: «یک رمز هم بگذار؟» */
+.login__setpass {
+  display: grid; gap: var(--sp-3); width: 100%; text-align: start;
+  padding: var(--sp-4); border: 1px dashed var(--line); border-radius: var(--r-lg);
+}
+.login__setpass .btn { justify-self: start; }

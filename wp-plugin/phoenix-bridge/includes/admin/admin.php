@@ -78,6 +78,111 @@ function phoenix_admin_menu() {
     foreach (phoenix_admin_extensions() as $ext) {
         add_submenu_page(PHOENIX_MENU, $ext['label'], $ext['label'], PHOENIX_CAP, 'admin.php?page=' . PHOENIX_MENU . '#/' . $ext['id']);
     }
+
+    /* پنل‌های جدا — هر کدام منوی خودش در پیشخوان */
+    foreach (phoenix_admin_worlds() as $w) {
+        add_menu_page($w['title'], $w['title'], PHOENIX_CAP, $w['menu'], 'phoenix_app_page', $w['dashicon'], $w['position']);
+        $first = true;
+        foreach ($w['sections'] as $sec) {
+            if ($first) {
+                add_submenu_page($w['menu'], $sec['label'] . ' — ' . $w['title'], $sec['label'], PHOENIX_CAP, $w['menu'], 'phoenix_app_page');
+                $first = false;
+                continue;
+            }
+            add_submenu_page($w['menu'], $sec['label'], $sec['label'], PHOENIX_CAP, 'admin.php?page=' . $w['menu'] . '#/' . $sec['id']);
+        }
+    }
+}
+
+/**
+ * یک بخشِ بیرونی، بررسی‌شده — مشترکِ ‎extensions‎ و ‎worlds‎.
+ *
+ * ⚠ ماژولش در پنلِ مدیر اجرا می‌شود: شناسه از الگوی ثابت، و نشانی
+ * فقط از پوشه‌ی افزونه‌های همین سایت و با پسوندِ ‎.js‎.
+ *
+ * @param string[] $taken شناسه‌هایی که از قبل گرفته شده‌اند
+ * @return array|null
+ */
+function phoenix_admin_clean_section($e, array $taken) {
+    if (!is_array($e)) {
+        return null;
+    }
+    $base   = trailingslashit(plugins_url());
+    $id     = isset($e['id']) ? (string) $e['id'] : '';
+    $module = isset($e['module']) ? (string) $e['module'] : '';
+    if (!preg_match('/^[a-z][a-z0-9-]{1,30}$/', $id) || in_array($id, $taken, true)) {
+        return null;
+    }
+    if (strpos($module, $base) !== 0 || !preg_match('#^[^?\#]+\.js$#', $module) || strpos($module, '..') !== false) {
+        return null;
+    }
+    return array(
+        'id'     => $id,
+        'label'  => sanitize_text_field(isset($e['label']) ? (string) $e['label'] : $id),
+        'icon'   => isset($e['icon']) && preg_match('/^[a-zA-Z]{2,20}$/', $e['icon']) ? $e['icon'] : 'box',
+        'module' => esc_url_raw($module),
+        /* نسخه‌ی خودِ آن افزونه — برای شکستنِ کشِ مرورگر بعد از به‌روزرسانی‌اش */
+        'ver'    => isset($e['ver']) && preg_match('/^[0-9a-z.\-]{1,20}$/', $e['ver']) ? $e['ver'] : PHOENIX_BRIDGE_VERSION,
+    );
+}
+
+/**
+ * پنل‌های جدا — «دنیای» دیگری با همان پوسته، منو و امنیت، ولی با
+ * منوی خودش در پیشخوان و بخش‌های خودش.
+ *
+ * ⚠ چرا پنلِ جدا و نه بخشِ بیشتر در همین پنل: کارِ پشتیبانی و
+ * مشتری روزانه و پرتکرار است و کارِ قیمت و محصول کم‌تکرار و حساس.
+ * یک منوی بلند هر دو را کُند می‌کند. پوسته مشترک است، پس دو پنل
+ * دو نسخه‌ی قاعده‌ی امنیت نیستند.
+ *
+ *   add_filter('phoenix_admin_worlds', function ($list) {
+ *       $list[] = array('id' => 'customers', 'title' => 'مشتریان', 'sub' => '…', 'mark' => 'م',
+ *                       'dashicon' => 'dashicons-groups', 'sections' => array(…));
+ *       return $list;
+ *   });
+ *
+ * @return array[] ‎{id, menu, title, sub, mark, dashicon, position, sections[]}‎
+ */
+function phoenix_admin_worlds() {
+    $out   = array();
+    $taken = array_merge(array('store'), array_keys(phoenix_admin_sections()));
+    foreach ((array) apply_filters('phoenix_admin_worlds', array()) as $w) {
+        if (!is_array($w) || !isset($w['id']) || !preg_match('/^[a-z]{2,20}$/', (string) $w['id']) || in_array($w['id'], $taken, true)) {
+            continue;
+        }
+        $secs = array();
+        foreach ((array) ($w['sections'] ?? array()) as $e) {
+            $c = phoenix_admin_clean_section($e, array_keys($secs));
+            if ($c) {
+                $secs[$c['id']] = $c;
+            }
+        }
+        if (!$secs) {
+            continue;
+        }
+        $taken[] = $w['id'];
+        $out[$w['id']] = array(
+            'id'       => (string) $w['id'],
+            'menu'     => PHOENIX_MENU . '-' . $w['id'],
+            'title'    => sanitize_text_field((string) ($w['title'] ?? $w['id'])),
+            'sub'      => sanitize_text_field((string) ($w['sub'] ?? '')),
+            'mark'     => function_exists('mb_substr') ? mb_substr(sanitize_text_field((string) ($w['mark'] ?? '')), 0, 1) : '',
+            'dashicon' => isset($w['dashicon']) && preg_match('/^dashicons-[a-z0-9-]{2,40}$/', $w['dashicon']) ? $w['dashicon'] : 'dashicons-admin-generic',
+            'position' => isset($w['position']) ? (float) $w['position'] : 57,
+            'sections' => array_values($secs),
+        );
+    }
+    return array_values($out);
+}
+
+/** پنلِ جدای صفحه‌ی فعلیِ پیشخوان، یا ‎null‎ برای پنلِ فروشگاه */
+function phoenix_admin_world_for_page($page) {
+    foreach (phoenix_admin_worlds() as $w) {
+        if ($w['menu'] === $page) {
+            return $w;
+        }
+    }
+    return null;
 }
 
 /**
@@ -98,29 +203,13 @@ function phoenix_admin_menu() {
  * @return array[] ‎{id, label, icon, module}‎
  */
 function phoenix_admin_extensions() {
-    $core = array_keys(phoenix_admin_sections());
-    $base = trailingslashit(plugins_url());
-    $out  = array();
+    $taken = array_keys(phoenix_admin_sections());
+    $out   = array();
     foreach ((array) apply_filters('phoenix_admin_extensions', array()) as $e) {
-        if (!is_array($e)) {
-            continue;
+        $c = phoenix_admin_clean_section($e, array_merge($taken, array_keys($out)));
+        if ($c) {
+            $out[$c['id']] = $c;
         }
-        $id     = isset($e['id']) ? (string) $e['id'] : '';
-        $module = isset($e['module']) ? (string) $e['module'] : '';
-        if (!preg_match('/^[a-z][a-z0-9-]{1,30}$/', $id) || in_array($id, $core, true) || isset($out[$id])) {
-            continue;
-        }
-        if (strpos($module, $base) !== 0 || !preg_match('#^[^?\#]+\.js$#', $module) || strpos($module, '..') !== false) {
-            continue;
-        }
-        $out[$id] = array(
-            'id'     => $id,
-            'label'  => sanitize_text_field(isset($e['label']) ? (string) $e['label'] : $id),
-            'icon'   => isset($e['icon']) && preg_match('/^[a-zA-Z]{2,20}$/', $e['icon']) ? $e['icon'] : 'box',
-            'module' => esc_url_raw($module),
-            /* نسخه‌ی خودِ آن افزونه — برای شکستنِ کشِ مرورگر بعد از به‌روزرسانی‌اش */
-            'ver'    => isset($e['ver']) && preg_match('/^[0-9a-z.\-]{1,20}$/', $e['ver']) ? $e['ver'] : PHOENIX_BRIDGE_VERSION,
-        );
     }
     return array_values($out);
 }
@@ -130,8 +219,8 @@ function phoenix_admin_extensions() {
  *
  * @param string $path مثل ‎products/12‎
  */
-function phoenix_admin_url($path = '') {
-    $url = admin_url('admin.php?page=' . PHOENIX_MENU);
+function phoenix_admin_url($path = '', $world = '') {
+    $url = admin_url('admin.php?page=' . PHOENIX_MENU . ($world !== '' ? '-' . $world : ''));
     return $path === '' ? $url : $url . '#/' . ltrim($path, '/');
 }
 

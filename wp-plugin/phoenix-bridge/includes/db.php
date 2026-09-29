@@ -295,7 +295,7 @@ function phoenix_settings_reset_cache() {
 /**
  * یک سطر در تاریخچه.
  *
- * @param string $kind    setting | rate | price | discount | queue
+ * @param string $kind    setting | rate | price | discount | queue | product | customer | ticket
  * @param string $subject کلید یا شناسه‌ی چیزی که عوض شد
  */
 function phoenix_audit($kind, $subject, $before, $after, $note = '') {
@@ -343,7 +343,7 @@ function phoenix_audit_read($kind = '', $limit = 50) {
 
     $limit = max(1, min(500, (int) $limit));
     $table = phoenix_table_audit();
-    $kinds = array('setting', 'rate', 'price', 'discount', 'queue', 'product');
+    $kinds = array('setting', 'rate', 'price', 'discount', 'queue', 'product', 'customer', 'ticket');
 
     if ($kind !== '' && in_array($kind, $kinds, true)) {
         return $wpdb->get_results($wpdb->prepare(

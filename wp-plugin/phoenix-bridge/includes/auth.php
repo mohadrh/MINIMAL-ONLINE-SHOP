@@ -68,10 +68,10 @@ function phoenix_otp_request(WP_REST_Request $request) {
     $ip_key    = 'phoenix_otp_ip_' . md5(phoenix_client_ip());
 
     if ((int) get_transient($phone_key) >= 3) {
-        return new WP_Error('phoenix_otp_flood', 'برای این شماره زیاد درخواست شد. چند دقیقه صبر کن.', array('status' => 429));
+        return new WP_Error('phoenix_otp_flood', 'برای این شماره درخواست‌های زیادی ثبت شده است. لطفاً چند دقیقه بعد دوباره تلاش کنید.', array('status' => 429));
     }
     if ((int) get_transient($ip_key) >= 10) {
-        return new WP_Error('phoenix_otp_flood', 'تعداد درخواست‌ها زیاد است.', array('status' => 429));
+        return new WP_Error('phoenix_otp_flood', 'تعداد درخواست‌ها زیاد است. لطفاً کمی بعد دوباره تلاش کنید.', array('status' => 429));
     }
 
     /* ⚠ random_int و نه rand.
@@ -126,7 +126,7 @@ function phoenix_otp_request(WP_REST_Request $request) {
         }
         return new WP_Error(
             'phoenix_sms_down',
-            'ارسال پیامک ممکن نشد. با پشتیبانی تماس بگیر.',
+            'ارسال پیامک ممکن نشد. لطفاً با پشتیبانی تماس بگیرید.',
             array('status' => 503)
         );
     }
@@ -151,19 +151,19 @@ function phoenix_otp_verify(WP_REST_Request $request) {
     $rec = get_transient($key);
 
     if (!is_array($rec)) {
-        return new WP_Error('phoenix_otp_expired', 'کد منقضی شده. دوباره درخواست بده.', array('status' => 410));
+        return new WP_Error('phoenix_otp_expired', 'کد منقضی شده است. لطفاً کد جدید دریافت کنید.', array('status' => 410));
     }
 
     if ((int) $rec['tries'] >= PHOENIX_OTP_MAX_TRIES) {
         delete_transient($key);
-        return new WP_Error('phoenix_otp_locked', 'تعداد تلاش زیاد بود. کد تازه بگیر.', array('status' => 429));
+        return new WP_Error('phoenix_otp_locked', 'تعداد تلاش‌ها بیش از حد مجاز بود. لطفاً کد جدید دریافت کنید.', array('status' => 429));
     }
 
     $rec['tries'] = (int) $rec['tries'] + 1;
     set_transient($key, $rec, PHOENIX_OTP_TTL);
 
     if (!wp_check_password($code, $rec['hash'])) {
-        return new WP_Error('phoenix_otp_wrong', 'کد درست نیست.', array('status' => 401));
+        return new WP_Error('phoenix_otp_wrong', 'کد واردشده درست نیست.', array('status' => 401));
     }
 
     /* کد یک‌بارمصرف است — بعد از موفقیت فوراً می‌سوزد */

@@ -589,3 +589,35 @@
   .phx2-conn { grid-template-columns: auto minmax(0, 1fr); }
   .phx2-conn > .phx2-pill, .phx2-conn > .phx2-row { grid-column: 2; }
 }
+
+/* ============================================================
+   صفِ تحویل — کارتِ کامل
+   ============================================================ */
+
+.phx2-check { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 10px 12px; list-style: none;
+  border-radius: 8px; background: var(--surface-2); font-size: 13px; font-weight: 700; }
+.phx2-check li { display: inline-flex; align-items: center; gap: 6px; }
+.phx2-check li svg { width: 16px; height: 16px; }
+.phx2-check li.is-ok { color: var(--good); }
+.phx2-check li.is-bad { color: var(--bad); }
+
+.phx2-jobgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.phx2-jobgrid > * { min-width: 0; }
+.phx2-jobsec { padding: 12px 14px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); background: var(--surface-2); }
+.phx2-jobsec.is-wide { grid-column: 1 / -1; }
+.phx2-jobsec h4 { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; font-size: 12.5px; font-weight: 800; color: var(--ink-3); }
+.phx2-jobsec h4 svg { width: 15px; height: 15px; }
+.phx2-jobsec h4 .phx2-btn { margin-inline-start: auto; }
+.phx2-jobsec p { margin: 0; font-size: 13px; line-height: 1.9; }
+
+.phx2-kvs2 { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 12px; margin: 0; font-size: 13px; }
+.phx2-kvs2 dt { color: var(--ink-3); }
+.phx2-kvs2 dd { margin: 0; color: var(--ink); font-weight: 700; word-break: break-word; }
+.phx2-kvs2 code { padding: 1px 6px; border-radius: 6px; background: var(--surface); font-size: 12.5px; user-select: all; }
+.phx2-copyable { user-select: all; }
+
+.phx2-deliv { display: grid; gap: 8px; padding: 10px 0; border-top: 1px dashed var(--line); }
+.phx2-deliv:first-child { border-top: 0; padding-top: 0; }
+.phx2-deliv__h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 12.5px; }
+.phx2-deliv__note { color: var(--ink-2); white-space: pre-line; }
+.phx2-job__note.is-info { color: var(--info); }

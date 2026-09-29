@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-const PHOENIX_ACC_DB_VERSION = '1';
+const PHOENIX_ACC_DB_VERSION = '2';
 const PHOENIX_ACC_OPTION     = 'phoenix_account_settings';
 
 function phoenix_acc_table_sessions() {
@@ -18,11 +18,76 @@ function phoenix_acc_table_sessions() {
     return $wpdb->prefix . 'phoenix_acc_sessions';
 }
 
+function phoenix_acc_table_customers() {
+    global $wpdb;
+    return $wpdb->prefix . 'phoenix_acc_customers';
+}
+
+function phoenix_acc_table_tickets() {
+    global $wpdb;
+    return $wpdb->prefix . 'phoenix_acc_tickets';
+}
+
+function phoenix_acc_table_messages() {
+    global $wpdb;
+    return $wpdb->prefix . 'phoenix_acc_ticket_msgs';
+}
+
 function phoenix_acc_install() {
     global $wpdb;
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     $charset = $wpdb->get_charset_collate();
     $t = phoenix_acc_table_sessions();
+
+    /* ⚠ مشتری با شماره شناخته می‌شود، نه با کاربرِ وردپرس.
+       کاربرِ وردپرس یعنی نقش، ورود به ‎wp-admin‎ و ایمیلِ اجباری — هیچ‌کدام
+       لازم نیست. رمز فقط هش (‎phoenix_acc_password_hash‎)؛ آمارِ خرید
+       کش است و از سفارش‌ها دوباره ساخته می‌شود. */
+    $c = phoenix_acc_table_customers();
+    dbDelta("CREATE TABLE {$c} (
+        phone varchar(15) NOT NULL,
+        name varchar(100) NOT NULL DEFAULT '',
+        email varchar(190) NOT NULL DEFAULT '',
+        pass_hash varchar(255) NOT NULL DEFAULT '',
+        pass_set_at datetime DEFAULT NULL,
+        blocked tinyint(1) NOT NULL DEFAULT 0,
+        admin_note varchar(500) NOT NULL DEFAULT '',
+        created_at datetime NOT NULL,
+        last_login datetime DEFAULT NULL,
+        orders_count int(10) unsigned NOT NULL DEFAULT 0,
+        paid_total bigint(20) unsigned NOT NULL DEFAULT 0,
+        last_order_at datetime DEFAULT NULL,
+        PRIMARY KEY  (phone),
+        KEY last_order_at (last_order_at)
+    ) {$charset};");
+
+    $tk = phoenix_acc_table_tickets();
+    dbDelta("CREATE TABLE {$tk} (
+        id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        phone varchar(15) NOT NULL,
+        subject varchar(150) NOT NULL,
+        order_id bigint(20) unsigned NOT NULL DEFAULT 0,
+        status varchar(12) NOT NULL DEFAULT 'open',
+        created_at datetime NOT NULL,
+        updated_at datetime NOT NULL,
+        last_by varchar(10) NOT NULL DEFAULT 'customer',
+        unread tinyint(1) NOT NULL DEFAULT 0,
+        PRIMARY KEY  (id),
+        KEY phone (phone),
+        KEY status (status, updated_at)
+    ) {$charset};");
+
+    $m = phoenix_acc_table_messages();
+    dbDelta("CREATE TABLE {$m} (
+        id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        ticket_id bigint(20) unsigned NOT NULL,
+        author varchar(10) NOT NULL,
+        staff varchar(60) NOT NULL DEFAULT '',
+        body text NOT NULL,
+        created_at datetime NOT NULL,
+        PRIMARY KEY  (id),
+        KEY ticket_id (ticket_id)
+    ) {$charset};");
 
     /* ⚠ ‎token_hash‎ یکتا: دو نشست با یک ژتون ممکن نیست، و جست‌وجو
        با ایندکس است، نه اسکنِ کلِ جدول سرِ هر درخواست. */

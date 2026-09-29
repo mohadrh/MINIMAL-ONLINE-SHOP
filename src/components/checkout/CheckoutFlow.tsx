@@ -12,6 +12,8 @@ import { Loader } from '../ui/Loader';
 import {
   BRIDGE_READY, BridgeError, createOrder as createLiveOrder, storedToken,
 } from '../../lib/api/bridge';
+import { getSession, type StoredSession } from '../../lib/api/session';
+import { PASSWORD_RULE, passwordProblem } from '../../lib/api/account';
 
 const fmt = (n: number) => n.toLocaleString('fa-IR');
 
@@ -149,7 +151,10 @@ export function CheckoutFlow() {
      نشوند و از هم نیفتند. */
   const okPhone = phoneOk(phone);
   const okName = nameOk(name);
-  const okPass = password.length >= 6;
+  /* ⚠ سایتِ وصل به پنل: رمزِ حساب در پنلِ کاربری تعیین می‌شود (با
+     قاعده‌ی سرور)، نه این‌جا — این فیلد فقط در نسخه‌ی نمایشی است. */
+  const passProblem = password ? passwordProblem(password, phone) : '';
+  const okPass = BRIDGE_READY || (password.length > 0 && !passProblem);
   /* ورودی‌های جامانده هم شرطِ پرداخت‌اند: بدونشان معلوم نیست
      اشتراک را روی کدام حساب فعال کنیم. */
   /** ورودی‌های خط، به‌علاوه‌ی آن‌چه سرِ تسویه پر شد */
@@ -162,7 +167,19 @@ export function CheckoutFlow() {
     return out;
   };
 
-  const canPay = okPhone && okName && okPass && needOk;
+  /* ⚠ سایتِ وصل به پنل: سفارش فقط با شماره‌ی تأییدشده — نشستِ حساب
+     (ورود با رمز یا کد) یا ژتونِ کدِ همین نشستِ مرورگر. شماره همان
+     شماره‌ی حساب است و عوض نمی‌شود. */
+  const [session, setSession] = useState<StoredSession | null>(null);
+  useEffect(() => {
+    if (!BRIDGE_READY) return;
+    const s = getSession();
+    setSession(s);
+    if (s) setPhone(s.phone);
+  }, []);
+  const verified = !BRIDGE_READY || !!session || !!storedToken();
+
+  const canPay = okPhone && okName && okPass && needOk && verified;
 
   if (count === 0 && step !== 'done') {
     return (
@@ -311,6 +328,13 @@ export function CheckoutFlow() {
                 با همین شماره واردت می‌کنیم.
               </p>
 
+              {BRIDGE_READY && !verified && (
+                <p className="co__signin" role="note">
+                  برای ثبت سفارش، لطفاً ابتدا وارد حساب کاربری خود شوید.{' '}
+                  <Link href="/login?next=/checkout" className="btn btn--primary btn--sm">ورود با کد پیامکی یا رمز عبور</Link>
+                </p>
+              )}
+
               <div className="co__fields">
                 <label className="pdp-input">
                   <span>شماره‌ی موبایل</span>
@@ -321,6 +345,7 @@ export function CheckoutFlow() {
                     dir="ltr"
                     placeholder="۰۹۱۲۱۲۳۴۵۶۷"
                     value={phone}
+                    readOnly={!!session}
                     onChange={(e) => setPhone(e.target.value)}
                     aria-invalid={phone.length > 0 && !okPhone}
                   />
@@ -354,13 +379,14 @@ export function CheckoutFlow() {
                   کسی که رمزش را فراموش کند، از صفحه‌ی ورود با کد
                   پیامکی وارد می‌شود — همان چیزی که در این بازار
                   «بازیابی رمز» است. */}
+              {!BRIDGE_READY && (<>
               <label className="pdp-input co__pass">
-                <span>یک رمز برای حسابت بگذار</span>
+                <span>رمز عبور حساب کاربری</span>
                 <input
                   type={showPass ? 'text' : 'password'}
                   autoComplete="new-password"
                   dir="ltr"
-                  placeholder="حداقل شش نویسه"
+                  maxLength={64}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   aria-invalid={password.length > 0 && !okPass}
@@ -369,19 +395,20 @@ export function CheckoutFlow() {
                   type="button"
                   className="co__eye"
                   onClick={() => setShowPass((v) => !v)}
-                  aria-label={showPass ? 'پنهان کردن رمز' : 'نمایش رمز'}
+                  aria-label={showPass ? 'پنهان کردن رمز عبور' : 'نمایش رمز عبور'}
                 >
                   {showPass ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
                 </button>
-                {password.length > 0 && !okPass && (
-                  <em className="co__err">حداقل شش نویسه.</em>
-                )}
+                {passProblem
+                  ? <em className="co__err">{passProblem}</em>
+                  : <small>لطفاً رمز عبور خود را وارد کنید. {PASSWORD_RULE}</small>}
               </label>
 
               <p className="co__note">
-                با همین شماره و رمز بعداً وارد می‌شوی. اگر رمزت را فراموش کردی،
-                از <Link href="/login">صفحه‌ی ورود</Link> با کد پیامکی وارد شو.
+                با همین شماره‌ی موبایل و رمز عبور می‌توانید بعداً وارد حساب خود شوید. در صورت
+                فراموشی رمز عبور، از <Link href="/login">صفحه‌ی ورود</Link> با کد پیامکی وارد شوید.
               </p>
+              </>)}
 
               {/* ⚠ ورودی‌های لازم، این‌جا نه در صفحه‌ی محصول.
 
@@ -490,8 +517,8 @@ export function CheckoutFlow() {
                     return;
                   }
 
-                  if (!storedToken()) {
-                    setError('برای ثبت سفارش، اول شماره‌ات را با کد تأیید کن.');
+                  if (!storedToken() && !getSession()) {
+                    setError('برای ثبت سفارش، لطفاً ابتدا وارد حساب کاربری خود شوید.');
                     return;
                   }
 

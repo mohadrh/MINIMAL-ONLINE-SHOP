@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Phoenix Bridge
  * Description: پلِ میان فروشگاه فونیکس و ووکامرس — فیلدهای دیجیتال، اندپوینت عمومی، و کلید حساب روی شماره‌ی موبایل.
- * Version:     1.5.0
+ * Version:     1.6.0
  * Requires PHP: 7.4
  * Author:      Phoenix Shop
  * Text Domain: phoenix-bridge
@@ -34,7 +34,7 @@ if (!defined('ABSPATH')) {
     exit; // دسترسی مستقیم ممنوع
 }
 
-define('PHOENIX_BRIDGE_VERSION', '1.5.0');
+define('PHOENIX_BRIDGE_VERSION', '1.6.0');
 define('PHOENIX_META_KEY', '_phoenix');
 
 /* ============================================================
@@ -81,9 +81,9 @@ function phoenix_set_fields($post_id, $fields) {
 const PHOENIX_PUBLIC_FIELDS = array(
     'english_title', 'brand', 'fulfillment', 'delivery_estimate', 'warranty_label', 'required_inputs',
     'features', 'notes', 'faq', 'platforms', 'accent', 'thumbnail', 'logo', 'cover', 'cutout', 'badges',
-    'seed_rating', 'seed_reviews', 'seed_sales', 'variant_label', 'variant_guide', 'variant_usd',
+    'seed_rating', 'seed_reviews', 'seed_sales', 'variant_label', 'variant_guide', 'variant_usd', 'variant_duration',
     /* پلن‌ها */
-    'label', 'usd', 'is_default', 'guide',
+    'label', 'usd', 'is_default', 'guide', 'duration_days',
 );
 
 function phoenix_public_fields($post_id) {
@@ -151,6 +151,7 @@ require_once $phoenix_dir . 'includes/pricing.php';
 require_once $phoenix_dir . 'includes/product-sources.php';
 require_once $phoenix_dir . 'includes/product-pricing.php';
 require_once $phoenix_dir . 'includes/fulfil-queue.php';
+require_once $phoenix_dir . 'includes/delivery.php';
 
 require_once $phoenix_dir . 'includes/rest.php';
 require_once $phoenix_dir . 'includes/auth.php';

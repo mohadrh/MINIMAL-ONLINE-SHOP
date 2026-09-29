@@ -296,6 +296,7 @@ function phoenix_product_payload($p) {
                 'sale'       => (int) round((float) $v->get_sale_price('edit')),
                 'stock'      => $v->get_manage_stock() ? (int) $v->get_stock_quantity() : null,
                 'usd'        => (float) ($vf['usd'] ?? 0),
+                'duration_days' => (int) ($vf['duration_days'] ?? 0),
                 'guide'      => isset($vf['guide']['fit'], $vf['guide']['detail']) ? $vf['guide'] : null,
                 'is_default' => !empty($vf['is_default']),
                 'pricing'    => array(
@@ -316,6 +317,7 @@ function phoenix_product_payload($p) {
             'sale'       => (int) round((float) $p->get_sale_price('edit')),
             'stock'      => $p->get_manage_stock() ? (int) $p->get_stock_quantity() : null,
             'usd'        => (float) ($f['variant_usd'] ?? 0),
+            'duration_days' => (int) ($f['variant_duration'] ?? 0),
             'guide'      => isset($f['variant_guide']['fit'], $f['variant_guide']['detail']) ? $f['variant_guide'] : null,
             'is_default' => true,
             'pricing'    => array('mode' => 'inherit', 'cost_usd' => 0, 'cost_toman' => 0, 'locked' => false,
@@ -577,7 +579,7 @@ function phoenix_product_write($p, array $d) {
     phoenix_set_or_unset($f, 'cost_toman', $d['pricing']['cost_toman']);
 
     if ($variable) {
-        unset($f['variant_label'], $f['variant_guide'], $f['variant_usd']);
+        unset($f['variant_label'], $f['variant_guide'], $f['variant_usd'], $f['variant_duration']);
 
         $labels = array_column($d['plans'], 'label');
         $attr   = new WC_Product_Attribute();
@@ -595,6 +597,7 @@ function phoenix_product_write($p, array $d) {
             unset($f['variant_guide']);
         }
         phoenix_set_or_unset($f, 'variant_usd', $plan['usd']);
+        phoenix_set_or_unset($f, 'variant_duration', $plan['duration_days']);
 
         $p->set_regular_price((string) $plan['regular']);
         $p->set_sale_price($plan['sale'] > 0 ? (string) $plan['sale'] : '');
@@ -654,6 +657,7 @@ function phoenix_product_write($p, array $d) {
                 unset($vf['guide']);
             }
             phoenix_set_or_unset($vf, 'usd', $plan['usd']);
+            phoenix_set_or_unset($vf, 'duration_days', $plan['duration_days']);
             if ($plan['pricing']['mode'] === 'inherit') {
                 unset($vf['price_mode']);
             } else {

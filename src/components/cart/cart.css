@@ -386,3 +386,11 @@
 }
 .co__need .co__review-h { display: block; margin-bottom: var(--sp-3); }
 .co__need-of { font-style: normal; color: var(--ink-faint); font-weight: 400; }
+
+/* سایتِ وصل به پنل: پیش از ثبتِ سفارش، ورود لازم است */
+.co__signin {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: var(--sp-3); margin: 0 0 var(--sp-5); padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--blue-line); border-radius: var(--r-lg);
+  background: var(--blue-wash); color: var(--ink); font-size: var(--text-sm); line-height: 1.9;
+}

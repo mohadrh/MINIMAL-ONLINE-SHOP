@@ -114,5 +114,113 @@ $l = phoenix_acc_log_push(array(array('at' => $now - 700, 'n' => 'old')), array(
 is_same('کهنه‌تر از عمر بیرون', array_column($l, 'n'), array('new'));
 is_same('تازه‌ها', array_column(phoenix_acc_log_fresh(array(array('at' => $now - 5, 'n' => 1), array('at' => $now - 5000, 'n' => 2)), 600, $now), 'n'), array(1));
 
+/* ============================================================ */
+section('رمز: قاعده‌ها');
+
+$P = '09121234567';
+is_same('کوتاه رد', phoenix_acc_password_problem('abc123', $P) !== '', true);
+is_same('هفت نویسه رد، هشت قبول', array(phoenix_acc_password_problem('abcdefg', $P) !== '', phoenix_acc_password_problem('ab3def9h', $P)), array(true, ''));
+is_same('خیلی بلند رد', phoenix_acc_password_problem(str_repeat('ab1', 30), $P) !== '', true);
+is_same('رایج رد (بی‌توجه به حروفِ بزرگ)', phoenix_acc_password_problem('PassWord1', $P) !== '', true);
+is_same('رایج با ارقامِ فارسی هم رد', phoenix_acc_password_problem('۱۲۳۴۵۶۷۸', $P) !== '', true);
+is_same('یک نویسه‌ی تکراری رد', phoenix_acc_password_problem('zzzzzzzzzz', $P) !== '', true);
+is_same('شماره‌ی خودش رد', phoenix_acc_password_problem('09121234567', $P) !== '', true);
+is_same('شماره بی‌صفر وسطِ رمز رد', phoenix_acc_password_problem('x9121234567y', $P) !== '', true);
+is_same('فاصله‌ی اول رد', phoenix_acc_password_problem(' goodpass77', $P) !== '', true);
+is_same('نویسه‌ی کنترلی رد', phoenix_acc_password_problem("good\x00pass77", $P) !== '', true);
+is_same('بی‌حرفِ انگلیسی رد (حتی با عدد)', phoenix_acc_password_problem('گل‌سرخِ۱۴۰۵', $P) !== '', true);
+is_same('فقط حروف رد', phoenix_acc_password_problem('Sunflowers', $P) !== '', true);
+is_same('فقط عدد رد', phoenix_acc_password_problem('90817263', $P) !== '', true);
+is_same('حرف + عدد قبول', phoenix_acc_password_problem('Sunflower42', $P), '');
+is_same('با نماد هم قبول', phoenix_acc_password_problem('Gol-Sorkh!1405', $P), '');
+is_same('عددِ فارسی هم عدد است', phoenix_acc_password_problem('Sunflower۴۲', $P), '');
+is_same('پیام‌ها محترمانه‌اند', strpos(phoenix_acc_password_problem('abc', $P), 'باید') !== false, true);
+is_same('غیرِ رشته رد', phoenix_acc_password_problem(12345678, $P) !== '', true);
+
+section('رمز: هش');
+
+$h = phoenix_acc_password_hash('Sunflower-42');
+is_same('هش، خودِ رمز نیست', strpos($h, 'Sunflower') === false, true);
+is_same('رمزِ درست', phoenix_acc_password_check('Sunflower-42', $h), true);
+is_same('رمزِ غلط', phoenix_acc_password_check('Sunflower-43', $h), false);
+is_same('ارقامِ فارسی = لاتین', phoenix_acc_password_check('Sunflower-۴۲', $h), true);
+is_same('هشِ خالی هیچ‌وقت درست نیست', phoenix_acc_password_check('x', ''), false);
+$long = str_repeat('ب', 40);
+is_same('بلندتر از ۷۲ بایت: تهِ رمز هم مهم است', phoenix_acc_password_check($long . 'الف', phoenix_acc_password_hash($long . 'دال')), false);
+is_same('دو هشِ یک رمز یکی نیستند (نمک)', $h !== phoenix_acc_password_hash('Sunflower-42'), true);
+
+section('قفلِ تلاشِ اشتباه');
+
+is_same('چهار اشتباه آزاد', phoenix_acc_lock_seconds(4), 0);
+is_same('پنجمی پانزده دقیقه', phoenix_acc_lock_seconds(5), 900);
+is_same('دهمی یک ساعت', phoenix_acc_lock_seconds(10), 3600);
+
+/* ============================================================ */
+section('وضعیتِ سفارش برای مشتری');
+
+is_same('پرداخت‌نشده', phoenix_acc_order_state('pending', array()), 'awaiting_payment');
+is_same('کارت‌به‌کارت منتظرِ تأیید', phoenix_acc_order_state('on-hold', array()), 'checking');
+is_same('در حالِ انجام', phoenix_acc_order_state('processing', array('pending')), 'fulfilling');
+is_same('یک قلم اصلاح می‌خواهد', phoenix_acc_order_state('processing', array('done', 'needs_input')), 'needs_input');
+is_same('تکمیل = تحویل', phoenix_acc_order_state('completed', array()), 'delivered');
+is_same('لغو', phoenix_acc_order_state('cancelled', array()), 'failed');
+
+$view = array(
+    'id' => 12, 'number' => '12', 'status' => 'processing', 'created' => 'c', 'paid' => 'p', 'total' => 500,
+    'payment' => array('method' => 'زرین‌پال', 'transaction_id' => 'T1', 'is_paid' => true),
+    'customer' => array('name' => 'x', 'phone' => '0912', 'email' => ''), 'note' => '',
+    'items' => array(
+        array('item_id' => 1, 'product_id' => 5, 'name' => 'الف', 'qty' => 1, 'total' => 200, 'inputs' => array(), 'deliveries' => array(), 'stock_codes' => array(),
+              'job' => array('id' => 3, 'status' => 'failed', 'note' => 'تأمین‌کننده جواب نداد')),
+        array('item_id' => 2, 'product_id' => 6, 'name' => 'ب', 'qty' => 1, 'total' => 300, 'inputs' => array(), 'deliveries' => array(), 'stock_codes' => array(),
+              'job' => array('id' => 4, 'status' => 'needs_input', 'note' => 'ایمیل را درست کن')),
+    ),
+);
+$cv = phoenix_acc_order_for_customer($view);
+is_same('یادداشتِ داخلیِ صف به مشتری نمی‌رسد', $cv['items'][0]['message'], '');
+is_same('قلمِ ناموفق برای مشتری «در انتظار»', $cv['items'][0]['state'], 'waiting');
+is_same('پیامِ اصلاح می‌رسد', array($cv['items'][1]['state'], $cv['items'][1]['message']), array('needs_input', 'ایمیل را درست کن'));
+is_same('وضعیتِ کلی: اصلاح', $cv['state'], 'needs_input');
+is_same('مشخصاتِ مشتری در نمای مشتری تکرار نمی‌شود', array_key_exists('customer', $cv), false);
+
+section('اشتراک');
+
+$day = 86400;
+$now = 1900000000;
+is_same('بی‌مدت و بی‌تاریخ: اشتراک نیست', phoenix_acc_subscription(0, array(), $now - $day, $now), null);
+$s = phoenix_acc_subscription(30, array(), $now - 10 * $day, $now);
+is_same('سی‌روزه از پرداخت: بیست روز مانده', array($s['days_left'], $s['state']), array(20, 'active'));
+$s = phoenix_acc_subscription(30, array(array('at' => $now - 2 * $day, 'until' => 0)), $now - 10 * $day, $now);
+is_same('شروع از تحویل، نه از پرداخت', $s['days_left'], 28);
+$s = phoenix_acc_subscription(30, array(array('at' => $now - 2 * $day, 'until' => $now + 3 * $day)), $now - 10 * $day, $now);
+is_same('«تا کِی»ی مدیر مقدم است', array($s['days_left'], $s['state']), array(3, 'ending'));
+is_same('هنوز تحویل نشده: ساعت شروع نشده', phoenix_acc_subscription(30, array(), $now - 5 * $day, $now, false), null);
+$s = phoenix_acc_subscription(30, array(array('at' => $now - $day, 'until' => 0)), $now - 5 * $day, $now, false);
+is_same('تحویل شده ولی صف هنوز باز: از تحویل', $s['days_left'], 29);
+$s = phoenix_acc_subscription(30, array(), $now - 40 * $day, $now);
+is_same('تمام‌شده', array($s['days_left'], $s['state']), array(0, 'expired'));
+
+/* ============================================================ */
+section('متن و تیکت');
+
+is_same('تگ و نویسه‌ی کنترلی بیرون', phoenix_acc_text("<b>سلام</b>\x07 دنیا", 100), 'سلام دنیا');
+is_same('شکستِ خط فقط در چندخطی', array(phoenix_acc_text("a\nb", 10), phoenix_acc_text("a\nb", 10, true)), array('ab', "a\nb"));
+is_same('چند خطِ خالی → یکی', phoenix_acc_text("a\n\n\n\n\nb", 10, true), "a\n\nb");
+is_same('UTF-8ی خراب رد', phoenix_acc_text("\xC3\x28", 10), '');
+is_same('بریده در سقف', mb_strlen(phoenix_acc_text(str_repeat('ک', 500), 120)), 120);
+$t = phoenix_acc_ticket_clean(array('subject' => 'کد', 'body' => ''), true);
+is_same('تیکت: موضوعِ کوتاه و متنِ خالی', array($t['ok'], array_keys($t['errors'])), array(false, array('body', 'subject')));
+$t = phoenix_acc_ticket_clean(array('subject' => 'کدم کار نمی‌کند', 'body' => '<script>alert(1)</script>سلام', 'order_id' => '-4'), true);
+is_same('تیکت: اسکریپت بیرون، سفارشِ منفی صفر', array($t['ok'], $t['data']['body'], $t['data']['order_id']), array(true, 'alert(1)سلام', 0));
+
+section('اصلاحِ ورودی');
+
+$allowed = array('email', 'آیدیِ تلگرام');
+is_same('کلیدِ ناشناخته رد', phoenix_acc_inputs_clean(array('_phoenix_delivery' => 'x'), $allowed)['ok'], false);
+is_same('مقدارِ خالی رد', phoenix_acc_inputs_clean(array('email' => '  '), $allowed)['ok'], false);
+is_same('غیرِ آرایه رد', phoenix_acc_inputs_clean('email=x', $allowed)['ok'], false);
+$c = phoenix_acc_inputs_clean(array('email' => ' a@b.co ', 'آیدیِ تلگرام' => '@mina'), $allowed);
+is_same('درست', array($c['ok'], $c['data']), array(true, array('email' => 'a@b.co', 'آیدیِ تلگرام' => '@mina')));
+
 printf("\n%d قبول، %d مردود\n", $GLOBALS['pass'], $GLOBALS['fail']);
 exit($GLOBALS['fail'] ? 1 : 0);

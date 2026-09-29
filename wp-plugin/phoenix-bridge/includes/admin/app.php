@@ -17,6 +17,20 @@ function phoenix_app_screen_id() {
     return 'toplevel_page_' . PHOENIX_MENU;
 }
 
+/** همه‌ی صفحه‌های پیشخوان که پنل را بار می‌کنند — فروشگاه و پنل‌های جدا */
+function phoenix_app_screen_ids() {
+    $ids = array(phoenix_app_screen_id());
+    foreach (phoenix_admin_worlds() as $w) {
+        $ids[] = 'toplevel_page_' . $w['menu'];
+    }
+    return $ids;
+}
+
+function phoenix_app_is_screen() {
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+    return $screen && in_array($screen->id, phoenix_app_screen_ids(), true);
+}
+
 function phoenix_app_page() {
     if (!current_user_can(PHOENIX_CAP)) {
         wp_die('دسترسی نداری.', '', array('response' => 403));
@@ -47,9 +61,10 @@ function phoenix_app_user_theme() {
 
 add_action('admin_enqueue_scripts', 'phoenix_app_assets');
 function phoenix_app_assets($hook) {
-    if ($hook !== phoenix_app_screen_id()) {
+    if (!in_array($hook, phoenix_app_screen_ids(), true)) {
         return;
     }
+    $world = phoenix_admin_world_for_page(isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '');
 
     $base = plugins_url('admin/', dirname(__DIR__, 2) . '/phoenix-bridge.php');
     $ver  = PHOENIX_BRIDGE_VERSION;
@@ -81,7 +96,13 @@ function phoenix_app_assets($hook) {
             'woo_products' => admin_url('edit.php?post_type=product'),
         ),
         /* بخش‌های افزونه‌های دیگر — بررسی‌شده در ‎phoenix_admin_extensions‎ */
-        'extensions' => phoenix_admin_extensions(),
+        'extensions' => $world ? array() : phoenix_admin_extensions(),
+        /* پنلِ جدا (مثلاً «مشتریان»)، و نشانیِ همه‌ی پنل‌ها برای جابه‌جایی */
+        'world'      => $world ? array(
+            'id' => $world['id'], 'menu' => $world['menu'], 'title' => $world['title'], 'sub' => $world['sub'],
+            'mark' => $world['mark'], 'sections' => $world['sections'],
+        ) : null,
+        'worlds'     => phoenix_app_world_links(),
     );
 
     wp_add_inline_script(
@@ -119,11 +140,19 @@ function phoenix_app_module_tag($tag, $handle, $src) {
     );
 }
 
+/** پنل‌ها برای «جابه‌جایی» در سربرگ — فروشگاه اول */
+function phoenix_app_world_links() {
+    $out = array(array('id' => 'store', 'label' => 'فروشگاه', 'icon' => 'grid', 'url' => phoenix_admin_url()));
+    foreach (phoenix_admin_worlds() as $w) {
+        $out[] = array('id' => $w['id'], 'label' => $w['title'], 'icon' => 'users', 'url' => phoenix_admin_url('', $w['id']));
+    }
+    return $out;
+}
+
 /** کلاسِ بدنه — فقط روی صفحه‌ی پنل، برای پس‌زمینه و پاورقی */
 add_filter('admin_body_class', 'phoenix_app_body_class');
 function phoenix_app_body_class($classes) {
-    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
-    if ($screen && $screen->id === phoenix_app_screen_id()) {
+    if (phoenix_app_is_screen()) {
         $classes .= ' phx2-body phx2-theme-' . phoenix_app_user_theme();
     }
     return $classes;
@@ -132,11 +161,9 @@ function phoenix_app_body_class($classes) {
 /** پاورقیِ «سپاسگزاریم از وردپرس» روی پنل جا نمی‌گیرد */
 add_filter('admin_footer_text', 'phoenix_app_footer_text', 20);
 function phoenix_app_footer_text($text) {
-    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
-    return ($screen && $screen->id === phoenix_app_screen_id()) ? '' : $text;
+    return phoenix_app_is_screen() ? '' : $text;
 }
 add_filter('update_footer', 'phoenix_app_footer_version', 20);
 function phoenix_app_footer_version($text) {
-    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
-    return ($screen && $screen->id === phoenix_app_screen_id()) ? '' : $text;
+    return phoenix_app_is_screen() ? '' : $text;
 }

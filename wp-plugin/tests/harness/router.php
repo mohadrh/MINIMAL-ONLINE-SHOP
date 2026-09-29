@@ -5,9 +5,10 @@
  *   php -S 127.0.0.1:4330 -t wp-plugin wp-plugin/tests/harness/router.php
  *   → http://127.0.0.1:4330/tests/harness/
  *
- * سه کار:
+ * چهار کار:
  *   ‎/__api/…‎        APIِ ساختگی (fake-api.php) — ولی اعتبارسنجی و
  *                    قیمت‌گذاری‌اش همان توابعِ واقعیِ افزونه است
+ *   ‎/wp-json/…‎      بک‌اندِ ساختگیِ سایت (fake-shop.php) — ورود و پنلِ مشتری
  *   ‎/products/…‎ ‎/brand/…‎  تصویرهای خودِ سایت از ‎public/‎، تا
  *                    تبِ رسانه و فهرستِ محصولات تصویرِ واقعی ببینند
  *   بقیه             فایلِ ایستا از ‎wp-plugin/‎
@@ -35,6 +36,12 @@ if (preg_match('#^/(products|brand)/#', $uri)) {
 
 if (strpos($uri, '/__api/') === 0) {
     require __DIR__ . '/fake-api.php';
+    return true;
+}
+
+/* بک‌اندِ ساختگیِ خودِ سایت — ورود و پنلِ مشتری (fake-shop.php) */
+if (strpos($uri, '/wp-json/') === 0) {
+    require __DIR__ . '/fake-shop.php';
     return true;
 }
 

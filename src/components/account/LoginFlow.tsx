@@ -31,10 +31,10 @@ type Mode = 'password' | 'otp';
 type Stage = 'phone' | 'code' | 'done';
 
 const ERRORS: Record<Exclude<OtpResult, 'ok'>, string> = {
-  wrong: 'کد درست نیست. دوباره امتحان کن.',
-  expired: 'کد منقضی شده. کد تازه بگیر.',
-  'too-many': 'تعداد تلاش‌ها زیاد شد. کد تازه بگیر.',
-  none: 'اول کد را درخواست کن.',
+  wrong: 'کد واردشده درست نیست. لطفاً دوباره تلاش کنید.',
+  expired: 'کد منقضی شده است. لطفاً کد جدید دریافت کنید.',
+  'too-many': 'تعداد تلاش‌ها بیش از حد مجاز بود. لطفاً کد جدید دریافت کنید.',
+  none: 'لطفاً ابتدا کد تأیید را درخواست کنید.',
 };
 
 export function LoginFlow() {
@@ -91,10 +91,10 @@ export function LoginFlow() {
       <div className="wrap login">
         <div className="login__box login__box--ok">
           <span className="login__tick" aria-hidden="true"><Check /></span>
-          <h1>وارد شدی</h1>
-          <p>حالا سفارش‌ها، تحویل‌ها و تیکت‌هایت یک‌جا هستند.</p>
+          <h1>خوش آمدید</h1>
+          <p>با موفقیت وارد حساب خود شدید. سفارش‌ها، تحویل‌ها و تیکت‌های شما در پنل کاربری است.</p>
           <div className="club-cta">
-            <Link href="/account" className="btn btn--primary">رفتن به پنل</Link>
+            <Link href="/account" className="btn btn--primary">ورود به پنل کاربری</Link>
             <Link href="/shop" className="btn btn--ghost">ادامه‌ی خرید</Link>
           </div>
         </div>
@@ -105,9 +105,9 @@ export function LoginFlow() {
   return (
     <div className="wrap login">
       <div className="login__box">
-        <h1>ورود به حساب</h1>
+        <h1>ورود به حساب کاربری</h1>
         <p className="login__lead">
-          با شماره‌ی موبایلت وارد می‌شوی. یوزرنیم جدا نداریم.
+          لطفاً با شماره‌ی موبایل خود وارد شوید؛ نام کاربری جداگانه لازم نیست.
         </p>
 
         {/* ---------- انتخاب راه ---------- */}
@@ -146,7 +146,7 @@ export function LoginFlow() {
             onChange={(e) => { setPhone(e.target.value); setStage('phone'); }}
             aria-invalid={phone.length > 0 && !okPhone}
           />
-          {phone && !okPhone && <em className="co__err">با ۰۹ شروع شود و یازده رقم باشد.</em>}
+          {phone && !okPhone && <em className="co__err">شماره‌ی موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.</em>}
         </label>
 
         {/* ---------- راه یک: رمز ---------- */}
@@ -165,7 +165,7 @@ export function LoginFlow() {
                 type="button"
                 className="co__eye"
                 onClick={() => setShowPass((v) => !v)}
-                aria-label={showPass ? 'پنهان کردن رمز' : 'نمایش رمز'}
+                aria-label={showPass ? 'پنهان کردن رمز عبور' : 'نمایش رمز عبور'}
               >
                 {showPass ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
               </button>
@@ -177,7 +177,7 @@ export function LoginFlow() {
               className="login__forgot"
               onClick={() => { setMode('otp'); setError(null); if (okPhone) askCode(); }}
             >
-              رمزم را فراموش کرده‌ام
+              رمز عبور خود را فراموش کرده‌اید؟
             </button>
 
             {error && <p className="co__err login__err">{error}</p>}
@@ -191,7 +191,7 @@ export function LoginFlow() {
                    چیزی که می‌دانیم این است که این مرورگر حسابی با
                    همین شماره ساخته یا نه. */
                 if (!acc || acc.phone !== phone.trim()) {
-                  setError('حسابی با این شماره روی این دستگاه پیدا نشد. با کد پیامکی وارد شو.');
+                  setError('حسابی با این شماره روی این دستگاه پیدا نشد. لطفاً با کد پیامکی وارد شوید.');
                   return;
                 }
                 setStage('done');
@@ -213,13 +213,13 @@ export function LoginFlow() {
                 disabled={!okPhone || busy}
                 onClick={askCode}
               >
-                فرستادن کد
+                ارسال کد تأیید
                 <ArrowRight aria-hidden="true" />
               </button>
             ) : (
               <>
                 <label className="pdp-input">
-                  <span>کد شش‌رقمی</span>
+                  <span>کد تأیید شش‌رقمی</span>
                   <input
                     ref={codeRef}
                     type="text"
@@ -236,16 +236,16 @@ export function LoginFlow() {
                 {/* ⚠ فقط تا وقتی سرویس پیامک وصل نیست */}
                 {sent && (
                   <p className="login__sim">
-                    <b>حالت آزمایشی:</b> سرویس پیامک هنوز وصل نیست، پس کد اینجا
-                    نشان داده می‌شود — <span className="num" dir="ltr">{sent}</span>
+                    <b>حالت آزمایشی:</b> سامانه‌ی پیامک هنوز متصل نیست؛ به همین دلیل کد در
+                    این‌جا نمایش داده می‌شود: <span className="num" dir="ltr">{sent}</span>
                   </p>
                 )}
 
                 <div className="login__resend">
                   {left > 0 ? (
-                    <span className="num">تا درخواست دوباره {left.toLocaleString('fa-IR')} ثانیه</span>
+                    <span className="num">ارسال دوباره تا {left.toLocaleString('fa-IR')} ثانیه‌ی دیگر</span>
                   ) : (
-                    <button type="button" onClick={askCode} disabled={busy}>کد تازه بفرست</button>
+                    <button type="button" onClick={askCode} disabled={busy}>ارسال دوباره‌ی کد</button>
                   )}
                 </div>
 
@@ -275,8 +275,8 @@ export function LoginFlow() {
         )}
 
         <p className="login__new">
-          حساب نداری؟ لازم نیست جدا بسازی — موقع{' '}
-          <Link href="/shop">اولین خرید</Link> خودش ساخته می‌شود.
+          حساب کاربری ندارید؟ نیازی به ثبت‌نام جداگانه نیست؛ هنگام{' '}
+          <Link href="/shop">اولین خرید</Link> حساب شما به‌طور خودکار ساخته می‌شود.
         </p>
       </div>
     </div>

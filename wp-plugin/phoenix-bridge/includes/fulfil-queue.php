@@ -138,7 +138,7 @@ function phoenix_queue_counts() {
        جدول از تابعِ بی‌آرگومانِ ‎phoenix_table_queue‎ می‌آید. */
     $rows = $wpdb->get_results("SELECT status, COUNT(*) AS n FROM {$table} GROUP BY status");
 
-    $out = array('pending' => 0, 'done' => 0, 'failed' => 0, 'cancelled' => 0);
+    $out = array('pending' => 0, 'needs_input' => 0, 'done' => 0, 'failed' => 0, 'cancelled' => 0);
     foreach ((array) $rows as $r) {
         if (isset($out[$r->status])) {
             $out[$r->status] = (int) $r->n;
@@ -155,7 +155,7 @@ function phoenix_queue_list($status = '', $limit = 50) {
 
     $table = phoenix_table_queue();
     $limit = max(1, min(200, (int) $limit));
-    $known = array('pending', 'done', 'failed', 'cancelled');
+    $known = array('pending', 'needs_input', 'done', 'failed', 'cancelled');
 
     if ($status !== '' && in_array($status, $known, true)) {
         return $wpdb->get_results($wpdb->prepare(

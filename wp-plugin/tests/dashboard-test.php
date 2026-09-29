@@ -228,6 +228,37 @@ $latin = array_values(array_filter($texts, function ($x) { return preg_match('/[
 is_same('هیچ رقمِ لاتینی در جمله‌های داشبورد', $latin, array());
 
 /* ============================================================ */
+section('فروش');
+
+$TZ  = 12600;                       // تهران: ‎+03:30‎
+$NOW = 1900000000;                  // یک لحظه‌ی ثابت
+$mid = (int) (floor(($NOW + $TZ) / 86400) * 86400 - $TZ); // نیمه‌شبِ امروز به وقتِ تهران
+$o = function ($ts, $total, $phone = '0912', $items = array()) { return array('ts' => $ts, 'total' => $total, 'phone' => $phone, 'items' => $items); };
+$rows = array(
+    $o($mid + 60, 100, '09120000001', array(array('name' => 'الف', 'qty' => 1, 'total' => 100))),
+    $o($mid + 7200, 300, '09120000002', array(array('name' => 'ب', 'qty' => 2, 'total' => 300))),
+    $o($mid - 60, 50, '09120000001', array(array('name' => 'الف', 'qty' => 1, 'total' => 50))),   // دیروز، یک دقیقه پیش از نیمه‌شب
+    $o($mid - 3 * 86400, 200, '09120000003'),
+    $o($mid - 9 * 86400, 400, '09120000003'),          // هفته‌ی قبل
+    $o($mid - 40 * 86400, 9999, '09120000004'),        // بیرون از سی روز
+    $o($NOW + 86400, 777),                              // آینده — نادیده
+);
+$s = phoenix_sales_summary($rows, $NOW, $TZ, 30);
+is_same('امروز به وقتِ تهران', $s['today'], array('count' => 2, 'revenue' => 400));
+is_same('یک دقیقه پیش از نیمه‌شب = دیروز', $s['yesterday'], array('count' => 1, 'revenue' => 50));
+is_same('هفت روز', array($s['week']['count'], $s['week']['revenue']), array(4, 650));
+is_same('روند در برابرِ هفته‌ی قبل', $s['week']['trend'], 62.5);
+is_same('سی روز، بی‌سفارشِ قدیمی و آینده', array($s['month']['count'], $s['month']['revenue']), array(5, 1050));
+is_same('میانگینِ هر سفارش', $s['month']['avg'], 210);
+is_same('خریدارِ یکتا', $s['month']['buyers'], 3);
+is_same('سی ستونِ روزانه', count($s['daily']), 30);
+is_same('ستونِ آخر امروز است', end($s['daily'])['revenue'], 400);
+is_same('پرفروش: بیشترین مبلغ اول', array_column($s['top'], 'name'), array('ب', 'الف'));
+is_same('پرفروش: جمعِ تعداد', $s['top'][1]['qty'], 2);
+$empty = phoenix_sales_summary(array(), $NOW, $TZ);
+is_same('بی‌فروش: روند نامعلوم، نه صفر', array($empty['week']['trend'], $empty['month']['avg']), array(null, 0));
+
+/* ============================================================ */
 
 printf("\n%s\n", str_repeat('-', 72));
 printf("%d قبول، %d مردود\n", $GLOBALS['pass'], $GLOBALS['fail']);

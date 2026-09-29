@@ -158,14 +158,15 @@ async function list(ctx) {
         return tr;
       })),
     );
-    body.append(
+    /* ⚠ ‎put‎‌وار: ‎pager‎ برای یک صفحه ‎null‎ است و ‎append()‎ی مرورگر آن را «null» می‌نویسد */
+    body.append(...[
       h('div', { class: 'phx2-listmeta' },
         h('span', null, fa(d.total) + ' محصول'),
         !d.engine_on && h('span', null, pill('موتورِ قیمت خاموش است — ستونِ «موتور» فقط پیش‌نمایش است', 'neutral')),
       ),
       h('div', { class: 'phx2-tablewrap' }, table),
       kit.pager({ page: d.page, pages: d.pages, onGo: (p) => { state.page = p; reload(); } }),
-    );
+    ].filter(Boolean));
     /* ⚠ سربرگ این‌جا به‌روز نمی‌شود: این پاسخ نمی‌داند نرخ کهنه
        است یا نه، و «تازه» نوشتنِ نرخِ کهنه هشدارِ سربرگ را پاک
        می‌کرد. سربرگ را ‎/rate‎ پر می‌کند (app.js). */
@@ -279,7 +280,7 @@ function build(ctx, data, terms) {
     min: 1, max: 20,
     addLabel: 'افزودنِ پلن',
     onChange: () => { refreshPlanNotes(); onChange(); },
-    blank: () => ({ id: 0, label: '', regular: 0, sale: 0, stock: null, usd: 0, guide: null, is_default: false,
+    blank: () => ({ id: 0, label: '', regular: 0, sale: 0, stock: null, usd: 0, duration_days: 0, guide: null, is_default: false,
       pricing: { mode: 'inherit', cost_usd: 0, cost_toman: 0, locked: false } }),
     row: (p) => planRow(p),
   });
@@ -293,6 +294,7 @@ function build(ctx, data, terms) {
     const stock = kit.money({ value: p.stock ?? '', unit: 'عدد', allowEmpty: true });
     const stockBox = h('div', { hidden: p.stock === null }, stock.el);
     const usd = kit.money({ value: p.usd || '', unit: 'دلار', allowEmpty: true, decimals: 2 });
+    const duration = kit.money({ value: p.duration_days || '', unit: 'روز', allowEmpty: true });
     const fit = kit.text({ value: p.guide?.fit || '', max: 200, placeholder: 'مثلاً: برای کسی که هر روز با چت‌جی‌پی‌تی کار می‌کند' });
     const detail = kit.area({ value: p.guide?.detail || '', rows: 3, max: 600, placeholder: 'دقیقاً چه می‌گیرد و چه نمی‌گیرد.' });
 
@@ -318,6 +320,7 @@ function build(ctx, data, terms) {
         F.sale = kit.field({ label: 'قیمتِ تخفیف‌خورده', hint: 'خالی یعنی بدونِ تخفیف. قیمتِ اصلی خط می‌خورد.' }, sale.el),
         kit.field({ label: 'موجودی' }, h('div', { class: 'phx2-stack' }, limited.el, stockBox)),
         kit.field({ label: 'مبلغِ دلاری (نمایشی)', hint: 'فقط برای نمایش: «در سایتِ خودش چند است». قیمتِ تمام‌شده نیست و موتور از آن استفاده نمی‌کند.' }, usd.el),
+        kit.field({ label: 'مدتِ اشتراک', hint: 'خالی یعنی اشتراکی نیست (کد، شارژ). با مدت، مشتری در حسابش تاریخِ پایان را می‌بیند و یادآوریِ تمدید می‌گیرد.' }, duration.el),
         F.guide = kit.field({ label: 'این پلن مالِ کیست', wide: true }, fit.el),
         kit.field({ label: 'دقیقاً چه می‌گیرد', wide: true }, detail.el),
       ),
@@ -334,6 +337,7 @@ function build(ctx, data, terms) {
         sale: sale.get() || 0,
         stock: limited.get() ? (stock.get() ?? 0) : null,
         usd: usd.get() || 0,
+        duration_days: duration.get() || 0,
         guide: fit.get() || detail.get() ? { fit: fit.get(), detail: detail.get() } : null,
         is_default: def.checked,
         pricing: pe.get(),

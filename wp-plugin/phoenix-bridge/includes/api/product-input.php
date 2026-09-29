@@ -231,6 +231,9 @@ function phoenix_product_clean(array $in) {
             'sale'    => $sale,
             'stock'   => $stock,
             'usd'     => max(0, min(100000, round((float) (isset($p['usd']) ? $p['usd'] : 0), 2))),
+            /* مدتِ اشتراک به روز — صفر یعنی اشتراکی نیست (کد، شارژ، …).
+               «اشتراک‌ها»ی حسابِ مشتری و یادآوریِ تمدید از همین می‌خوانند. */
+            'duration_days' => max(0, min(3650, (int) (isset($p['duration_days']) ? $p['duration_days'] : 0))),
             'guide'   => $guide,
             /* ⚠ تک‌پلن یعنی محصولِ ساده: قیمت‌گذاریِ پلن وجود ندارد.
                اگر پلنِ دوم حذف شده و تنظیمِ جدای اولی مانده، همان

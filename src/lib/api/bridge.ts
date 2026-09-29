@@ -13,6 +13,8 @@
    است، پس قیمت باید سمتِ سرور حساب شود.
    ============================================================ */
 
+import { getSession } from './session';
+
 const BASE = (process.env.NEXT_PUBLIC_BRIDGE_URL ?? '').replace(/\/$/, '');
 
 /** آیا بک‌اند وصل است؟ اگر نه، سایت با شبیه‌سازیِ محلی کار می‌کند. */
@@ -32,7 +34,7 @@ export class BridgeError extends Error {
   }
 }
 
-async function post<T>(path: string, body: unknown): Promise<T> {
+async function post<T>(path: string, body: unknown, extra: Record<string, string> = {}): Promise<T> {
   if (!BRIDGE_READY) {
     throw new BridgeError(0, 'بک‌اند هنوز وصل نشده است.');
   }
@@ -44,7 +46,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     const res = await fetch(`${BASE}/wp-json/phoenix/v1${path}`, {
       method: 'POST',
       signal: ctrl.signal,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...extra },
       body: JSON.stringify(body),
     });
 
@@ -139,10 +141,13 @@ export async function createOrder(params: {
   expected_total?: number;
 }): Promise<OrderResult> {
   const token = storedToken();
-  if (!token) {
+  /* مشتریِ واردشده (Phoenix Account) کدِ تازه نمی‌خواهد: سرور نشستش
+     را می‌سنجد و شماره‌ی همان نشست باید همین شماره باشد. */
+  const session = getSession();
+  if (!token && !session) {
     throw new BridgeError(401, 'اول شماره‌ات را با کد تأیید کن.');
   }
-  return post<OrderResult>('/order', { ...params, token });
+  return post<OrderResult>('/order', { ...params, token }, !token && session ? { 'X-Phoenix-Session': session.token } : {});
 }
 
 /* ---------------------------------------------------------------

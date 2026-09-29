@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Phoenix Account
- * Description: پنلِ مشتریِ فروشگاه فونیکس — نشستِ ورود، پیامک، و (مرحله‌به‌مرحله) سفارش‌های من، تحویلی‌ها، اشتراک‌ها و تیکت. کنارِ Phoenix Bridge کار می‌کند.
- * Version:     0.1.0
+ * Description: پنلِ مشتریِ فروشگاه فونیکس — ورود با رمز یا پیامک، بازیابیِ رمز، سفارش‌ها، تحویل‌ها، اشتراک‌ها و تیکت؛ و برای مدیر پنلِ جدای «مشتریان». کنارِ Phoenix Bridge کار می‌کند.
+ * Version:     0.2.0
  * Requires PHP: 7.4
  * Requires Plugins: phoenix-bridge
  * Author:      Phoenix Shop
@@ -21,9 +21,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('PHOENIX_ACC_VERSION', '0.1.0');
+define('PHOENIX_ACC_VERSION', '0.2.0');
 define('PHOENIX_ACC_FILE', __FILE__);
-define('PHOENIX_ACC_NEEDS_BRIDGE', '1.5.0');
+define('PHOENIX_ACC_NEEDS_BRIDGE', '1.6.0');
 
 $phoenix_acc_dir = plugin_dir_path(__FILE__);
 require_once $phoenix_acc_dir . 'includes/core.php';
@@ -45,13 +45,19 @@ function phoenix_acc_boot() {
         && version_compare(PHOENIX_BRIDGE_VERSION, PHOENIX_ACC_NEEDS_BRIDGE, '>=')
         && function_exists('phoenix_token_phone')
         && function_exists('phoenix_api_route')
-        && function_exists('phoenix_conn_runtime');
+        && function_exists('phoenix_conn_runtime')
+        /* ⚠ فقط تابع‌هایی که روی هر درخواست بار می‌شوند — ‎includes/admin/‎ی
+           Bridge فقط در پیشخوان است و REST آن را ندارد */
+        && function_exists('phoenix_order_view');
     if (!$ok) {
         add_action('admin_notices', 'phoenix_acc_need_bridge');
         return;
     }
+    phoenix_acc_maybe_upgrade(); // جدول‌های تازه حتی اگر مدیر هنوز به پیشخوان نیامده
     $dir = plugin_dir_path(__FILE__);
     require_once $dir . 'includes/sessions.php';
+    require_once $dir . 'includes/customers.php';
+    require_once $dir . 'includes/tickets.php';
     require_once $dir . 'includes/sms.php';
     require_once $dir . 'includes/api-customer.php';
     require_once $dir . 'includes/api-admin.php';

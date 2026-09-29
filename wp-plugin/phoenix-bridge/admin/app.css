@@ -263,6 +263,26 @@ body.phx2-body #wpfooter { display: none; }
 
 .phx2-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
+/* پنلِ جدا (مثلاً «مشتریان») — نشانِ رنگِ دیگر، تا با یک نگاه معلوم
+   باشد کدام پنل باز است */
+.phx2-brand.is-world .phx2-brand__mark {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--info) 62%, #fff), var(--info));
+  color: #fff;
+  box-shadow: 0 8px 20px -10px var(--info);
+}
+.phx2-worlds { display: inline-flex; gap: 6px; }
+.phx2 .phx2-worldlink {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 36px; padding: 0 13px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface-2); color: var(--ink-2);
+  font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap;
+  transition: border-color .15s var(--ease), color .15s var(--ease);
+}
+.phx2 .phx2-worldlink:hover { border-color: var(--brand); color: var(--ink); }
+.phx2-worldlink:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.phx2-worldlink svg { width: 16px; height: 16px; }
+
 /* چیپِ نرخ — همیشه جلوی چشم، چون همه‌ی قیمت‌ها به آن بسته‌اند */
 .phx2-ratechip {
   display: inline-flex;
@@ -810,3 +830,30 @@ body.phx2-body #wpfooter { display: none; }
     transition: none !important;
   }
 }
+
+
+/* ============================================================
+   داشبورد — فروش
+   ============================================================ */
+.phx2-sales { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.phx2-sale {
+  display: grid; gap: 4px; min-width: 0; padding: 12px 14px;
+  border: 1px solid var(--line-2); border-radius: var(--radius-sm); background: var(--surface-2);
+}
+.phx2-sale__h { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; font-weight: 700; color: var(--ink-3); }
+.phx2-sale > b { font-size: 21px; font-weight: 900; color: var(--ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.phx2-sale > b small { font-size: 12px; font-weight: 700; color: var(--ink-3); }
+.phx2-sale__s { font-size: 12px; color: var(--ink-3); }
+.phx2-chart--bars { margin-top: 14px; }
+.phx2-bar { fill: color-mix(in srgb, var(--brand) 38%, transparent); transition: fill .15s var(--ease); }
+.phx2-bar:hover { fill: color-mix(in srgb, var(--brand) 70%, transparent); }
+.phx2-bar.is-today { fill: var(--brand); }
+.phx2-sales__wait { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 12px 0 0; font-size: 13px; color: var(--ink-2); }
+.phx2-sales__wait svg { width: 16px; height: 16px; color: var(--ink-3); }
+.phx2-top { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.phx2-top li { display: grid; gap: 4px; }
+.phx2-top__h { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; }
+.phx2-top__h span { min-width: 0; overflow-wrap: anywhere; }
+.phx2-top__bar { height: 6px; border-radius: 999px; background: var(--sunken); overflow: hidden; }
+.phx2-top__bar span { display: block; height: 100%; border-radius: inherit; background: var(--brand); }
+.phx2-top small { font-size: 11.5px; color: var(--ink-3); }

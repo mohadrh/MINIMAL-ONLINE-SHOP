@@ -11,3 +11,4 @@ dist/
 
 # انبارِ سرورِ آزمایشیِ پنل
 wp-plugin/tests/harness/.state.json
+wp-plugin/tests/harness/.shop-state.json

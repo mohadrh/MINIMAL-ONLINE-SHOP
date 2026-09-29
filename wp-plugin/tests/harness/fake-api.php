@@ -195,6 +195,7 @@ require_once $inc . 'api/dashboard.php';
 require_once $inc . 'api/product-input.php';
 require_once $inc . 'api/products.php';
 require_once __DIR__ . '/../../phoenix-account/includes/core.php';
+require_once $inc . 'delivery.php';
 
 /* ============================================================
    انبار
@@ -359,15 +360,20 @@ function h_seed() {
             array('code' => 'PHX-VIP-7K2Q', 'type' => 'percent', 'value' => 15, 'used' => 0, 'limit' => 1,
                   'email' => 'sara@example.com', 'expires' => gmdate('c', $now + 86400 * 6)),
         ),
+        'orders' => h_seed_orders($now),
         'queue' => array(
-            array('id' => 31, 'order_id' => 1204, 'product' => 'چت‌جی‌پی‌تی پلاس', 'qty' => 1, 'mode' => 'ارتقای اکانتِ خودِ مشتری',
-                  'inputs' => array(array('key' => 'email', 'value' => 'ali.r@example.com')), 'status' => 'pending', 'tries' => 0,
-                  'created' => gmdate('c', $now - 1500), 'note' => ''),
-            array('id' => 30, 'order_id' => 1203, 'product' => 'تلگرام پریمیوم', 'qty' => 2, 'mode' => 'شارژ خودکار',
-                  'inputs' => array(array('key' => 'telegram_id', 'value' => 'mina_dev')), 'status' => 'failed', 'tries' => 3,
-                  'created' => gmdate('c', $now - 7200), 'note' => 'تأمین‌کننده پاسخ نداد (timeout بعد از ۲۰ ثانیه).'),
-            array('id' => 29, 'order_id' => 1199, 'product' => 'اسپاتیفای پریمیوم', 'qty' => 1, 'mode' => 'دستی',
-                  'inputs' => array(), 'status' => 'done', 'tries' => 1, 'created' => gmdate('c', $now - 86400), 'note' => ''),
+            array('id' => 32, 'order_id' => 1206, 'item_id' => 9061, 'product_id' => 145, 'qty' => 1, 'mode_key' => 'manual',
+                  'status' => 'pending', 'tries' => 0, 'created' => gmdate('c', $now - 300), 'note' => ''),
+            array('id' => 31, 'order_id' => 1204, 'item_id' => 9041, 'product_id' => 1421, 'qty' => 1, 'mode_key' => 'upgrade_on_user',
+                  'status' => 'pending', 'tries' => 0, 'created' => gmdate('c', $now - 1500), 'note' => ''),
+            array('id' => 30, 'order_id' => 1203, 'item_id' => 9031, 'product_id' => 1481, 'qty' => 2, 'mode_key' => 'api_topup',
+                  'status' => 'failed', 'tries' => 3, 'created' => gmdate('c', $now - 7200), 'note' => 'تأمین‌کننده پاسخ نداد (timeout بعد از ۲۰ ثانیه).'),
+            array('id' => 29, 'order_id' => 1199, 'item_id' => 8991, 'product_id' => 1471, 'qty' => 1, 'mode_key' => 'manual',
+                  'status' => 'done', 'tries' => 1, 'created' => gmdate('c', $now - 86400), 'note' => 'تحویل شد'),
+        ),
+        'deliveries' => array(
+            '8991' => array(array('id' => 'a1b2c3d4e5f6', 'kind' => 'upgrade', 'secret' => '', 'until' => $now + 29 * 86400,
+                'note' => 'روی اکانتِ hossein.k@example.com فعال شد؛ یک بار از حساب خارج و دوباره وارد شوید.', 'at' => $now - 85000, 'by' => 'مدیر')),
         ),
         'log' => h_seed_log($now),
         'src_test_at' => 0,
@@ -515,7 +521,38 @@ if ($path === '/dashboard' || $path === '/engine' || $path === '/rate/refresh') 
         phoenix_settings_save(array('engine_on' => !empty($body['on'])), 'از پنل');
     }
     $d['state']['engine']['on'] = (bool) phoenix_setting('engine_on');
+    $d['sales'] = $sc === 'fresh' ? phoenix_sales_summary(array(), time(), 12600) + array('recent' => array(), 'waiting' => array('pending' => 0, 'on_hold' => 0)) : h_sales();
     h_ok($d);
+}
+
+/* فروشِ نمونه‌ی سی روز — همان ‎phoenix_sales_summary‎ی واقعی */
+function h_sales() {
+    mt_srand(42);
+    $now = time();
+    $cat = array(array('چت‌جی‌پی‌تی پلاس - یک‌ماهه', 5389000), array('کلود پرو', 5803000), array('تلگرام پریمیوم - سه‌ماهه', 3890000),
+                 array('اسپاتیفای پریمیوم - انفرادی', 378000), array('کانوا پرو - یک‌ماهه', 249000), array('جمینای ادونسد', 4190000));
+    $names = array('علی رضایی', 'مینا احمدی', 'حسین کاظمی', 'نگار کریمی', 'سارا محمدی', 'رضا نوری', 'مریم حسینی');
+    $rows = array();
+    $id = 1100;
+    for ($day = 32; $day >= 0; $day--) {
+        $n = mt_rand(0, 5) + ($day < 7 ? 1 : 0);
+        for ($k = 0; $k < $n; $k++) {
+            $p = $cat[mt_rand(0, count($cat) - 1)];
+            $q = mt_rand(1, 10) > 8 ? 2 : 1;
+            $ts = $now - $day * 86400 - mt_rand(0, $day ? 80000 : (int) min(80000, ($now + 12600) % 86400));
+            $ni = mt_rand(0, count($names) - 1);
+            $rows[] = array('id' => ++$id, 'number' => (string) $id, 'name' => $names[$ni], 'phone' => '0912000000' . $ni,
+                'ts' => $ts, 'total' => $p[1] * $q, 'items' => array(array('name' => $p[0], 'qty' => $q, 'total' => $p[1] * $q)));
+        }
+    }
+    $out = phoenix_sales_summary($rows, $now, 12600, 30);
+    usort($rows, function ($a, $b) { return $b['ts'] <=> $a['ts']; });
+    $out['recent'] = array_map(function ($r) {
+        return array('id' => $r['id'], 'number' => $r['number'], 'name' => $r['name'], 'phone' => $r['phone'], 'total' => $r['total'],
+            'paid' => gmdate('c', $r['ts']), 'edit_url' => '#woo', 'items' => $r['items'][0]['name']);
+    }, array_slice($rows, 0, 6));
+    $out['waiting'] = array('pending' => 3, 'on_hold' => 1);
+    return $out;
 }
 if ($path === '/prefs') {
     h_ok(array('theme' => $body['theme'] ?? 'system'));
@@ -828,30 +865,121 @@ if ($path === '/search/products') {
 
 /* ---------- صف، تاریخچه، تنظیمات ---------- */
 
+/* سفارش‌های نمونه — همان شکلِ ‎phoenix_order_view()‎ی واقعی */
+function h_seed_orders($now) {
+    $o = function ($id, $num, $status, $paid, $method, $tx, $name, $phone, $email, $note, $items, $ago) use ($now) {
+        return array('id' => $id, 'number' => (string) $num, 'status' => $status,
+            'status_label' => array('processing' => 'در حال انجام', 'completed' => 'تکمیل‌شده', 'on-hold' => 'در انتظار بررسی')[$status],
+            'created' => gmdate('c', $now - $ago), 'paid' => $paid ? gmdate('c', $now - $ago + 60) : null,
+            'total' => array_sum(array_column($items, 'total')),
+            'payment' => array('method' => $method, 'transaction_id' => $tx, 'is_paid' => $paid),
+            'customer' => array('name' => $name, 'phone' => $phone, 'email' => $email), 'note' => $note, 'items' => $items);
+    };
+    $it = function ($item_id, $pid, $name, $qty, $total, $inputs) {
+        return array('item_id' => $item_id, 'product_id' => $pid, 'name' => $name, 'qty' => $qty, 'total' => $total,
+            'inputs' => $inputs, 'deliveries' => array(), 'stock_codes' => array(), 'job' => null);
+    };
+    return array(
+        '1206' => $o(1206, 1206, 'on-hold', false, 'کارت‌به‌کارت', '', 'نگار کریمی', '09191234567', '', '',
+            array($it(9061, 1451, 'کانوا پرو - یک‌ماهه', 1, 249000, array())), 300),
+        '1204' => $o(1204, 1204, 'processing', true, 'زرین‌پال', 'A000000000123456789', 'علی رضایی', '09121234567', 'ali.r@example.com', 'لطفاً امروز فعال شود.',
+            array($it(9041, 1421, 'چت‌جی‌پی‌تی پلاس - یک‌ماهه', 1, 5389000, array(array('key' => 'ایمیلِ اکانت', 'value' => 'ali.r@example.com'))),
+                  $it(9042, 143, 'کلود پرو', 1, 5803000, array())), 1500),
+        '1203' => $o(1203, 1203, 'processing', true, 'درگاه سامان', '783412905512', 'مینا احمدی', '09351112233', 'mina@example.com', '',
+            array($it(9031, 1481, 'تلگرام پریمیوم - سه‌ماهه', 2, 7780000, array(array('key' => 'telegram_id', 'value' => 'mina_dev')))), 7200),
+        '1199' => $o(1199, 1199, 'completed', true, 'زرین‌پال', 'A000000000123450000', 'حسین کاظمی', '09123334455', '', '',
+            array($it(8991, 1471, 'اسپاتیفای پریمیوم - انفرادی', 1, 378000, array())), 86400),
+    );
+}
+
+function h_job_required($pid, array $inputs) {
+    $map = array(1421 => array(array('key' => 'email', 'label' => 'ایمیلِ اکانت')), 1481 => array(array('key' => 'telegram_id', 'label' => 'آیدیِ تلگرام')));
+    $given = array();
+    foreach ($inputs as $i) { if (trim($i['value']) !== '') { $given[$i['key']] = true; } }
+    $out = array();
+    foreach ($map[$pid] ?? array() as $r) { $out[] = array_merge($r, array('given' => isset($given[$r['key']]) || isset($given[$r['label']]))); }
+    return $out;
+}
+
+function h_order_view($oid, $reveal = false) {
+    $o = $GLOBALS['S']['orders'][(string) $oid] ?? null;
+    if (!$o) return null;
+    foreach ($o['items'] as &$it) {
+        $it['deliveries'] = h_deliveries($it['item_id'], $reveal);
+        foreach ($GLOBALS['S']['queue'] as $j) {
+            if ($j['item_id'] === $it['item_id']) { $it['job'] = array('id' => $j['id'], 'status' => $j['status'], 'note' => $j['note']); }
+        }
+    }
+    unset($it);
+    return $o;
+}
+
+/* همان رمزنگاری و پوشاندنِ واقعی — ‎phoenix_delivery_entries‎ بدونِ ووکامرس */
+function h_deliveries($item_id, $reveal) {
+    $out = array();
+    foreach ($GLOBALS['S']['deliveries'][(string) $item_id] ?? array() as $e) {
+        $secret = $e['secret'] !== '' ? json_decode((string) phoenix_secret_decrypt($e['secret']), true) : array();
+        $out[] = array('id' => $e['id'], 'kind' => $e['kind'], 'note' => $e['note'], 'until' => $e['until'], 'at' => $e['at'],
+            'secret' => $reveal ? (array) $secret : phoenix_delivery_mask((array) $secret));
+    }
+    return $out;
+}
+
 function h_queue_payload($status) {
-    $counts = array('pending' => 0, 'done' => 0, 'failed' => 0, 'cancelled' => 0);
+    $counts = array('pending' => 0, 'needs_input' => 0, 'done' => 0, 'failed' => 0, 'cancelled' => 0);
+    $words = array('manual' => 'دستی', 'upgrade_on_user' => 'ارتقای اکانتِ خودِ مشتری', 'api_topup' => 'شارژ خودکار');
     $rows = array();
     foreach ($GLOBALS['S']['queue'] as $j) {
         $counts[$j['status']]++;
-        if ($status === '' || $status === $j['status']) {
-            $rows[] = array_merge($j, array('order_url' => 'https://panel.phonixmarket.com/wp-admin/admin.php?page=wc-orders&action=edit&id=' . $j['order_id']));
-        }
+        if ($status !== '' && $status !== $j['status']) continue;
+        $view = h_order_view($j['order_id']);
+        $item = null;
+        foreach ($view['items'] as $it) { if ($it['item_id'] === $j['item_id']) $item = $it; }
+        $rows[] = array_merge($j, array(
+            'order_url' => 'https://panel.phonixmarket.com/wp-admin/admin.php?page=wc-orders&action=edit&id=' . $j['order_id'],
+            'product' => $item ? $item['name'] : '#' . $j['product_id'], 'mode' => $words[$j['mode_key']] ?? 'دستی',
+            'inputs' => $item ? $item['inputs'] : array(), 'deliveries' => $item ? $item['deliveries'] : array(),
+            'required' => h_job_required($j['product_id'], $item ? $item['inputs'] : array()), 'order' => $view,
+        ));
     }
     return array('counts' => $counts, 'rows' => $rows, 'auto_fulfil' => (bool) phoenix_setting('auto_fulfil'));
 }
 if ($path === '/queue') h_ok(h_queue_payload((string) ($q['status'] ?? '')));
+if (preg_match('#^/queue/(\d+)/reveal$#', $path, $m)) {
+    foreach ($GLOBALS['S']['queue'] as $j) {
+        if ($j['id'] === (int) $m[1]) {
+            phoenix_audit('queue', 'job:' . $j['id'], null, null, 'نمایشِ جزئیاتِ تحویل');
+            h_ok(array('deliveries' => h_deliveries($j['item_id'], true)));
+        }
+    }
+    h_fail('phoenix_queue', 'این کار پیدا نشد.', 404);
+}
 if (preg_match('#^/queue/(\d+)$#', $path, $m)) {
     $act = (string) ($body['act'] ?? '');
-    if (!in_array($act, array('done', 'retry', 'cancel'), true)) h_fail('rest_invalid_param', 'کنشِ نامعتبر.', 400);
+    if (!in_array($act, array('done', 'retry', 'cancel', 'deliver', 'ask'), true)) h_fail('rest_invalid_param', 'کنشِ نامعتبر.', 400);
     foreach ($GLOBALS['S']['queue'] as &$j) {
-        if ($j['id'] === (int) $m[1]) {
-            $before = $j['status'];
+        if ($j['id'] !== (int) $m[1]) continue;
+        $before = $j['status'];
+        $order = $GLOBALS['S']['orders'][(string) $j['order_id']];
+        if ($act === 'deliver') {
+            if (!$order['payment']['is_paid']) h_fail('phoenix_unpaid', 'این سفارش هنوز پرداخت نشده؛ تحویل نمی‌شود.', 409);
+            $c = phoenix_delivery_clean($body['delivery'] ?? array());
+            if (!$c['ok']) h_fail('phoenix_invalid', 'بعضی فیلدها درست نیستند.', 422, array('errors' => $c['errors']));
+            $GLOBALS['S']['deliveries'][(string) $j['item_id']][] = array('id' => substr(md5(uniqid()), 0, 12), 'kind' => $c['data']['kind'],
+                'secret' => $c['data']['secret'] ? phoenix_secret_encrypt(json_encode($c['data']['secret'])) : '',
+                'note' => $c['data']['note'], 'until' => $c['data']['until'], 'at' => time(), 'by' => 'مدیر');
+            $j['status'] = 'done'; $j['note'] = 'تحویل شد';
+        } elseif ($act === 'ask') {
+            $msg = trim((string) ($body['message'] ?? ''));
+            if ($msg === '' || mb_strlen($msg) > 500) h_fail('phoenix_invalid', 'پیام برای مشتری لازم است.', 422, array('errors' => array('message' => 'بنویس چه چیزی باید اصلاح شود — حداکثر ۵۰۰ نویسه.')));
+            $j['status'] = 'needs_input'; $j['note'] = $msg;
+        } else {
             $j['status'] = array('done' => 'done', 'retry' => 'pending', 'cancel' => 'cancelled')[$act];
             if ($act === 'retry') $j['note'] = '';
-            phoenix_audit('queue', 'job:' . $j['id'], $before, $j['status'], 'دستی از پنل');
-            unset($j);
-            h_ok(h_queue_payload(''));
         }
+        phoenix_audit('queue', 'job:' . $j['id'], $before, $j['status'], 'دستی از پنل');
+        unset($j);
+        h_ok(h_queue_payload(''));
     }
     h_fail('phoenix_queue', 'این کار پیدا نشد.', 404);
 }
@@ -1085,6 +1213,210 @@ if ($path === '/account/sms/test') {
     $GLOBALS['S']['acc_log'] = phoenix_acc_log_push($GLOBALS['S']['acc_log'] ?? array(),
         array('at' => time(), 'phone' => phoenix_acc_mask_phone($phone), 'ok' => $res['ok'], 'note' => $res['note']), 20, 604800, time());
     h_ok(array_merge(h_acc_payload(), array('test' => $res, 'request_url' => strtok($req['url'], '?'))));
+}
+
+/* ---------- Phoenix Account: سفارش‌ها، مشتریان، تیکت‌ها ---------- */
+
+/* مشتریان و تیکت‌های نمونه — بارِ اول از روی سفارش‌های نمونه */
+function h_acc_seed() {
+    if (isset($GLOBALS['S']['acc_customers'])) return;
+    $now = time();
+    $c = function ($phone, $name, $email, $pass, $joined, $login, $blocked = false) use ($now) {
+        return array('phone' => $phone, 'name' => $name, 'email' => $email, 'has_password' => $pass,
+            'pass_set_at' => $pass ? gmdate('c', $now - 20 * 86400) : null, 'blocked' => $blocked, 'note' => '',
+            'joined' => gmdate('c', $now - $joined), 'last_login' => $login ? gmdate('c', $now - $login) : null, 'locked_for' => 0);
+    };
+    $GLOBALS['S']['acc_customers'] = array(
+        '09121234567' => $c('09121234567', 'علی رضایی', 'ali.r@example.com', true, 90 * 86400, 1200),
+        '09351112233' => $c('09351112233', 'مینا احمدی', 'mina@example.com', false, 40 * 86400, 7000),
+        '09123334455' => $c('09123334455', 'حسین کاظمی', '', true, 200 * 86400, 3 * 86400),
+        '09191234567' => $c('09191234567', 'نگار کریمی', '', false, 400, 300),
+    );
+    $GLOBALS['S']['acc_sessions'] = array(
+        '09121234567' => array(
+            array('id' => 71, 'device' => 'آیفون · Safari', 'created' => gmdate('c', $now - 5 * 86400), 'last_seen' => gmdate('c', $now - 1200)),
+            array('id' => 64, 'device' => 'ویندوز · Chrome', 'created' => gmdate('c', $now - 12 * 86400), 'last_seen' => gmdate('c', $now - 2 * 86400)),
+        ),
+        '09351112233' => array(array('id' => 70, 'device' => 'اندروید · Chrome', 'created' => gmdate('c', $now - 7200), 'last_seen' => gmdate('c', $now - 7000))),
+    );
+    $GLOBALS['S']['acc_tickets'] = array(
+        array('id' => 12, 'phone' => '09121234567', 'subject' => 'فعال‌سازیِ چت‌جی‌پی‌تی کِی انجام می‌شود؟', 'order_id' => 1204, 'status' => 'open',
+              'created' => gmdate('c', $now - 1100), 'updated' => gmdate('c', $now - 900), 'last_by' => 'customer', 'unread' => false,
+              'messages' => array(
+                  array('id' => 1, 'author' => 'customer', 'staff' => '', 'body' => "سلام، سفارش را ثبت کردم و پرداخت شد.\nکِی روی اکانتم فعال می‌شود؟ امروز لازمش دارم.", 'at' => gmdate('c', $now - 1100)),
+                  array('id' => 2, 'author' => 'customer', 'staff' => '', 'body' => 'ایمیل همان ali.r@example.com است.', 'at' => gmdate('c', $now - 900)),
+              )),
+        array('id' => 11, 'phone' => '09351112233', 'subject' => 'آیدیِ تلگرام را اشتباه زدم', 'order_id' => 1203, 'status' => 'answered',
+              'created' => gmdate('c', $now - 6800), 'updated' => gmdate('c', $now - 6000), 'last_by' => 'staff', 'unread' => true,
+              'messages' => array(
+                  array('id' => 3, 'author' => 'customer', 'staff' => '', 'body' => 'آیدی را اشتباه نوشتم، درستش mina_dev2 است.', 'at' => gmdate('c', $now - 6800)),
+                  array('id' => 4, 'author' => 'staff', 'staff' => 'مدیر', 'body' => 'در حسابت روی سفارش «اصلاح» را بزن و آیدیِ درست را بنویس؛ همان لحظه به صف برمی‌گردد.', 'at' => gmdate('c', $now - 6000)),
+              )),
+        array('id' => 9, 'phone' => '09123334455', 'subject' => 'تمدیدِ اسپاتیفای', 'order_id' => 0, 'status' => 'closed',
+              'created' => gmdate('c', $now - 20 * 86400), 'updated' => gmdate('c', $now - 19 * 86400), 'last_by' => 'staff', 'unread' => false,
+              'messages' => array(
+                  array('id' => 5, 'author' => 'customer', 'staff' => '', 'body' => 'برای تمدید باید دوباره خرید کنم؟', 'at' => gmdate('c', $now - 20 * 86400)),
+                  array('id' => 6, 'author' => 'staff', 'staff' => 'مدیر', 'body' => 'بله، از صفحه‌ی محصول همان پلن را بخر؛ روی همان اکانت تمدید می‌شود.', 'at' => gmdate('c', $now - 19 * 86400)),
+              )),
+    );
+}
+h_acc_seed();
+
+function h_acc_order_row($o) {
+    $jobs = array();
+    foreach ($GLOBALS['S']['queue'] as $j) { if ($j['order_id'] === $o['id']) $jobs[] = $j['status']; }
+    return array('id' => $o['id'], 'number' => $o['number'], 'status' => $o['status'], 'status_label' => $o['status_label'],
+        'created' => $o['created'], 'paid' => $o['paid'], 'total' => $o['total'], 'method' => $o['payment']['method'],
+        'customer' => array('name' => $o['customer']['name'], 'phone' => $o['customer']['phone']),
+        'items' => array_map(function ($i) { return array('name' => $i['name'], 'qty' => $i['qty']); }, $o['items']),
+        'jobs' => array_count_values($jobs));
+}
+function h_acc_stats($phone) {
+    $n = 0; $sum = 0; $last = null;
+    foreach ($GLOBALS['S']['orders'] as $o) {
+        if ($o['customer']['phone'] !== $phone) continue;
+        if ($o['payment']['is_paid']) { $n++; $sum += $o['total']; }
+        $last = max((string) $last, $o['created']);
+    }
+    return array('orders_count' => $n, 'paid_total' => $sum, 'last_order' => $last);
+}
+function h_acc_customer_row($phone) {
+    $c = $GLOBALS['S']['acc_customers'][$phone];
+    return array_merge($c, h_acc_stats($phone));
+}
+function h_acc_ticket_list($status, $phone) {
+    $rows = array();
+    foreach ($GLOBALS['S']['acc_tickets'] as $t) {
+        if ($status !== '' && $t['status'] !== $status) continue;
+        if ($phone !== '' && $t['phone'] !== $phone) continue;
+        $row = $t; unset($row['messages']);
+        $row['customer'] = $GLOBALS['S']['acc_customers'][$t['phone']]['name'] ?? '';
+        $rows[] = $row;
+    }
+    usort($rows, function ($a, $b) {
+        if (($a['status'] === 'open') !== ($b['status'] === 'open')) return $a['status'] === 'open' ? -1 : 1;
+        return $a['status'] === 'open' ? strcmp($a['updated'], $b['updated']) : strcmp($b['updated'], $a['updated']);
+    });
+    return $rows;
+}
+function h_acc_ticket_counts() {
+    $c = array('open' => 0, 'answered' => 0, 'closed' => 0);
+    foreach ($GLOBALS['S']['acc_tickets'] as $t) $c[$t['status']]++;
+    return $c;
+}
+
+if ($path === '/account/overview') {
+    $all = array_map('h_acc_customer_row', array_keys($GLOBALS['S']['acc_customers']));
+    $recent = array_map('h_acc_order_row', array_values($GLOBALS['S']['orders']));
+    usort($recent, function ($a, $b) { return strcmp($b['created'], $a['created']); });
+    $onhold = count(array_filter($GLOBALS['S']['orders'], function ($o) { return $o['status'] === 'on-hold'; }));
+    $needs = count(array_filter($GLOBALS['S']['queue'], function ($j) { return $j['status'] === 'needs_input'; }));
+    $fresh = $all;
+    usort($fresh, function ($a, $b) { return strcmp($b['joined'], $a['joined']); });
+    h_ok(array(
+        'customers' => array('total' => count($all), 'new7' => count(array_filter($all, function ($c) { return strtotime($c['joined']) > time() - 7 * 86400; })),
+            'active7' => count(array_filter($all, function ($c) { return $c['last_login'] && strtotime($c['last_login']) > time() - 7 * 86400; })),
+            'with_password' => count(array_filter($all, function ($c) { return $c['has_password']; })),
+            'blocked' => count(array_filter($all, function ($c) { return $c['blocked']; }))),
+        'attention' => array('tickets_open' => h_acc_ticket_counts()['open'], 'on_hold' => $onhold, 'pending' => 0, 'needs_input' => $needs),
+        'waiting' => array_slice(h_acc_ticket_list('open', ''), 0, 6),
+        'recent' => $recent,
+        'fresh' => array_slice($fresh, 0, 6),
+    ));
+}
+if ($path === '/account/orders' && $method === 'GET') {
+    $st = (string) ($q['status'] ?? ''); $qq = trim((string) ($q['q'] ?? ''));
+    $counts = array();
+    $rows = array();
+    foreach ($GLOBALS['S']['orders'] as $o) {
+        $counts[$o['status']] = ($counts[$o['status']] ?? 0) + 1;
+        if ($st !== '' && $o['status'] !== $st) continue;
+        if ($qq !== '') {
+            $digits = preg_replace('/[^0-9]/', '', strtr($qq, array('۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9')));
+            if ($digits !== $o['number'] && $digits !== $o['customer']['phone']) continue;
+        }
+        $rows[] = h_acc_order_row($o);
+    }
+    usort($rows, function ($a, $b) { return strcmp($b['created'], $a['created']); });
+    h_ok(array('rows' => $rows, 'page' => 1, 'pages' => 1, 'total' => count($rows), 'counts' => $counts));
+}
+if (preg_match('#^/account/orders/(\d+)$#', $path, $m)) {
+    $view = h_order_view((int) $m[1]);
+    if (!$view) h_fail('phoenix_acc_nf', 'این سفارش پیدا نشد.', 404);
+    $phone = $view['customer']['phone'];
+    $now = time();
+    $notes = array(array('at' => gmdate('c', $now - 60), 'text' => 'وضعیتِ سفارش از «در انتظار پرداخت» به «در حال انجام» تغییر کرد.', 'customer' => false, 'by' => 'system'));
+    if ($view['paid']) array_unshift($notes, array('at' => $view['paid'], 'text' => 'پرداخت با ' . $view['payment']['method'] . ' انجام شد (تراکنش ' . $view['payment']['transaction_id'] . ').', 'customer' => false, 'by' => 'system'));
+    $cust = isset($GLOBALS['S']['acc_customers'][$phone]) ? array_merge(array('phone' => $phone, 'blocked' => $GLOBALS['S']['acc_customers'][$phone]['blocked']), h_acc_stats($phone)) : null;
+    h_ok(array('order' => array_merge($view, array('edit_url' => 'https://panel.phonixmarket.com/wp-admin/admin.php?page=wc-orders&action=edit&id=' . $view['id'])),
+        'notes' => $notes, 'customer' => $cust, 'tickets' => h_acc_ticket_list('', $phone)));
+}
+
+if ($path === '/account/customers' && $method === 'GET') {
+    $qq = trim((string) ($q['q'] ?? '')); $sort = (string) ($q['sort'] ?? 'recent');
+    $rows = array();
+    foreach (array_keys($GLOBALS['S']['acc_customers']) as $ph) {
+        $r = h_acc_customer_row($ph);
+        if ($qq !== '' && mb_stripos($r['name'] . ' ' . $r['email'] . ' ' . $r['phone'], $qq) === false) continue;
+        $rows[] = $r;
+    }
+    $key = array('recent' => 'last_order', 'spent' => 'paid_total', 'orders' => 'orders_count', 'joined' => 'joined')[$sort] ?? 'last_order';
+    usort($rows, function ($a, $b) use ($key) { return $b[$key] <=> $a[$key]; });
+    $all = array_map('h_acc_customer_row', array_keys($GLOBALS['S']['acc_customers']));
+    h_ok(array('rows' => $rows, 'total' => count($rows), 'page' => 1, 'pages' => 1, 'summary' => array(
+        'customers' => count($all), 'buyers' => count(array_filter($all, function ($r) { return $r['orders_count'] > 0; })),
+        'spent' => array_sum(array_column($all, 'paid_total')), 'with_password' => count(array_filter($all, function ($r) { return $r['has_password']; })))));
+}
+if ($path === '/account/customers/sync') h_ok(array('page' => 1, 'pages' => 1, 'phones' => count($GLOBALS['S']['acc_customers']), 'done' => true));
+if (preg_match('#^/account/customers/(09\d{9})$#', $path, $m)) {
+    $ph = $m[1];
+    if (!isset($GLOBALS['S']['acc_customers'][$ph])) h_fail('phoenix_acc_nf', 'مشتری‌ای با این شماره نیست.', 404);
+    if ($method === 'POST') {
+        $cc = &$GLOBALS['S']['acc_customers'][$ph];
+        switch ((string) ($body['act'] ?? '')) {
+            case 'block': $cc['blocked'] = true; $GLOBALS['S']['acc_sessions'][$ph] = array(); break;
+            case 'unblock': $cc['blocked'] = false; break;
+            case 'revoke': $GLOBALS['S']['acc_sessions'][$ph] = array(); break;
+            case 'clear_password': $cc['has_password'] = false; $cc['pass_set_at'] = null; $GLOBALS['S']['acc_sessions'][$ph] = array(); break;
+            case 'unlock': $cc['locked_for'] = 0; break;
+            case 'note': $cc['note'] = phoenix_acc_text($body['note'] ?? '', 500, true); break;
+            default: h_fail('rest_invalid_param', 'کنشِ نامعتبر.', 400);
+        }
+        unset($cc);
+        phoenix_audit('customer', 'phone:' . $ph, null, null, (string) $body['act']);
+    }
+    $orders = array();
+    foreach ($GLOBALS['S']['orders'] as $o) { if ($o['customer']['phone'] === $ph) $orders[] = h_acc_order_row($o); }
+    h_ok(array('customer' => h_acc_customer_row($ph), 'orders' => $orders,
+        'sessions' => $GLOBALS['S']['acc_sessions'][$ph] ?? array(), 'tickets' => h_acc_ticket_list('', $ph)));
+}
+
+if ($path === '/account/tickets' && $method === 'GET') {
+    h_ok(array('rows' => h_acc_ticket_list((string) ($q['status'] ?? ''), ''), 'total' => 0, 'page' => 1, 'pages' => 1, 'counts' => h_acc_ticket_counts()));
+}
+if (preg_match('#^/account/tickets/(\d+)$#', $path, $m)) {
+    $idx = null;
+    foreach ($GLOBALS['S']['acc_tickets'] as $i => $t) { if ($t['id'] === (int) $m[1]) $idx = $i; }
+    if ($idx === null) h_fail('phoenix_acc_nf', 'این تیکت پیدا نشد.', 404);
+    $t = &$GLOBALS['S']['acc_tickets'][$idx];
+    if ($method === 'POST') {
+        $act = (string) ($body['act'] ?? '');
+        if ($act === 'reply') {
+            $c = phoenix_acc_ticket_clean(array('body' => $body['body'] ?? ''), false);
+            if (!$c['ok']) h_fail('phoenix_invalid', 'متنِ پاسخ را بنویس.', 422, array('errors' => $c['errors']));
+            $t['messages'][] = array('id' => count($t['messages']) + 100, 'author' => 'staff', 'staff' => 'مدیر', 'body' => $c['data']['body'], 'at' => gmdate('c'));
+            $t['status'] = 'answered'; $t['last_by'] = 'staff'; $t['unread'] = true; $t['updated'] = gmdate('c');
+        } elseif ($act === 'close' || $act === 'reopen') {
+            $t['status'] = $act === 'close' ? 'closed' : 'open'; $t['updated'] = gmdate('c');
+        } else {
+            h_fail('rest_invalid_param', 'کنشِ نامعتبر.', 400);
+        }
+        phoenix_audit('ticket', 'ticket:' . $t['id'], null, $t['status'], $act);
+    }
+    $ticket = $t; unset($t);
+    $ord = null;
+    if ($ticket['order_id'] && isset($GLOBALS['S']['orders'][(string) $ticket['order_id']])) $ord = h_acc_order_row($GLOBALS['S']['orders'][(string) $ticket['order_id']]);
+    h_ok(array('ticket' => $ticket, 'customer' => h_acc_customer_row($ticket['phone']), 'order' => $ord));
 }
 
 h_fail('rest_no_route', 'مسیر پیدا نشد: ' . $method . ' ' . $path, 404);

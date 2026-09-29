@@ -35,16 +35,19 @@ function paint(ctx, d) {
   ctx.setRate(st.rate.value, st.rate.stale);
 
   clear(v);
-  v.append(
+  /* ⚠ ‎put‎‌وار: کارتِ فروش بی‌ووکامرس ‎null‎ است و ‎append()‎ی مرورگر آن را «null» می‌نویسد */
+  v.append(...[
     hero(ctx, d),
     kpis(ctx, d),
+    d.sales ? salesCard(ctx, d.sales) : null,
+    d.sales ? h('div', { class: 'phx2-grid phx2-grid--2' }, topCard(ctx, d.sales), soldCard(ctx, d.sales)) : null,
     h('div', { class: 'phx2-grid phx2-grid--2' },
       alertsCard(ctx, d),
       suggestionsCard(ctx, d),
     ),
     chartCard(ctx, d),
     recentCard(ctx, d),
-  );
+  ].filter(Boolean));
 }
 
 /* ------------------------------------------------------------
@@ -92,6 +95,10 @@ function actionButton(ctx, action, cls = 'phx2-btn phx2-btn--sm') {
   if (action.href) {
     return h('a', { class: cls, href: action.href, target: '_blank', rel: 'noopener noreferrer' },
       action.label, icon('external'));
+  }
+  /* بخشی در پنلِ دیگرِ همین پیشخوان (مثلاً «مشتریان») — همین تب */
+  if (action.link) {
+    return h('a', { class: cls, href: action.link }, icon('arrow'), action.label);
   }
   const btn = h('button', { class: cls, type: 'button' },
     action.do === 'rate-refresh' ? icon('refresh') : action.do ? icon('power') : icon('arrow'),
@@ -261,6 +268,126 @@ function kpis(ctx, d) {
       extra: sw,
     }),
   );
+}
+
+/* ------------------------------------------------------------
+   فروش
+
+   ⚠ عدد از سرور، قضاوت هم: «امروز» با ساعتِ تهران بریده می‌شود و
+   روند در ‎phoenix_sales_summary‎ حساب می‌شود (با تست). این‌جا فقط
+   نشان داده می‌شود. جزئیاتِ هر سفارش در پنلِ «مشتریان».
+   ------------------------------------------------------------ */
+
+/** سفارش در پنلِ «مشتریان»، وگرنه صفحه‌ی ووکامرس */
+function orderLink(ctx, id, fallback) {
+  return ctx.worldUrl('customers', 'orders/' + id) || fallback;
+}
+
+function delta(ctx, now, before) {
+  const { pill, fa } = ctx.ui;
+  if (!before) return now ? pill('تازه', 'info') : null;
+  const pct = ((now - before) / before) * 100;
+  const tone = pct > 0 ? 'good' : pct < 0 ? 'bad' : 'neutral';
+  return pill((pct > 0 ? '▲ ' : pct < 0 ? '▼ ' : '') + fa(Math.abs(pct).toFixed(0)) + '٪', tone);
+}
+
+function salesCard(ctx, sa) {
+  const { h, fa, pill, card, icon } = ctx.ui;
+  const tile = (label, value, sub, badge) => h('article', { class: 'phx2-sale' },
+    h('div', { class: 'phx2-sale__h' }, h('span', null, label), badge),
+    h('b', { class: 'num' }, value, h('small', null, ' تومان')),
+    h('span', { class: 'phx2-sale__s' }, sub),
+  );
+  const wk = sa.week;
+  const trend = wk.trend === null ? (wk.revenue ? pill('هفته‌ی اول', 'info') : null)
+    : pill((wk.trend > 0 ? '▲ ' : wk.trend < 0 ? '▼ ' : '') + fa(Math.abs(wk.trend).toFixed(0)) + '٪', wk.trend > 0 ? 'good' : wk.trend < 0 ? 'bad' : 'neutral');
+
+  const c = card('فروش', 'سفارش‌های پرداخت‌شده — با ساعتِ خودِ سایت.');
+  const all = ctx.worldUrl('customers', 'orders');
+  if (all) c.querySelector('.phx2-card__head').append(h('a', { class: 'phx2-btn phx2-btn--sm phx2-btn--ghost', href: all }, 'همه‌ی سفارش‌ها', icon('arrow')));
+
+  const w = sa.waiting || {};
+  c.append(
+    h('div', { class: 'phx2-sales' },
+      tile('امروز', fa(sa.today.revenue), fa(sa.today.count) + ' سفارش · دیروز ' + fa(sa.yesterday.revenue), delta(ctx, sa.today.revenue, sa.yesterday.revenue)),
+      tile('هفت روزِ اخیر', fa(wk.revenue), fa(wk.count) + ' سفارش · در برابرِ هفت روزِ قبل', trend),
+      tile('سی روزِ اخیر', fa(sa.month.revenue), fa(sa.month.count) + ' سفارش · ' + fa(sa.month.buyers) + ' خریدار', null),
+      tile('میانگینِ هر سفارش', fa(sa.month.avg), 'در سی روزِ اخیر', null),
+    ),
+    h('div', { class: 'phx2-chart phx2-chart--bars', role: 'img', 'aria-label': `فروشِ روزانه در سی روزِ اخیر؛ جمع ${fa(sa.month.revenue)} تومان` },
+      bars(ctx, sa.daily)),
+    (w.pending || w.on_hold) ? h('p', { class: 'phx2-sales__wait' },
+      icon('clock'),
+      h('span', null, fa(w.pending || 0) + ' سفارش در انتظارِ پرداخت'),
+      w.on_hold ? h('a', { href: ctx.worldUrl('customers', 'orders/on-hold') || '#' }, fa(w.on_hold) + ' پرداخت منتظرِ تأییدِ توست') : null,
+    ) : null,
+  );
+  return c;
+}
+
+/** ستون‌های فروشِ روزانه — چپ‌به‌راست مثلِ نمودارِ نرخ؛ امروز پررنگ */
+function bars(ctx, days) {
+  const { s, fa, shortDate } = ctx.ui;
+  const W = 760; const H = 170;
+  const P = { t: 14, r: 64, b: 26, l: 8 };
+  /* سقفِ «گرد» — «۵۵ میلیون» خواناست، «۵۰٬۹۹۹٬۰۰۰» نه */
+  const top0 = Math.max(1, ...days.map((d) => d.revenue));
+  const mag = 10 ** Math.floor(Math.log10(top0));
+  const max = (Math.ceil((top0 / mag) * 2) / 2) * mag;
+  const short = (n) => (n >= 1e9 ? fa(+(n / 1e9).toFixed(1)) + ' میلیارد'
+    : n >= 1e6 ? fa(+(n / 1e6).toFixed(1)) + ' میلیون'
+    : n >= 1e3 ? fa(+(n / 1e3).toFixed(1)) + ' هزار' : fa(n));
+  const bw = (W - P.l - P.r) / days.length;
+  const y = (v) => P.t + (1 - v / max) * (H - P.t - P.b);
+  const last = days.length - 1;
+  return s('svg', { viewBox: `0 0 ${W} ${H}`, 'aria-hidden': 'true' },
+    [0, 0.5, 1].map((f) => {
+      const gy = P.t + f * (H - P.t - P.b);
+      return [
+        s('line', { class: 'phx2-chart__grid', x1: P.l, x2: W - P.r, y1: gy, y2: gy }),
+        s('text', { class: 'phx2-chart__lbl', x: W - P.r + 8, y: gy + 4 }, short(Math.round(max * (1 - f)))),
+      ];
+    }),
+    days.map((d, i) => {
+      const top = y(d.revenue);
+      const bar = s('rect', {
+        class: 'phx2-bar' + (i === last ? ' is-today' : ''),
+        x: (P.l + i * bw + bw * 0.18).toFixed(1), y: top.toFixed(1),
+        width: (bw * 0.64).toFixed(1), height: Math.max(d.revenue ? 2 : 0, H - P.b - top).toFixed(1), rx: 3,
+      });
+      bar.append(s('title', null, `${shortDate(d.date + 'T12:00:00')} — ${fa(d.revenue)} تومان، ${fa(d.count)} سفارش`));
+      return bar;
+    }),
+    s('text', { class: 'phx2-chart__lbl', x: P.l, y: H - 6 }, shortDate(days[0].date + 'T12:00:00')),
+    s('text', { class: 'phx2-chart__lbl', x: W - P.r, y: H - 6, 'text-anchor': 'end' }, 'امروز'),
+  );
+}
+
+function topCard(ctx, sa) {
+  const { h, fa, card } = ctx.ui;
+  const max = Math.max(1, ...sa.top.map((t) => t.revenue));
+  return card('پرفروش‌ها', 'سی روزِ اخیر، به مبلغ.',
+    sa.top.length
+      ? h('ol', { class: 'phx2-top' }, sa.top.map((t) => h('li', null,
+        h('div', { class: 'phx2-top__h' }, h('span', null, t.name), h('b', { class: 'num' }, fa(t.revenue))),
+        h('div', { class: 'phx2-top__bar', 'aria-hidden': 'true' }, h('span', { style: { width: Math.max(3, (t.revenue / max) * 100) + '%' } })),
+        h('small', { class: 'num' }, fa(t.qty) + ' عدد'),
+      )))
+      : h('p', { class: 'phx2-empty' }, 'در این سی روز هنوز فروشی نبوده.'));
+}
+
+function soldCard(ctx, sa) {
+  const { h, fa, digits, ago, card } = ctx.ui;
+  return card('آخرین فروش‌ها', 'پرداخت‌شده‌ها، تازه‌ترین بالا.',
+    sa.recent.length
+      ? h('ul', { class: 'phx2-linklist' }, sa.recent.map((r) => h('li', null,
+        h('span', null,
+          h('a', { href: orderLink(ctx, r.id, r.edit_url) }, h('b', { class: 'num' }, '#' + digits(r.number))),
+          ' ', r.name || digits(r.phone),
+          h('small', { class: 'phx2-td-sub' }, r.items)),
+        h('span', { class: 'phx2-td-nowrap' }, h('b', { class: 'num' }, fa(r.total)), h('small', { class: 'phx2-td-sub' }, ago(r.paid))),
+      )))
+      : h('p', { class: 'phx2-empty' }, 'هنوز فروشی ثبت نشده.'));
 }
 
 /* ------------------------------------------------------------

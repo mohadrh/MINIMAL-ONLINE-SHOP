@@ -6,7 +6,7 @@
    بقیه بعد از یک سال.
    ============================================================ */
 
-const KIND = { setting: 'تنظیم', rate: 'نرخ', price: 'قیمت', discount: 'تخفیف', queue: 'صف', product: 'محصول' };
+const KIND = { setting: 'تنظیم', rate: 'نرخ', price: 'قیمت', discount: 'تخفیف', queue: 'صف', product: 'محصول', customer: 'مشتری', ticket: 'تیکت' };
 const SETTING = {
   engine_on: 'موتور قیمت', auto_fulfil: 'خرید خودکار', margin: 'حاشیه‌ی پیش‌فرض',
   margin_by_cat: 'حاشیه‌ی دسته‌ها', margin_by_prod: 'حاشیه‌ی محصولات', discounts: 'تخفیف‌ها',
@@ -26,6 +26,8 @@ function subject(kind, s) {
   if (v.startsWith('coupon:')) return 'کدِ ' + iso(v.slice(7));
   if (v.startsWith('job:')) return 'کارِ ' + toFa(v.slice(4));
   if (v.startsWith('order:')) return 'سفارشِ ' + toFa(v.slice(6));
+  if (v.startsWith('ticket:')) return 'تیکتِ ' + toFa(v.slice(7));
+  if (v.startsWith('phone:')) return iso(toFa(v.slice(6)));
   return /[A-Za-z]/.test(v) ? iso(v) : v;
 }
 
@@ -33,7 +35,10 @@ function value(v) {
   if (v === null || v === undefined || v === '') return '—';
   if (v === 'true') return 'روشن';
   if (v === 'false') return 'خاموش';
-  const words = { pending: 'منتظر', done: 'انجام‌شده', failed: 'ناموفق', cancelled: 'لغوشده' };
+  const words = {
+    pending: 'منتظر', done: 'انجام‌شده', failed: 'ناموفق', cancelled: 'لغوشده', needs_input: 'منتظرِ اصلاحِ مشتری',
+    open: 'باز', answered: 'پاسخ داده شد', closed: 'بسته',
+  };
   if (words[v]) return words[v];
   if (/^\d+$/.test(v)) return Number(v).toLocaleString('fa-IR');
   if (/^[\d.,/٪ ]+$/.test(v)) return toFa(v);
