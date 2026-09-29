@@ -222,5 +222,45 @@ is_same('غیرِ آرایه رد', phoenix_acc_inputs_clean('email=x', $allowed
 $c = phoenix_acc_inputs_clean(array('email' => ' a@b.co ', 'آیدیِ تلگرام' => '@mina'), $allowed);
 is_same('درست', array($c['ok'], $c['data']), array(true, array('email' => 'a@b.co', 'آیدیِ تلگرام' => '@mina')));
 
+/* ============================================================ */
+section('چت: تنظیمات');
+
+$d = phoenix_acc_chat_defaults();
+is_same('بیست کارشناس، همه فعال', array(count($d['agents']), count(phoenix_acc_chat_active_agents($d))), array(20, 20));
+is_same('نام‌ها فارسی', (bool) preg_match('/^[\x{0600}-\x{06FF}\x{200C} ]+$/u', implode('', array_column($d['agents'], 'name'))), true);
+$c = phoenix_acc_chat_settings_clean(array());
+is_same('بی‌ورودی = پیش‌فرض و درست', array($c['ok'], $c['data']['title'], count($c['data']['agents'])), array(true, $d['title'], 20));
+$c = phoenix_acc_chat_settings_clean(array('agents' => array(array('name' => 'الف', 'active' => false))));
+is_same('بی‌کارشناسِ فعال رد', isset($c['errors']['agents']), true);
+$c = phoenix_acc_chat_settings_clean(array('agents' => array(array('name' => 'الف', 'active' => true), array('name' => 'الف', 'active' => true), array('name' => ' ', 'active' => true), array('name' => '<b>ب</b>', 'active' => true))));
+is_same('نامِ تکراری و خالی بیرون، تگ پاک', array_column($c['data']['agents'], 'name'), array('الف', 'ب'));
+is_same('ساعتِ بد رد', isset(phoenix_acc_chat_settings_clean(array('hours_from' => '25:00'))['errors']['hours_from']), true);
+is_same('رنگِ بد رد', isset(phoenix_acc_chat_settings_clean(array('accent' => 'red;background:url(x)'))['errors']['accent']), true);
+is_same('رنگِ درست کوچک', phoenix_acc_chat_settings_clean(array('accent' => '#E8862E'))['data']['accent'], '#e8862e');
+is_same('آیدیِ تلگرام با @ پذیرفته', phoenix_acc_chat_settings_clean(array('telegram' => '@Ph0enixSupport'))['data']['telegram'], 'Ph0enixSupport');
+is_same('آیدیِ تلگرامِ بد رد', isset(phoenix_acc_chat_settings_clean(array('telegram' => 'a b'))['errors']['telegram']), true);
+is_same('گوشه‌ی ناشناخته → چپ', phoenix_acc_chat_settings_clean(array('position' => 'top'))['data']['position'], 'left');
+is_same('ساعتِ روشن بی‌روز رد', isset(phoenix_acc_chat_settings_clean(array('hours_on' => true, 'days' => array()))['errors']['days']), true);
+is_same('روزِ بیرون از ۰..۶ بیرون', phoenix_acc_chat_settings_clean(array('days' => array(9, 2, 2, -1)))['data']['days'], array(2));
+$pub = phoenix_acc_chat_public($d, true);
+is_same('سایت پاسخ‌های آماده را نمی‌بیند', array_key_exists('quick', $pub), false);
+
+section('چت: ساعت و کارشناس');
+
+$h = array_merge($d, array('hours_on' => true, 'hours_from' => '09:00', 'hours_to' => '23:00', 'days' => array(0, 1, 2, 3, 4, 5)));
+is_same('ساعتِ خاموش = همیشه باز', phoenix_acc_chat_is_open($d, 3 * 60, 6), true);
+is_same('۱۰ صبحِ شنبه باز', phoenix_acc_chat_is_open($h, 600, 0), true);
+is_same('۸ صبح بسته', phoenix_acc_chat_is_open($h, 480, 0), false);
+is_same('جمعه بسته', phoenix_acc_chat_is_open($h, 600, 6), false);
+is_same('۲۳:۰۰ خودش بسته', phoenix_acc_chat_is_open($h, 23 * 60, 1), false);
+$night = array_merge($h, array('hours_from' => '22:00', 'hours_to' => '02:00'));
+is_same('بازه‌ی از نیمه‌شب گذشته: ۱ بامداد باز', phoenix_acc_chat_is_open($night, 60, 1), true);
+is_same('بازه‌ی از نیمه‌شب گذشته: ظهر بسته', phoenix_acc_chat_is_open($night, 720, 1), false);
+$act = array('سارا محمدی', 'امیر رضایی');
+is_same('نامِ خواسته‌شده اگر فعال است', phoenix_acc_chat_pick_agent($act, 'امیر رضایی', 0), 'امیر رضایی');
+is_same('نامِ ناشناخته → قرعه از فعال‌ها', in_array(phoenix_acc_chat_pick_agent($act, 'هکر', 7), $act, true), true);
+is_same('بی‌فعال → «پشتیبانی»', phoenix_acc_chat_pick_agent(array(), 'x', 1), 'پشتیبانی');
+is_same('{agent} جایگزین', phoenix_acc_chat_fill('وصلت می‌کنم به {agent}.', 'سارا'), 'وصلت می‌کنم به سارا.');
+
 printf("\n%d قبول، %d مردود\n", $GLOBALS['pass'], $GLOBALS['fail']);
 exit($GLOBALS['fail'] ? 1 : 0);

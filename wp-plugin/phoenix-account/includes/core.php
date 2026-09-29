@@ -523,3 +523,217 @@ function phoenix_acc_log_push(array $list, array $row, $max, $ttl, $now) {
     }
     return $out;
 }
+
+/* ============================================================
+   چتِ آنلاین — تنظیمات
+   ============================================================ */
+
+/**
+ * بیست کارشناس — نامِ فارسی. به هر گفتگو یکی نشان داده می‌شود و تا
+ * آخرِ همان گفتگو همان می‌ماند. فهرست از پنل عوض می‌شود.
+ */
+const PHOENIX_ACC_CHAT_AGENTS = array(
+    'سارا محمدی', 'امیر رضایی', 'نگین کاظمی', 'محمد حسینی',
+    'الهه نوری', 'پویا صادقی', 'مریم افشار', 'رضا کریمی',
+    'شیوا مرادی', 'آرش بهرامی', 'نیلوفر جعفری', 'سینا اکبری',
+    'هستی رحیمی', 'کیان مهدوی', 'پریسا شریفی', 'بهنام قاسمی',
+    'یلدا امینی', 'فرهاد نیک‌پور', 'ترانه سلطانی', 'حامد یزدانی',
+);
+
+/**
+ * پیش‌فرض‌ها — متن‌ها همان‌اند که چتِ سایت همین حالا دارد؛ لحن را
+ * کارفرما بعداً از پنل عوض می‌کند.
+ */
+function phoenix_acc_chat_defaults() {
+    $agents = array();
+    foreach (PHOENIX_ACC_CHAT_AGENTS as $n) {
+        $agents[] = array('name' => $n, 'active' => true);
+    }
+    return array(
+        'enabled'       => true,
+        'bot'           => true,
+        'title'         => 'دستیار و پشتیبانی فونیکس',
+        'subtitle'      => 'معمولاً زیر چند دقیقه جواب می‌دهیم',
+        'greeting'      => "سلام 👋\nهم برای انتخاب محصول کمکت می‌کنم، هم سفارشت را پیگیری می‌کنم، هم جواب سوال‌هایت را می‌دهم.\n\nکدام؟",
+        'handoff'       => "وصلت می‌کنم به {agent} از تیم پشتیبانی.\n\nسوالت را برایش فرستادم و همین‌جا جواب می‌دهد.",
+        'offline'       => "الان خارج از ساعتِ پاسخ‌گویی هستیم.\n\nسوالت را برای {agent} فرستادم؛ اولِ وقتِ کاری همین‌جا جواب می‌دهد.",
+        'hours_on'      => false,
+        'hours_from'    => '09:00',
+        'hours_to'      => '23:00',
+        'days'          => array(0, 1, 2, 3, 4, 5, 6), // ۰ = شنبه … ۶ = جمعه
+        'telegram'      => 'Ph0enixSupport',
+        'show_telegram' => true,
+        'position'      => 'left',   // left | right — گوشه‌ی دکمه
+        'accent'        => '',       // خالی = رنگِ خودِ سایت
+        'agents'        => $agents,
+        'quick'         => array(
+            'سلام، وقتتون بخیر. در خدمتم.',
+            'چند لحظه اجازه بدید بررسی کنم.',
+            'سفارشتون در صفِ تحویل است و به‌زودی فعال می‌شود.',
+            'لطفاً شماره‌ی سفارش را بفرستید.',
+            'مشکل برطرف شد. اگر سوال دیگری هست در خدمتم.',
+        ),
+    );
+}
+
+/**
+ * @return array{ok:bool, errors:array<string,string>, data:array}
+ */
+function phoenix_acc_chat_settings_clean(array $in) {
+    $d   = phoenix_acc_chat_defaults();
+    $err = array();
+    $out = array();
+
+    foreach (array('enabled', 'bot', 'hours_on', 'show_telegram') as $k) {
+        $out[$k] = array_key_exists($k, $in) ? (bool) $in[$k] : $d[$k];
+    }
+
+    foreach (array('title' => 60, 'subtitle' => 90) as $k => $max) {
+        $v = phoenix_acc_text(array_key_exists($k, $in) ? $in[$k] : $d[$k], $max);
+        if ($v === '') {
+            $err[$k] = 'خالی نماند.';
+        }
+        $out[$k] = $v;
+    }
+    foreach (array('greeting' => 600, 'handoff' => 600, 'offline' => 600) as $k => $max) {
+        $v = phoenix_acc_text(array_key_exists($k, $in) ? $in[$k] : $d[$k], $max, true);
+        if ($v === '') {
+            $err[$k] = 'خالی نماند.';
+        }
+        $out[$k] = $v;
+    }
+
+    foreach (array('hours_from', 'hours_to') as $k) {
+        $v = (string) (array_key_exists($k, $in) ? $in[$k] : $d[$k]);
+        if (!preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $v)) {
+            $err[$k] = 'ساعت به شکلِ ۰۹:۰۰ — از ۰۰:۰۰ تا ۲۳:۵۹.';
+            $v = $d[$k];
+        }
+        $out[$k] = $v;
+    }
+    $days = array();
+    foreach ((array) (array_key_exists('days', $in) ? $in['days'] : $d['days']) as $x) {
+        if (is_numeric($x) && (int) $x >= 0 && (int) $x <= 6) {
+            $days[(int) $x] = true;
+        }
+    }
+    $out['days'] = array_keys($days);
+    sort($out['days']);
+    if ($out['hours_on'] && !$out['days']) {
+        $err['days'] = 'دست‌کم یک روز.';
+    }
+
+    $tg = ltrim(trim((string) (array_key_exists('telegram', $in) ? $in['telegram'] : $d['telegram'])), '@');
+    if ($tg !== '' && !preg_match('/^[A-Za-z][A-Za-z0-9_]{4,31}$/', $tg)) {
+        $err['telegram'] = 'آیدیِ تلگرام: حرفِ لاتین، عدد و زیرخط، ۵ تا ۳۲ نویسه.';
+        $tg = $d['telegram'];
+    }
+    $out['telegram'] = $tg;
+
+    $pos = (string) ($in['position'] ?? $d['position']);
+    $out['position'] = in_array($pos, array('left', 'right'), true) ? $pos : 'left';
+
+    $acc = trim((string) ($in['accent'] ?? ''));
+    if ($acc !== '' && !preg_match('/^#[0-9a-fA-F]{6}$/', $acc)) {
+        $err['accent'] = 'رنگ به شکلِ ‎#e8862e‎، یا خالی برای رنگِ سایت.';
+        $acc = '';
+    }
+    $out['accent'] = strtolower($acc);
+
+    /* کارشناس‌ها: نامِ تکراری یک بار، حداکثر ۶۰ نفر */
+    $agents = array();
+    $seen   = array();
+    foreach ((array) (array_key_exists('agents', $in) ? $in['agents'] : $d['agents']) as $a) {
+        $name = phoenix_acc_text(is_array($a) ? ($a['name'] ?? '') : $a, 40);
+        if ($name === '' || isset($seen[$name])) {
+            continue;
+        }
+        $seen[$name] = true;
+        $agents[] = array('name' => $name, 'active' => is_array($a) ? !empty($a['active']) : true);
+        if (count($agents) >= 60) {
+            break;
+        }
+    }
+    if (!array_filter(array_column($agents, 'active'))) {
+        $err['agents'] = 'دست‌کم یک کارشناسِ فعال لازم است.';
+    }
+    $out['agents'] = $agents;
+
+    $quick = array();
+    foreach ((array) (array_key_exists('quick', $in) ? $in['quick'] : $d['quick']) as $q) {
+        $q = phoenix_acc_text($q, 400, true);
+        if ($q !== '' && count($quick) < 40) {
+            $quick[] = $q;
+        }
+    }
+    $out['quick'] = $quick;
+
+    return array('ok' => !$err, 'errors' => $err, 'data' => $out);
+}
+
+/** نام‌های کارشناس‌های فعال */
+function phoenix_acc_chat_active_agents(array $s) {
+    $out = array();
+    foreach ((array) $s['agents'] as $a) {
+        if (!empty($a['active'])) {
+            $out[] = (string) $a['name'];
+        }
+    }
+    return $out;
+}
+
+/** آنچه سایت لازم دارد — بی‌پاسخ‌های آماده‌ی اپراتور */
+function phoenix_acc_chat_public(array $s, $open) {
+    return array(
+        'enabled'  => (bool) $s['enabled'],
+        'bot'      => (bool) $s['bot'],
+        'title'    => $s['title'],
+        'subtitle' => $s['subtitle'],
+        'greeting' => $s['greeting'],
+        'handoff'  => $s['handoff'],
+        'offline'  => $s['offline'],
+        'open'     => (bool) $open,
+        'telegram' => $s['show_telegram'] ? $s['telegram'] : '',
+        'position' => $s['position'],
+        'accent'   => $s['accent'],
+        'agents'   => phoenix_acc_chat_active_agents($s),
+    );
+}
+
+/**
+ * الان ساعتِ پاسخ‌گویی است؟
+ *
+ * @param int $minutes دقیقه از نیمه‌شب، به وقتِ سایت
+ * @param int $day     ۰ = شنبه … ۶ = جمعه
+ */
+function phoenix_acc_chat_is_open(array $s, $minutes, $day) {
+    if (empty($s['hours_on'])) {
+        return true;
+    }
+    if (!in_array((int) $day, array_map('intval', (array) $s['days']), true)) {
+        return false;
+    }
+    list($fh, $fm) = array_map('intval', explode(':', $s['hours_from']));
+    list($th, $tm) = array_map('intval', explode(':', $s['hours_to']));
+    $from = $fh * 60 + $fm;
+    $to   = $th * 60 + $tm;
+    /* ‎۲۲:۰۰ تا ۰۲:۰۰‎ — بازه از نیمه‌شب رد می‌شود */
+    return $from <= $to ? ($minutes >= $from && $minutes < $to) : ($minutes >= $from || $minutes < $to);
+}
+
+/** نامی که مرورگر خواسته، اگر در فهرستِ فعال هست؛ وگرنه یکی به قرعه */
+function phoenix_acc_chat_pick_agent(array $active, $wanted, $rand) {
+    if (!$active) {
+        return 'پشتیبانی';
+    }
+    $wanted = (string) $wanted;
+    if ($wanted !== '' && in_array($wanted, $active, true)) {
+        return $wanted;
+    }
+    return $active[abs((int) $rand) % count($active)];
+}
+
+/** ‎{agent}‎ در متن‌های قابلِ تنظیم */
+function phoenix_acc_chat_fill($text, $agent) {
+    return str_replace('{agent}', (string) $agent, (string) $text);
+}

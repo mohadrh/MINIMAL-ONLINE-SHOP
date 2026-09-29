@@ -60,7 +60,9 @@ export interface Chip {
 export type ChatState =
   | { mode: 'idle' }
   | { mode: 'buy'; cat: string }
-  | { mode: 'track' };
+  | { mode: 'track' }
+  /** پیامِ بعدی مستقیم به کارشناس — بی‌آنکه ربات حدس بزند */
+  | { mode: 'agent' };
 
 export const START: ChatState = { mode: 'idle' };
 
@@ -74,6 +76,9 @@ export interface Answer {
   next?: ChatState;
   /** راهنمای کادرِ نوشتن، وقتی ربات منتظرِ چیزِ مشخصی است */
   ask?: string;
+  /** سوالی که باید به کارشناس برسد — سایتِ وصل به پنل آن را واقعاً
+      به چتِ آنلاین می‌فرستد (‎lib/api/chat‎) */
+  handoff?: string;
 }
 
 /* ---------------------------------------------------------------
@@ -88,6 +93,10 @@ const MENU: Chip[] = [
   { label: '🛍 کمک برای انتخاب', act: 'buy' },
   { label: '📦 پیگیری سفارش', act: 'track' },
   { label: '💬 سوال و پشتیبانی', act: 'help' },
+  /* ⚠ راهِ مستقیم به آدم. ربات با کلیدواژه جواب می‌دهد و گاهی جوابی
+     می‌دهد که سوال نبود؛ کسی که از اول آدم می‌خواهد نباید از ربات
+     رد شود. */
+  { label: '👤 صحبت با کارشناس', act: 'agent' },
 ];
 
 export const GREETING: Answer = {
@@ -466,6 +475,7 @@ function handoff(question: string, agent: string, context?: string): Answer {
       'سوالت را برایش فرستادم و همین‌جا جواب می‌دهد. اگر عجله داری، در تلگرام هم می‌توانی بپرسی — آن‌جا سریع‌تر جواب می‌گیری.',
     ].join('\n'),
     links: [{ label: 'پرسیدن در تلگرام', href: supportLink(question, context) }],
+    handoff: question,
     chips: [
       { label: 'همین‌جا منتظر می‌مانم', act: 'wait' },
       { label: 'سوال دیگری دارم', act: 'help' },
@@ -567,6 +577,16 @@ export function run(act: string, state: ChatState): Answer {
       text: 'باشه. سوالت ثبت شد و کارشناس همین‌جا جواب می‌دهد.\nتا آن موقع می‌توانی چیز دیگری بپرسی.',
       chips: MENU,
       next: START,
+    };
+  }
+
+  /* --- مستقیم به کارشناس --- */
+
+  if (act === 'agent') {
+    return {
+      text: 'سوالت را بنویس تا به یکی از کارشناس‌ها برسد.',
+      chips: [backChip],
+      next: { mode: 'agent' },
     };
   }
 
@@ -713,6 +733,9 @@ function smallTalk(t: string): Answer | null {
 export function freeText(input: string, state: ChatState, agent: string, context?: string): Answer {
   const t = input.trim();
   if (!t) return { text: 'چیزی ننوشتی.', chips: MENU, next: START };
+
+  /* کاربر خودش کارشناس خواسته — هرچه نوشت همان می‌رود */
+  if (state.mode === 'agent') return handoff(t, agent, context);
 
   /* سلام و تعارف — ولی نه وقتی ربات منتظرِ کدِ سفارش است */
   if (state.mode !== 'track') {

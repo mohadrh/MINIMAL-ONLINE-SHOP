@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Phoenix Account
- * Description: پنلِ مشتریِ فروشگاه فونیکس — ورود با رمز یا پیامک، بازیابیِ رمز، سفارش‌ها، تحویل‌ها، اشتراک‌ها و تیکت؛ و برای مدیر پنلِ جدای «مشتریان». کنارِ Phoenix Bridge کار می‌کند.
- * Version:     0.2.0
+ * Description: پنلِ مشتریِ فروشگاه فونیکس — ورود با رمز یا پیامک، بازیابیِ رمز، سفارش‌ها، تحویل‌ها، اشتراک‌ها، تیکت و چتِ آنلاین؛ و برای مدیر پنلِ جدای «مشتریان». کنارِ Phoenix Bridge کار می‌کند.
+ * Version:     0.3.0
  * Requires PHP: 7.4
  * Requires Plugins: phoenix-bridge
  * Author:      Phoenix Shop
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('PHOENIX_ACC_VERSION', '0.2.0');
+define('PHOENIX_ACC_VERSION', '0.3.0');
 define('PHOENIX_ACC_FILE', __FILE__);
 define('PHOENIX_ACC_NEEDS_BRIDGE', '1.6.0');
 
@@ -58,6 +58,7 @@ function phoenix_acc_boot() {
     require_once $dir . 'includes/sessions.php';
     require_once $dir . 'includes/customers.php';
     require_once $dir . 'includes/tickets.php';
+    require_once $dir . 'includes/chat.php';
     require_once $dir . 'includes/sms.php';
     require_once $dir . 'includes/api-customer.php';
     require_once $dir . 'includes/api-admin.php';

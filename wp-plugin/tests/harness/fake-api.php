@@ -1419,4 +1419,53 @@ if (preg_match('#^/account/tickets/(\d+)$#', $path, $m)) {
     h_ok(array('ticket' => $ticket, 'customer' => h_acc_customer_row($ticket['phone']), 'order' => $ord));
 }
 
+/* ---------- چتِ آنلاین (مشترک با fake-shop.php) ---------- */
+require_once __DIR__ . '/chat-store.php';
+if (strpos($path, '/account/chat') === 0) {
+    $CD = hc_load();
+    if ($path === '/account/chat/settings') {
+        if ($method === 'POST') {
+            $c = phoenix_acc_chat_settings_clean($body);
+            if (!$c['ok']) h_fail('phoenix_invalid', 'بعضی فیلدها درست نیستند.', 422, array('errors' => $c['errors']));
+            $CD['settings'] = $c['data'];
+            hc_save($CD);
+        }
+        h_ok(array('settings' => $CD['settings'], 'defaults' => phoenix_acc_chat_defaults(), 'open_now' => hc_open_now($CD['settings'])));
+    }
+    if ($path === '/account/chat') {
+        $st = (string) ($q['status'] ?? '');
+        $rows = array();
+        foreach ($CD['chats'] as $c) { if ($st === '' || $c['status'] === $st) $rows[] = $c; }
+        usort($rows, function ($a, $b) { return ($b['unread'] <=> $a['unread']) ?: ($b['updated'] <=> $a['updated']); });
+        h_ok(array('rows' => array_map('hc_row', $rows), 'total' => count($rows), 'page' => 1, 'pages' => 1,
+            'counts' => hc_counts($CD), 'quick' => $CD['settings']['quick']));
+    }
+    if (preg_match('#^/account/chat/(\d+)$#', $path, $m)) {
+        $i = hc_find($CD, $m[1]);
+        if ($i === null) h_fail('phoenix_acc_nf', 'این گفتگو پیدا نشد.', 404);
+        $c = &$CD['chats'][$i];
+        $after = (int) ($q['after'] ?? 0);
+        if ($method === 'POST') {
+            $act = (string) ($body['act'] ?? '');
+            if ($act === 'reply') {
+                $txt = phoenix_acc_text($body['body'] ?? '', 2000, true);
+                if ($txt === '') h_fail('phoenix_invalid', 'متنِ جواب را بنویس.', 422, array('errors' => array('body' => 'متنِ جواب را بنویس.')));
+                $c['messages'][] = array('id' => ++$CD['seq'], 'author' => 'staff', 'staff' => 'مدیر', 'body' => $txt, 'at' => time());
+                $c['status'] = 'answered'; $c['last_by'] = 'staff';
+            } elseif ($act === 'close' || $act === 'reopen') {
+                $c['status'] = $act === 'close' ? 'closed' : 'open';
+            } else {
+                h_fail('rest_invalid_param', 'کنشِ نامعتبر.', 400);
+            }
+            $c['updated'] = time();
+            $after = 0;
+        }
+        $c['unread'] = 0;
+        $out = array('chat' => hc_row($c), 'messages' => hc_msgs($c, $after, true));
+        unset($c);
+        hc_save($CD);
+        h_ok($out);
+    }
+}
+
 h_fail('rest_no_route', 'مسیر پیدا نشد: ' . $method . ' ' . $path, 404);

@@ -26,7 +26,7 @@ $origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
 if (preg_match('#^http://(localhost|127\.0\.0\.1)(:\d+)?$#', $origin)) {
     header('Access-Control-Allow-Origin: ' . $origin);
     header('Vary: Origin');
-    header('Access-Control-Allow-Headers: Content-Type, X-Phoenix-Session');
+    header('Access-Control-Allow-Headers: Content-Type, X-Phoenix-Session, X-Phoenix-Chat');
     header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
 }
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -285,6 +285,57 @@ if ($p === '/password/reset') {
     revoke_others($phone, 0);
     unset($S['fails'][$phone]);
     session_new($phone);
+}
+
+/* ---------- چتِ آنلاین — بی‌نشست، با ژتونِ گفتگو (مشترک با پنل) ---------- */
+if (strpos($p, '/chat') === 0) {
+    require_once __DIR__ . '/chat-store.php';
+    $CD = hc_load();
+    $cs = $CD['settings'];
+    if ($p === '/chat/config') out(phoenix_acc_chat_public($cs, hc_open_now($cs)));
+    if ($p === '/chat' && $method === 'POST') {
+        if (empty($cs['enabled'])) fail('phoenix_acc_chat_off', 'چتِ آنلاین فعلاً خاموش است.', 403);
+        $msg = phoenix_acc_text($body['message'] ?? '', 2000, true);
+        if ($msg === '') fail('phoenix_invalid', 'پیام خالی است.', 422);
+        $agent = phoenix_acc_chat_pick_agent(phoenix_acc_chat_active_agents($cs), $body['agent'] ?? '', random_int(0, 1000000));
+        $sess0 = session_row();
+        $tok = phoenix_acc_new_token();
+        $id = ++$CD['seq'];
+        $msgs = array();
+        $ctx = phoenix_acc_text($body['context'] ?? '', 1500, true);
+        if ($ctx !== '') $msgs[] = array('id' => ++$CD['seq'], 'author' => 'system', 'staff' => '', 'body' => $ctx, 'at' => time());
+        $msgs[] = array('id' => ++$CD['seq'], 'author' => 'visitor', 'staff' => '', 'body' => $msg, 'at' => time());
+        $open = hc_open_now($cs);
+        $msgs[] = array('id' => ++$CD['seq'], 'author' => 'bot', 'staff' => '', 'body' => phoenix_acc_chat_fill($open ? $cs['handoff'] : $cs['offline'], $agent), 'at' => time());
+        $chat = array('id' => $id, 'token_hash' => phoenix_acc_token_hash($tok), 'phone' => $sess0 ? $sess0['phone'] : '', 'agent' => $agent,
+            'status' => 'open', 'created' => time(), 'updated' => time(), 'last_by' => 'visitor', 'unread' => 1,
+            'page' => phoenix_acc_text($body['page'] ?? '', 200), 'ua' => phoenix_acc_ua_label((string) ($_SERVER['HTTP_USER_AGENT'] ?? '')), 'messages' => $msgs);
+        $CD['chats'][] = $chat;
+        hc_save($CD);
+        out(array('id' => $id, 'token' => $tok, 'agent' => $agent, 'status' => 'open', 'open' => $open, 'messages' => hc_msgs($chat, 0, false)));
+    }
+    if (preg_match('#^/chat/(\d+)(/messages|/close)?$#', $p, $m)) {
+        $i = hc_find($CD, $m[1]);
+        $tok = (string) ($_SERVER['HTTP_X_PHOENIX_CHAT'] ?? '');
+        if ($i === null || !phoenix_acc_token_ok($tok) || !hash_equals($CD['chats'][$i]['token_hash'], phoenix_acc_token_hash($tok))) {
+            fail('phoenix_acc_nf', 'این گفتگو پیدا نشد.', 404);
+        }
+        $c = &$CD['chats'][$i];
+        $after = (int) ($_GET['after'] ?? ($body['after'] ?? 0));
+        if (($m[2] ?? '') === '/messages') {
+            $msg = phoenix_acc_text($body['body'] ?? '', 2000, true);
+            if ($msg === '') fail('phoenix_invalid', 'پیام خالی است.', 422);
+            $c['messages'][] = array('id' => ++$CD['seq'], 'author' => 'visitor', 'staff' => '', 'body' => $msg, 'at' => time());
+            $c['status'] = 'open'; $c['unread'] = 1; $c['last_by'] = 'visitor'; $c['updated'] = time();
+        } elseif (($m[2] ?? '') === '/close') {
+            $c['status'] = 'closed'; $c['unread'] = 0; $c['updated'] = time();
+        }
+        $res = array('id' => $c['id'], 'agent' => $c['agent'], 'status' => $c['status'], 'messages' => hc_msgs($c, $after, false));
+        unset($c);
+        hc_save($CD);
+        out($res);
+    }
+    fail('rest_no_route', 'مسیر نیست.', 404);
 }
 
 /* ---------- از این‌جا نشست لازم است ---------- */

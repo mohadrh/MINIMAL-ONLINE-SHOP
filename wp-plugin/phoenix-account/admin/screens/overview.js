@@ -42,6 +42,11 @@ function paint(ctx, d) {
 
   const tiles = h('section', { class: 'phx2-kpis', 'aria-label': 'منتظرِ ما' },
     tile({
+      label: 'چتِ منتظرِ جواب', value: fa(a.chats || 0), unit: 'گفتگو', href: '#/chat',
+      tone: a.chats ? 'bad' : 'good', pillText: a.chats ? 'مشتری روی سایت منتظر است' : 'همه جواب گرفته‌اند',
+      sub: 'چتِ آنلاین — جواب همان لحظه به مشتری می‌رسد',
+    }),
+    tile({
       label: 'تیکتِ بی‌جواب', value: fa(a.tickets_open), unit: 'تیکت', href: '#/tickets',
       tone: a.tickets_open ? 'warn' : 'good', pillText: a.tickets_open ? 'منتظرِ جوابِ ما' : 'همه جواب گرفته‌اند',
       sub: 'قدیمی‌ترین منتظر اول',
@@ -109,7 +114,7 @@ function paint(ctx, d) {
   put(ctx.view,
     kit.pageHead({
       title: 'نمای کلی',
-      sub: 'چه کسی منتظرِ ماست — تیکت، پرداخت، اصلاح.',
+      sub: 'چه کسی منتظرِ ماست — چت، تیکت، پرداخت، اصلاح.',
       actions: sales ? [h('a', { class: 'phx2-btn phx2-btn--sm', href: sales }, icon('pulse'), 'آمارِ فروش در داشبوردِ فروشگاه')] : [],
     }),
     tiles,

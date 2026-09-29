@@ -1045,3 +1045,48 @@
 /* سایتِ وصل به پنل، کاربرِ واردنشده: پیوندِ ورود زیرِ عنوان */
 .amenu__head a { color: var(--blue); font-size: var(--text-sm); font-weight: 600; }
 .amenu__head a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+
+/* ============================================================
+   چتِ وصل به پنل — جوابِ کارشناس، پیامِ تازه، پایانِ گفتگو،
+   و گوشه و رنگی که از پنلِ «مشتریان ← چت آنلاین» می‌آید.
+   ============================================================ */
+
+/* گوشه‌ی مقابل: چت و پنجره‌اش با هم می‌روند، «بازگشت به بالا» جایشان */
+.chatfab.is-flip { inset-inline-end: auto; inset-inline-start: var(--sp-6); }
+.chat.is-flip { inset-inline-end: auto; inset-inline-start: var(--sp-6); }
+.chat-flip .stop { inset-inline-start: auto; inset-inline-end: var(--sp-6); }
+
+/* رنگِ جدای چت، اگر در پنل انتخاب شده */
+.chatfab.has-accent,
+.chatfab.has-accent:hover { background: var(--chat-accent); border-color: var(--chat-accent); }
+.chat.has-accent .chat__msg--user,
+.chat.has-accent .chat__form button { background: var(--chat-accent); }
+
+.chatfab__badge {
+  position: absolute; top: -7px; inset-inline-start: -7px;
+  min-width: 20px; height: 20px; padding: 0 5px;
+  display: grid; place-items: center;
+  border-radius: var(--r-full);
+  background: var(--danger); color: #fff;
+  font-size: 11px; font-weight: 700; line-height: 1;
+  box-shadow: 0 0 0 2px var(--paper);
+}
+
+.chat__head > div { flex: 1; min-width: 0; }
+.chat__end {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--ink-faint);
+  font: inherit; font-size: 11px;
+  cursor: pointer;
+}
+.chat__end:hover { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); }
+
+.chat__msg--agent { border: 1px solid color-mix(in srgb, var(--blue) 22%, transparent); }
+.chat__who { display: block; margin-bottom: 3px; font-size: 11px; font-weight: 700; color: var(--blue); }
+[data-theme='dark'] .chat__who { color: var(--brand); }
+.chat__form input:disabled, .chat__form button:disabled { opacity: 0.6; cursor: progress; }

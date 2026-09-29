@@ -77,7 +77,7 @@
         /* ‎?world=customers‎ — همان چیزی که ‎phoenix_admin_worlds‎ برای Phoenix Account می‌فرستد */
         world: q.get('world') === 'customers' ? {
           id: 'customers', menu: 'phoenix-customers', title: 'مشتریان', sub: 'سفارش‌ها، مشتریان و پشتیبانی', mark: 'م',
-          sections: ['overview:نمای کلی:grid', 'orders:سفارش‌ها:box', 'customers:مشتریان:users', 'tickets:تیکت‌ها:message', 'sms:پیامک و ورود:lock'].map(function (x) {
+          sections: ['overview:نمای کلی:grid', 'chat:چت آنلاین:message', 'orders:سفارش‌ها:box', 'customers:مشتریان:users', 'tickets:تیکت‌ها:inbox', 'sms:پیامک و ورود:lock'].map(function (x) {
             var p = x.split(':');
             return { id: p[0], label: p[1], icon: p[2], module: '/phoenix-account/admin/screens/' + p[0] + '.js', ver: 'dev-' + Date.now() };
           })

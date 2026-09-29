@@ -27,6 +27,7 @@ function subject(kind, s) {
   if (v.startsWith('job:')) return 'کارِ ' + toFa(v.slice(4));
   if (v.startsWith('order:')) return 'سفارشِ ' + toFa(v.slice(6));
   if (v.startsWith('ticket:')) return 'تیکتِ ' + toFa(v.slice(7));
+  if (v.startsWith('chat:')) return 'چتِ ' + toFa(v.slice(5));
   if (v.startsWith('phone:')) return iso(toFa(v.slice(6)));
   return /[A-Za-z]/.test(v) ? iso(v) : v;
 }

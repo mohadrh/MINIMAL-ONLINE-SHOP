@@ -74,3 +74,21 @@
 .phx2 a.phxa-tile:hover { border-color: var(--brand); translate: 0 -2px; }
 .phx2 a.phxa-tile:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .phx2 a.phxa-tile:hover { translate: none; } }
+
+/* ---------- چتِ آنلاین ---------- */
+.phxa-dot.is-hot { background: var(--bad); box-shadow: 0 0 0 3px color-mix(in srgb, var(--bad) 22%, transparent); }
+.phxa-unread td { background: color-mix(in srgb, var(--bad) 5%, transparent); }
+.phxa-unread b { font-weight: 900; }
+.phxa-snip { max-width: 340px; font-size: 13px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.phxa-msg.is-bot { justify-self: center; max-width: min(520px, 96%); }
+.phxa-msg.is-bot .phxa-msg__b {
+  background: transparent; border-style: dashed; color: var(--ink-3); font-size: 12.5px;
+}
+.phxa-msg.is-bot .phxa-msg__m { justify-content: center; }
+.phxa-quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.phxa-quick .phx2-chip { cursor: pointer; font: inherit; font-size: 12.5px; }
+.phxa-days { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.phxa-day { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+.phxa-agent { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.phxa-agent .phx2-in { flex: 1; min-width: 180px; }
+.phxa-color { width: 44px; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); cursor: pointer; }

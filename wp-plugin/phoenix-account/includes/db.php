@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-const PHOENIX_ACC_DB_VERSION = '2';
+const PHOENIX_ACC_DB_VERSION = '3';
 const PHOENIX_ACC_OPTION     = 'phoenix_account_settings';
 
 function phoenix_acc_table_sessions() {
@@ -31,6 +31,16 @@ function phoenix_acc_table_tickets() {
 function phoenix_acc_table_messages() {
     global $wpdb;
     return $wpdb->prefix . 'phoenix_acc_ticket_msgs';
+}
+
+function phoenix_acc_table_chats() {
+    global $wpdb;
+    return $wpdb->prefix . 'phoenix_acc_chats';
+}
+
+function phoenix_acc_table_chat_msgs() {
+    global $wpdb;
+    return $wpdb->prefix . 'phoenix_acc_chat_msgs';
 }
 
 function phoenix_acc_install() {
@@ -87,6 +97,39 @@ function phoenix_acc_install() {
         created_at datetime NOT NULL,
         PRIMARY KEY  (id),
         KEY ticket_id (ticket_id)
+    ) {$charset};");
+
+    /* چتِ آنلاین — هر گفتگو ژتونِ خودش را دارد (فقط هشش این‌جا)؛
+       مرورگرِ بازدیدکننده با همان ژتون پیام می‌فرستد و جواب می‌گیرد. */
+    $ch = phoenix_acc_table_chats();
+    dbDelta("CREATE TABLE {$ch} (
+        id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        token_hash char(64) NOT NULL,
+        phone varchar(15) NOT NULL DEFAULT '',
+        agent varchar(40) NOT NULL DEFAULT '',
+        status varchar(10) NOT NULL DEFAULT 'open',
+        created_at datetime NOT NULL,
+        updated_at datetime NOT NULL,
+        last_by varchar(10) NOT NULL DEFAULT 'visitor',
+        unread_staff tinyint(1) NOT NULL DEFAULT 1,
+        page varchar(200) NOT NULL DEFAULT '',
+        ua varchar(160) NOT NULL DEFAULT '',
+        PRIMARY KEY  (id),
+        UNIQUE KEY token_hash (token_hash),
+        KEY status (status, updated_at),
+        KEY phone (phone)
+    ) {$charset};");
+
+    $cm = phoenix_acc_table_chat_msgs();
+    dbDelta("CREATE TABLE {$cm} (
+        id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        chat_id bigint(20) unsigned NOT NULL,
+        author varchar(10) NOT NULL,
+        staff varchar(60) NOT NULL DEFAULT '',
+        body text NOT NULL,
+        created_at datetime NOT NULL,
+        PRIMARY KEY  (id),
+        KEY chat_id (chat_id, id)
     ) {$charset};");
 
     /* ⚠ ‎token_hash‎ یکتا: دو نشست با یک ژتون ممکن نیست، و جست‌وجو

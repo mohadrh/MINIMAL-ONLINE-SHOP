@@ -75,6 +75,7 @@ function phoenix_acc_admin_overview(WP_REST_Request $r) {
             'with_password' => (int) $sum->with_pass, 'blocked' => (int) $sum->blocked,
         ),
         'attention' => array(
+            'chats'        => phoenix_acc_chat_counts()['unread'],
             'tickets_open' => $tk['counts']['open'],
             /* کارت‌به‌کارت و مانندش: پول رسیده یا نه — تا تأیید نشود، صف راه نمی‌افتد */
             'on_hold'      => (int) wc_orders_count('on-hold'),
@@ -419,9 +420,10 @@ function phoenix_acc_admin_world($list) {
     $sections = array();
     foreach (array(
         'overview'  => array('نمای کلی', 'grid'),
+        'chat'      => array('چت آنلاین', 'message'),
         'orders'    => array('سفارش‌ها', 'box'),
         'customers' => array('مشتریان', 'users'),
-        'tickets'   => array('تیکت‌ها', 'message'),
+        'tickets'   => array('تیکت‌ها', 'inbox'),
         'sms'       => array('پیامک و ورود', 'lock'),
     ) as $id => $meta) {
         $sections[] = array(
@@ -451,6 +453,12 @@ function phoenix_acc_admin_world($list) {
  */
 add_filter('phoenix_dash_alerts_extra', 'phoenix_acc_dash_alerts');
 function phoenix_acc_dash_alerts($alerts) {
+    $chats = phoenix_acc_chat_counts()['unread'];
+    if ($chats > 0) {
+        $alerts[] = array('level' => 'high', 'title' => 'پیامِ تازه در چتِ آنلاین',
+            'text' => strtr((string) $chats, array('0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹')) . ' گفتگو منتظرِ جواب است — مشتری همین حالا روی سایت است.',
+            'action' => array('label' => 'چت آنلاین', 'go' => 'chat', 'world' => 'customers'));
+    }
     $waiting = phoenix_acc_ticket_counts()['open'];
     if ($waiting > 0) {
         $alerts[] = array('level' => 'medium', 'title' => 'تیکتِ منتظرِ پاسخ',
