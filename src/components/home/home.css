@@ -1781,75 +1781,11 @@
   stroke: var(--brand);
   stroke-width: 3;
   stroke-dasharray: 1;
-  /* ‎--lit‎ همان کسری است که جنگنده رویش ایستاده — دلیلش در
-     WhyPhoenix.tsx نوشته شده */
+  /* ‎--lit‎ پیوسته با اسکرول عوض می‌شود (WhyPhoenix.tsx)؛ گذارِ کوتاه
+     فقط لرزشِ بینِ فریم‌ها را صاف می‌کند، عقب نمی‌ماند */
   stroke-dashoffset: calc(1 - var(--lit, 0));
-  transition: stroke-dashoffset 560ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: stroke-dashoffset 120ms linear;
   filter: drop-shadow(0 0 5px color-mix(in srgb, var(--brand) 40%, transparent));
-}
-
-/* قابِ پرواز — همان هندسه، لایه‌ی بالاتر. دلیلش در
-   WhyPhoenix.tsx نوشته شده. */
-.buypath__flight { z-index: 2; }
-
-/* ---------- جنگنده ----------
-
-   همان سوخو-۵۷ِ سبدِ خرید، این‌بار سیلوئت. روی سیم می‌رود و سرِ
-   هر گام می‌ایستد. نقطه و زاویه‌اش در کامپوننت از خودِ مسیر
-   خوانده می‌شود و روی ترنسفرم می‌نشیند؛ نرم‌شدنش کارِ همین
-   ‎transition‎ پایین است. دلیلِ کنار گذاشتنِ ‎animateMotion‎ در
-   WhyPhoenix.tsx نوشته شده. */
-/* ⚠ دیگر ‎non-scaling-stroke‎ لازم نیست.
-
-   قاب قبلاً ‎preserveAspectRatio="none"‎ داشت و افقی کش می‌آمد؛
-   آن ویژگی روی هر خط گذاشته می‌شد تا ضخامتش پهن نشود. حالا
-   viewBox با عرضِ واقعی جلو می‌رود و نسبت یک‌به‌یک است، پس هیچ
-   جبرانی لازم نیست — و مهم‌تر، شکلِ توپُرِ هواپیما هم سالم
-   می‌ماند، که با آن قابِ کشیده ممکن نبود. */
-/* ⚠ با ‎.buypath__wire‎ جلویش نوشته می‌شود، وگرنه توخالی می‌ماند.
-
-   بالاتر یک ‎.buypath__wire path { fill: none }‎ هست که برای
-   خطِ مسیر گذاشته شده. آن انتخابگر دو جزء دارد و کلاسِ تنها یک
-   جزء، پس در تساویِ لایه برنده می‌شود و بدنه‌ی هواپیما
-   ‎fill: none‎ می‌گرفت — یعنی اصلاً دیده نمی‌شد. */
-.buypath__wire .buypath__jet-body {
-  fill: var(--brand);
-  stroke: var(--paper);
-  stroke-width: 1.1;
-  stroke-linejoin: round;
-}
-/* شیشه‌ی کابین — روشن‌تر از بدنه، نه رنگِ تازه */
-.buypath__wire .buypath__jet-glass {
-  fill: color-mix(in srgb, var(--paper) 72%, var(--brand));
-}
-/* شعله — همان کهربای تم، محو به سمتِ بیرون */
-.buypath__wire .buypath__jet-burn {
-  fill: var(--vip);
-  opacity: 0.7;
-  filter: blur(1.4px);
-}
-.buypath__jet {
-  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--brand) 45%, transparent));
-  /* ⚠ این دو خط لازم‌اند، نه تزئینی.
-
-     ترنسفرمِ CSS روی عنصرِ SVG به‌طور پیش‌فرض حولِ مرکزِ جعبه‌ی
-     خودِ شکل می‌چرخد و مبدأش هم همان‌جاست. با این دو، دقیقاً مثل
-     اتریبیوتِ ‎transform‎ی خودِ SVG رفتار می‌کند: مبدأ گوشه‌ی
-     دستگاهِ viewBox، و ‎translate‎ همان مختصاتِ مسیر. بدونشان
-     هواپیما از سیم می‌پرد. */
-  transform-box: view-box;
-  transform-origin: 0 0;
-  /* نرم‌شدنِ حرکت بین دو ایستگاه — جای کاری که ‎animateMotion‎
-     می‌کرد. منحنی‌اش تند شروع می‌شود و آرام می‌ایستد، مثل
-     رسیدنِ هواپیما. */
-  transition: transform 720ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* با کم‌کردنِ حرکت، جنگنده همان اول ته مسیر می‌ایستد و تکان
-   نمی‌خورد — بودنش اطلاعات است، حرکتش تزئین. */
-@media (prefers-reduced-motion: reduce) {
-  .buypath__jet { transition: none; }
-  .buypath__jet-burn { display: none; }
 }
 
 .buypath__step {
