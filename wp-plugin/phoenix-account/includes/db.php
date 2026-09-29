@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-const PHOENIX_ACC_DB_VERSION = '3';
+const PHOENIX_ACC_DB_VERSION = '4';
 const PHOENIX_ACC_OPTION     = 'phoenix_account_settings';
 
 function phoenix_acc_table_sessions() {
@@ -41,6 +41,11 @@ function phoenix_acc_table_chats() {
 function phoenix_acc_table_chat_msgs() {
     global $wpdb;
     return $wpdb->prefix . 'phoenix_acc_chat_msgs';
+}
+
+function phoenix_acc_table_tg() {
+    global $wpdb;
+    return $wpdb->prefix . 'phoenix_acc_tg';
 }
 
 function phoenix_acc_install() {
@@ -97,6 +102,19 @@ function phoenix_acc_install() {
         created_at datetime NOT NULL,
         PRIMARY KEY  (id),
         KEY ticket_id (ticket_id)
+    ) {$charset};");
+
+    /* تلگرام — کدام گفتگوی ربات مالِ کدام شماره است. هر حسابِ تلگرام
+       یک شماره دارد، پس ‎chat_id‎ هم یکتاست. */
+    $tg = phoenix_acc_table_tg();
+    dbDelta("CREATE TABLE {$tg} (
+        phone varchar(15) NOT NULL,
+        chat_id bigint(20) NOT NULL,
+        tg_user bigint(20) NOT NULL DEFAULT 0,
+        username varchar(64) NOT NULL DEFAULT '',
+        linked_at datetime NOT NULL,
+        PRIMARY KEY  (phone),
+        UNIQUE KEY chat_id (chat_id)
     ) {$charset};");
 
     /* چتِ آنلاین — هر گفتگو ژتونِ خودش را دارد (فقط هشش این‌جا)؛

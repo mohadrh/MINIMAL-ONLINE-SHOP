@@ -1184,13 +1184,31 @@ function h_acc_payload() {
     }
     return array('settings' => $s, 'connections' => $conns,
         'devlog' => $s['sms_provider'] === 'dev' ? phoenix_acc_log_fresh($GLOBALS['S']['acc_dev'] ?? array(), 1800, time()) : array(),
-        'log' => $GLOBALS['S']['acc_log'] ?? array(), 'bridge_debug' => false);
+        'log' => $GLOBALS['S']['acc_log'] ?? array(), 'bridge_debug' => false,
+        'telegram' => array('bot' => $s['tg_bot'] ?? '', 'linked' => $GLOBALS['S']['tg_linked'] ?? 0,
+            'hook_default' => 'https://panel.phonixmarket.com/wp-json/phoenix-account/v1/tg/hook'));
+}
+/* ربات تلگرامِ ساختگی: «وصل کردن» نام را می‌گذارد؛ وضعیت همیشه سالم */
+if ($path === '/account/sms/telegram') {
+    $s = array_merge(phoenix_acc_defaults(), $GLOBALS['S']['acc'] ?? array());
+    if ($method === 'POST' && ($body['act'] ?? '') === 'connect') {
+        if (($s['sms_provider'] ?? '') !== 'telegram' || empty($s['sms_conn'])) h_fail('phoenix_acc_tg', 'توکنِ ربات تنظیم نشده یا شکلش درست نیست.', 502);
+        $GLOBALS['S']['acc']['tg_bot'] = 'PhoenixShopLoginBot';
+        $GLOBALS['S']['tg_linked'] = 3;
+        $s['tg_bot'] = 'PhoenixShopLoginBot';
+    }
+    $hook = $s['tg_hook'] ?: 'https://panel.phonixmarket.com/wp-json/phoenix-account/v1/tg/hook';
+    h_ok(array('bot' => $s['tg_bot'] ?? '', 'linked' => $GLOBALS['S']['tg_linked'] ?? 0, 'expected' => $hook, 'error' => '',
+        'hook' => !empty($s['tg_bot']) ? array('url' => $hook, 'pending' => 0, 'last_error' => '', 'last_at' => null) : null));
 }
 if ($path === '/account/sms' && $method === 'GET') h_ok(h_acc_payload());
 if ($path === '/account/sms' && $method === 'POST') {
     $c = phoenix_acc_settings_clean($body, array_keys(phoenix_connections()));
     if (!$c['ok']) h_fail('phoenix_invalid', 'بعضی فیلدها درست نیستند.', 422, array('errors' => $c['errors']));
-    $GLOBALS['S']['acc'] = $c['data'];
+    /* مثلِ افزونه: ادغام، و توکنِ تازه نامِ ربات را پاک می‌کند */
+    $prev = $GLOBALS['S']['acc'] ?? array();
+    if ((string) $c['data']['sms_conn'] !== (string) ($prev['sms_conn'] ?? '')) $c['data']['tg_bot'] = '';
+    $GLOBALS['S']['acc'] = array_merge($prev, $c['data']);
     /* شبیه‌سازیِ چند درخواستِ ورود، تا کدهای حالتِ آزمایشی دیده شوند */
     if ($c['data']['sms_provider'] === 'dev' && empty($GLOBALS['S']['acc_dev'])) {
         $GLOBALS['S']['acc_dev'] = array(array('at' => time() - 40, 'phone' => '09121234567', 'code' => '482913'),
@@ -1202,7 +1220,15 @@ if ($path === '/account/sms/test') {
     $phone = preg_match('/^09\d{9}$/', (string) ($body['phone'] ?? '')) ? $body['phone'] : '';
     if ($phone === '') h_fail('phoenix_invalid', 'شماره‌ی موبایل معتبر نیست.', 422, array('errors' => array('phone' => 'مثلاً ۰۹۱۲۱۲۳۴۵۶۷')));
     $s = array_merge(phoenix_acc_defaults(), $GLOBALS['S']['acc'] ?? array());
-    if (!in_array($s['sms_provider'], array('kavenegar', 'smsir'), true)) h_fail('phoenix_no_sms', 'اول یک سامانه‌ی پیامک انتخاب و ذخیره کن.', 409);
+    if (!in_array($s['sms_provider'], array('kavenegar', 'smsir', 'telegram'), true)) h_fail('phoenix_no_sms', 'اول یک سامانه‌ی پیامک یا ربات تلگرام انتخاب و ذخیره کن.', 409);
+    if ($s['sms_provider'] === 'telegram') {
+        /* رباتِ ساختگی: فقط ‎09121234567‎ ربات را باز کرده */
+        $res = $phone === '09121234567' ? array('ok' => true, 'note' => 'در تلگرام رسید')
+            : array('ok' => false, 'note' => 'این شماره هنوز ربات را باز نکرده. اول در تلگرام ربات را باز کن و «ارسال شماره‌ی من» را بزن.');
+        $GLOBALS['S']['acc_log'] = phoenix_acc_log_push($GLOBALS['S']['acc_log'] ?? array(),
+            array('at' => time(), 'phone' => phoenix_acc_mask_phone($phone), 'ok' => $res['ok'], 'note' => $res['note']), 20, 604800, time());
+        h_ok(array_merge(h_acc_payload(), array('test' => $res)));
+    }
     $conn = phoenix_conn_runtime($s['sms_conn']);
     $req = phoenix_acc_sms_request($s['sms_provider'], $conn['key'], $s, $phone, '123456');
     /* سامانه‌ی ساختگی: فقط کلیدِ «demo-key-b» را قبول دارد */

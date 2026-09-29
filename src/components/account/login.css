@@ -162,3 +162,13 @@
   padding: var(--sp-4); border: 1px dashed var(--line); border-radius: var(--r-lg);
 }
 .login__setpass .btn { justify-self: start; }
+
+/* کدِ ورود در ربات تلگرام — راهنمای بارِ اول */
+.login__tg {
+  display: grid; gap: var(--sp-2); justify-items: start;
+  margin: var(--sp-3) 0; padding: var(--sp-4);
+  border: 1px solid var(--blue-line); border-radius: var(--r-lg);
+  background: var(--blue-wash); color: var(--ink);
+  font-size: var(--text-sm); line-height: 1.9; text-align: start;
+}
+.login__tg b { font-size: var(--text-sm); }

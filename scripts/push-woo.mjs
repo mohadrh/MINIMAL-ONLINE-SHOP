@@ -98,14 +98,14 @@ async function loadCatalog() {
     return g.products;
   }
 
-  /* هنوز همگام نشده — از خودِ ماژول‌های داده می‌خوانیم */
-  const url = new URL('../src/data/catalog.ts', import.meta.url);
-  console.error('\n✗ generated/catalog.json خالی است.');
-  console.error('  این اسکریپت داده‌ی ساخته‌شده می‌خواهد، نه TypeScript خام.');
-  console.error(`  فایل: ${url.pathname}`);
-  console.error('\n  راه ساده: یک بار `npm run build` بزن تا داده‌ها');
-  console.error('  ترنسپایل شوند، بعد دوباره این را اجرا کن.\n');
-  process.exit(1);
+  /* هنوز همگام نشده — از خودِ ماژول‌های داده می‌خوانیم.
+     ⚠ دستورِ ‎npm run push‎ با ‎--experimental-strip-types‎ و
+     ‎ts-resolver‎ اجرا می‌شود، پس ‎catalog.ts‎ مستقیم بار می‌شود —
+     همان کاری که ‎check-roundtrip‎ می‌کند. نسخه‌ی قبل این‌جا فقط
+     پیامِ خطا می‌داد و انتقالِ اول هیچ‌وقت راه نمی‌افتاد. */
+  const { PRODUCTS } = await import('../src/data/catalog.ts');
+  console.log(`کاتالوگِ محلی خوانده شد (${PRODUCTS.length} محصول)`);
+  return PRODUCTS;
 }
 
 /* ---------- دسته‌بندی ---------- */
@@ -245,7 +245,11 @@ function imagesOf(p) {
   /* ترتیب مهم است: ووکامرس اولی را تصویرِ شاخص می‌کند. */
   for (const key of ['thumbnail', 'cover', 'cutout', 'logo']) {
     const rel = p.media?.[key];
-    if (!rel || seen.has(rel)) continue;
+    /* ⚠ SVG نه: وردپرس بارگذاریِ SVG را (به‌حق — می‌تواند اسکریپت
+       داشته باشد) رد می‌کند و ووکامرس کلِ محصول را با «تصویر
+       نامعتبر» نمی‌سازد. لوگو در متا می‌ماند و سایت از همان‌جا
+       می‌خواندش؛ گالری بدونِ آن هم کامل است. */
+    if (!rel || seen.has(rel) || /\.svg$/i.test(rel)) continue;
     seen.add(rel);
     out.push({
       src: rel.startsWith('http') ? rel : base + rel,

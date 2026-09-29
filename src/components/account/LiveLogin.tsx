@@ -51,6 +51,8 @@ export function LiveLogin() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasPassword, setHasPassword] = useState(true);
+  /** نامِ ربات، وقتی کد به‌جای پیامک در تلگرام می‌رود */
+  const [tgBot, setTgBot] = useState<string | null>(null);
   const codeRef = useRef<HTMLInputElement>(null);
 
   const p = toLatin(phone.trim());
@@ -90,6 +92,7 @@ export function LiveLogin() {
 
   const askCode = () => run(async () => {
     const r = await requestOtp(p);
+    setTgBot(r.channel === 'telegram' && r.bot ? r.bot : null);
     setLeft(r.ttl || 120);
     setCode('');
     setStage('code');
@@ -233,8 +236,9 @@ export function LiveLogin() {
                 value={code}
                 onChange={(e) => { setCode(e.target.value); setError(null); }}
               />
-              <small>کد به شماره‌ی {p ? <span className="num" dir="ltr">{p.replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)])}</span> : 'شما'} ارسال شد.</small>
+              {!tgBot && <small>کد به شماره‌ی {p ? <span className="num" dir="ltr">{p.replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)])}</span> : 'شما'} ارسال شد.</small>}
             </label>
+            {tgBot && <TelegramHint bot={tgBot} />}
             <div className="login__resend">
               {left > 0
                 ? <span className="num">ارسال دوباره تا {left.toLocaleString('fa-IR')} ثانیه‌ی دیگر</span>
@@ -273,6 +277,28 @@ export function LiveLogin() {
           <Link href="/shop">اولین خرید</Link> حساب شما به‌طور خودکار ساخته می‌شود.
         </p>
       </div>
+    </div>
+  );
+}
+
+/**
+ * کد به‌جای پیامک در ربات تلگرام رفته است.
+ *
+ * ⚠ نمی‌گوییم «این شماره قبلاً وصل بوده یا نه» — سرور هم نمی‌گوید؛ هر
+ * دو حالت یک راهنما دارند: اگر کد نیامده، ربات را باز کنید و شماره را
+ * بفرستید، کد همان‌جا می‌رسد.
+ */
+export function TelegramHint({ bot }: { bot: string }) {
+  return (
+    <div className="login__tg" role="note">
+      <b>کد تأیید در تلگرام برای شما ارسال شد.</b>
+      <span>
+        اگر پیامی نیامده (بار اول)، ربات <span dir="ltr">@{bot}</span> را باز کنید و دکمه‌ی
+        «ارسال شماره‌ی من» را بزنید؛ کد همان‌جا ارسال می‌شود.
+      </span>
+      <a className="btn btn--primary btn--sm" href={`https://t.me/${bot}?start=login`} target="_blank" rel="noopener noreferrer">
+        باز کردن ربات در تلگرام
+      </a>
     </div>
   );
 }

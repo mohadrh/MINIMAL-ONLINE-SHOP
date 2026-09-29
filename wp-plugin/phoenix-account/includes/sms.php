@@ -32,6 +32,9 @@ function phoenix_acc_send_otp($sent, $phone, $code) {
     if ($provider === 'off') {
         return $sent; // رفتارِ خودِ Bridge
     }
+    if ($provider === 'telegram') {
+        return phoenix_acc_tg_send_code((string) $phone, (string) $code);
+    }
     if ($provider === 'dev') {
         $list = get_option(PHOENIX_ACC_DEVLOG, array());
         update_option(PHOENIX_ACC_DEVLOG, phoenix_acc_log_push(is_array($list) ? $list : array(),

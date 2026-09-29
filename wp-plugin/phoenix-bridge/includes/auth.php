@@ -131,7 +131,17 @@ function phoenix_otp_request(WP_REST_Request $request) {
         );
     }
 
-    return rest_ensure_response(array('ok' => true, 'ttl' => PHOENIX_OTP_TTL));
+    /* ⚠ کانالِ ارسال (مثلاً تلگرام، از Phoenix Account) تا سایت بگوید
+       «کد را کجا ببین». فقط کلیدهای شناخته‌شده و رشته‌ی ساده؛ و هیچ‌چیزی
+       که بگوید این شماره حساب دارد یا نه. */
+    $extra = (array) apply_filters('phoenix_otp_response_extra', array(), $phone);
+    $out   = array('ok' => true, 'ttl' => PHOENIX_OTP_TTL);
+    foreach (array('channel', 'bot') as $k) {
+        if (isset($extra[$k]) && is_string($extra[$k]) && preg_match('/^[A-Za-z0-9_]{1,40}$/', $extra[$k])) {
+            $out[$k] = $extra[$k];
+        }
+    }
+    return rest_ensure_response($out);
 }
 
 /* ============================================================

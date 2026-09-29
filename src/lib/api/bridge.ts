@@ -78,8 +78,15 @@ async function post<T>(path: string, body: unknown, extra: Record<string, string
    رمز یک‌بارمصرف
 --------------------------------------------------------------- */
 
-export async function requestOtp(phone: string): Promise<{ ttl: number }> {
-  return post<{ ttl: number }>('/otp/request', { phone });
+/**
+ * ‎channel: 'telegram'‎ یعنی کد در ربات تلگرام رفت (نه پیامک)؛ ‎bot‎ نامِ
+ * ربات است تا صفحه پیوندِ بازکردنش را نشان دهد.
+ */
+export async function requestOtp(phone: string): Promise<{ ttl: number; channel?: string; bot?: string }> {
+  const r = await post<{ ttl: number; channel?: string; bot?: string }>('/otp/request', { phone });
+  /* نامِ ربات در پیوندِ ‎t.me‎ می‌نشیند — فقط شکلِ مجازِ نامِ کاربریِ تلگرام */
+  if (r.bot !== undefined && !/^[A-Za-z0-9_]{1,40}$/.test(String(r.bot))) delete r.bot;
+  return r;
 }
 
 /**

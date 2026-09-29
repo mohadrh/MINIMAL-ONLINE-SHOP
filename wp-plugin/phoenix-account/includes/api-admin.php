@@ -364,6 +364,12 @@ function phoenix_acc_admin_sms_payload() {
         /* کدهای حالتِ آزمایشی فقط وقتی همان حالت روشن است */
         'devlog'      => $s['sms_provider'] === 'dev' ? phoenix_acc_log_fresh(is_array($dev) ? $dev : array(), 30 * MINUTE_IN_SECONDS, time()) : array(),
         'log'         => is_array($log) ? $log : array(),
+        /* ربات تلگرام — بی‌تماس با تلگرام؛ وضعیتِ زنده با ‎GET /account/sms/telegram‎ */
+        'telegram'    => array(
+            'bot'          => (string) phoenix_acc_setting('tg_bot'),
+            'linked'       => phoenix_acc_tg_count(),
+            'hook_default' => phoenix_acc_tg_default_hook(),
+        ),
         'bridge_debug'=> defined('WP_DEBUG') && WP_DEBUG,
     );
 }
@@ -376,6 +382,10 @@ function phoenix_acc_admin_sms_save(WP_REST_Request $r) {
     $c = phoenix_acc_settings_clean((array) $r->get_json_params(), array_keys(phoenix_connections()));
     if (!$c['ok']) {
         return new WP_Error('phoenix_invalid', 'بعضی فیلدها درست نیستند.', array('status' => 422, 'errors' => $c['errors']));
+    }
+    /* توکنِ تازه = شاید رباتِ دیگر: نامِ قبلی به مشتری نشان داده نشود تا دوباره «وصل کردن» */
+    if ((string) $c['data']['sms_conn'] !== (string) phoenix_acc_setting('sms_conn')) {
+        $c['data']['tg_bot'] = '';
     }
     phoenix_acc_settings_save($c['data']);
     return phoenix_api_ok(phoenix_acc_admin_sms_payload());
@@ -392,8 +402,8 @@ function phoenix_acc_admin_sms_test(WP_REST_Request $r) {
         return new WP_Error('phoenix_invalid', 'شماره‌ی موبایل معتبر نیست.', array('status' => 422, 'errors' => array('phone' => 'مثلاً ۰۹۱۲۱۲۳۴۵۶۷')));
     }
     $provider = (string) phoenix_acc_setting('sms_provider');
-    if (!in_array($provider, array('kavenegar', 'smsir'), true)) {
-        return phoenix_api_fail('phoenix_no_sms', 'اول یک سامانه‌ی پیامک انتخاب و ذخیره کن.', 409);
+    if (!in_array($provider, array('kavenegar', 'smsir', 'telegram'), true)) {
+        return phoenix_api_fail('phoenix_no_sms', 'اول یک سامانه‌ی پیامک یا ربات تلگرام انتخاب و ذخیره کن.', 409);
     }
     $lock = 'phoenix_acc_smstest_' . get_current_user_id();
     if (get_transient($lock)) {
@@ -401,7 +411,7 @@ function phoenix_acc_admin_sms_test(WP_REST_Request $r) {
     }
     set_transient($lock, 1, MINUTE_IN_SECONDS);
 
-    $res = phoenix_acc_sms_send($phone, '123456');
+    $res = $provider === 'telegram' ? phoenix_acc_tg_test($phone) : phoenix_acc_sms_send($phone, '123456');
     return phoenix_api_ok(array_merge(phoenix_acc_admin_sms_payload(), array('test' => $res)));
 }
 
@@ -466,6 +476,11 @@ function phoenix_acc_dash_alerts($alerts) {
             'action' => array('label' => 'تیکت‌ها', 'go' => 'tickets', 'world' => 'customers'));
     }
     $p = (string) phoenix_acc_setting('sms_provider');
+    if ($p === 'telegram' && (string) phoenix_acc_setting('tg_bot') === '') {
+        $alerts[] = array('level' => 'high', 'title' => 'ربات تلگرام وصل نشده',
+            'text' => 'کدِ ورود با تلگرام انتخاب شده ولی ربات هنوز وصل نشده؛ مشتری کد نمی‌گیرد.',
+            'action' => array('label' => 'پیامک و ورود', 'go' => 'sms', 'world' => 'customers'));
+    }
     if ($p === 'dev') {
         $alerts[] = array('level' => 'high', 'title' => 'پیامک در حالتِ آزمایشی است',
             'text' => 'کدِ ورود برای مشتری فرستاده نمی‌شود و فقط در پنل دیده می‌شود. پیش از فروشِ واقعی سامانه را وصل کن.',

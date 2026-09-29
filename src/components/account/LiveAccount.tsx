@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { otpOk } from '../../lib/account';
 import { BridgeError, requestOtp, storedToken, verifyOtp } from '../../lib/api/bridge';
+import { TelegramHint } from './LiveLogin';
 import * as api from '../../lib/api/account';
 import { PASSWORD_RULE } from '../../lib/api/account';
 import type {
@@ -787,6 +788,7 @@ function PasswordCard({ me, onMe }: { me: Me; onMe: (m: Me, revoked: number) => 
   const [show, setShow] = useState(false);
   const [viaCode, setViaCode] = useState(!me.has_password);
   const [codeSent, setCodeSent] = useState(false);
+  const [tgBot, setTgBot] = useState<string | null>(null);
   const [code, setCode] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -848,7 +850,11 @@ function PasswordCard({ me, onMe }: { me: Me; onMe: (m: Me, revoked: number) => 
         <div className="acc__code-row">
           <button type="button" className="btn btn--ghost btn--sm" disabled={busy} onClick={async () => {
             setErrors({});
-            try { await requestOtp(me.phone); setCodeSent(true); } catch (e) { setErrors({ code: errText(e) }); }
+            try {
+              const r = await requestOtp(me.phone);
+              setTgBot(r.channel === 'telegram' && r.bot ? r.bot : null);
+              setCodeSent(true);
+            } catch (e) { setErrors({ code: errText(e) }); }
           }}>{codeSent ? 'ارسال دوباره‌ی کد' : 'ارسال کد تأیید به ' + faDigits(me.phone)}</button>
           {codeSent && (
             <label className="pdp-input">
@@ -856,6 +862,7 @@ function PasswordCard({ me, onMe }: { me: Me; onMe: (m: Me, revoked: number) => 
               <input inputMode="numeric" autoComplete="one-time-code" dir="ltr" maxLength={6} value={code} onChange={(e) => setCode(e.target.value)} aria-invalid={!!errors.code} />
             </label>
           )}
+          {codeSent && tgBot && <TelegramHint bot={tgBot} />}
           {errors.code && <em className="co__err">{errors.code}</em>}
         </div>
       )}
