@@ -26,6 +26,7 @@ function phoenix_acc_defaults() {
         'session_days' => 30,
         'tg_api'       => '',     // واسطه‌ی Bot API اگر هاست به تلگرام نمی‌رسد؛ خالی = api.telegram.org
         'tg_hook'      => '',     // نشانیِ وبهوک برای تلگرام اگر از واسطه می‌گذرد؛ خالی = همین سایت
+        'tg_mode'      => 'own',  // own = رباتِ جدا (وبهوک با ما) | shared = رباتِ موجود (پیوند با API)
     );
 }
 
@@ -58,6 +59,12 @@ function phoenix_acc_settings_clean(array $in, array $conns = array()) {
             $v = '';
         }
         $tg[$k] = $v;
+    }
+
+    $mode = isset($in['tg_mode']) ? (string) $in['tg_mode'] : $d['tg_mode'];
+    if (!in_array($mode, array('own', 'shared'), true)) {
+        $err['tg_mode'] = 'نوعِ ربات ناشناخته.';
+        $mode = 'own';
     }
 
     if (in_array($provider, array('kavenegar', 'smsir'), true)) {
@@ -93,7 +100,8 @@ function phoenix_acc_settings_clean(array $in, array $conns = array()) {
             'sms_param'    => $param !== '' ? $param : $d['sms_param'],
             'session_days' => $days,
             'tg_api'       => $tg['tg_api'],
-            'tg_hook'      => $tg['tg_hook'],
+            'tg_hook'      => $mode === 'shared' ? '' : $tg['tg_hook'],
+            'tg_mode'      => $mode,
         ),
     );
 }
@@ -775,6 +783,7 @@ const PHOENIX_ACC_TG_TEXT = array(
     'not_own'  => 'لطفاً فقط شماره‌ی خودتان را با دکمه‌ی «ارسال شماره‌ی من» بفرستید.',
     'not_ir'   => 'در حال حاضر فقط شماره‌های موبایل ایران (۰۹…) پشتیبانی می‌شود.',
     'help'     => 'برای دریافت کد ورود، به سایت فونیکس شاپ برگردید و «ارسال کد تأیید» را بزنید؛ کد همین‌جا ارسال می‌شود.',
+    'linked_sent' => 'شماره‌ی شما تأیید شد و کد ورود همین حالا برایتان ارسال شد. از این پس کدهای ورود فونیکس شاپ همین‌جا ارسال می‌شود.',
 );
 
 /** متنِ پیامِ کد */
@@ -837,6 +846,47 @@ function phoenix_acc_tg_request($api, $token, $method, array $params) {
     return array(
         'url'  => $base . '/bot' . $token . '/' . $method,
         'body' => json_encode($params, JSON_UNESCAPED_UNICODE),
+    );
+}
+
+/**
+ * ورودیِ ‎POST /tg/link‎ — وقتی رباتِ موجودِ فروشگاه (نه این افزونه)
+ * شماره‌ی مشتری را گرفته و به ما می‌دهد.
+ *
+ * ⚠ همان قاعده‌ی وبهوک: شماره فقط از ‎message.contact‎ و فقط وقتی
+ *   ‎contact.user_id === from.id‎. و گفتگو همان کاربر است
+ *   (در گفتگوی خصوصی ‎chat.id === from.id‎) — پس کد به کسی می‌رسد
+ *   که صاحبِ همان شماره است، نه جای دیگر.
+ *
+ * @return array{ok:bool, error?:string, phone?:string, chat?:int, user?:int, username?:string}
+ */
+function phoenix_acc_tg_link_input($in) {
+    if (!is_array($in)) {
+        return array('ok' => false, 'error' => 'bad_request');
+    }
+    $id = function ($v) {
+        if (is_int($v)) {
+            return $v > 0 ? $v : 0;
+        }
+        return is_string($v) && preg_match('/^[1-9]\d{0,15}$/', $v) ? (int) $v : 0;
+    };
+    $chat    = $id($in['chat_id'] ?? null);
+    $user    = $id($in['user_id'] ?? null);
+    $contact = $id($in['contact_user_id'] ?? null);
+    if (!$chat || !$user) {
+        return array('ok' => false, 'error' => 'bad_request');
+    }
+    if ($chat !== $user || $contact !== $user) {
+        return array('ok' => false, 'error' => 'not_own');
+    }
+    $phone = phoenix_acc_tg_phone($in['phone'] ?? '');
+    if ($phone === '') {
+        return array('ok' => false, 'error' => 'not_ir');
+    }
+    $u = (string) ($in['username'] ?? '');
+    return array(
+        'ok' => true, 'phone' => $phone, 'chat' => $chat, 'user' => $user,
+        'username' => preg_match('/^[A-Za-z0-9_]{1,64}$/', $u) ? $u : '',
     );
 }
 

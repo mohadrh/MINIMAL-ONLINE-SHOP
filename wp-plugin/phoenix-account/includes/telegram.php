@@ -20,6 +20,13 @@
  * ⚠ هاستِ ایران ممکن است به ‎api.telegram.org‎ نرسد — ‎tg_api‎ یک واسطه
  *   (مثلاً Cloudflare Worker) و ‎tg_hook‎ نشانیِ وبهوک از همان واسطه.
  *   راهنما: docs/TELEGRAM.md
+ *
+ * ⚠ دو نوع ربات (‎tg_mode‎):
+ *   own    رباتِ جدا فقط برای ورود — وبهوکش با این افزونه است.
+ *   shared رباتی که فروشگاه از قبل دارد و برنامه‌ی خودش را دارد. این
+ *          افزونه وبهوکش را دست نمی‌زند (وگرنه رباتِ فروش از کار می‌افتاد)؛
+ *          آن ربات شماره‌ی مشتری را با ‎POST /tg/link‎ به ما می‌دهد و ما فقط
+ *          با همان توکن کد می‌فرستیم (‎sendMessage‎ با وبهوکِ دیگران تداخل ندارد).
  * ============================================================
  */
 
@@ -28,6 +35,20 @@ if (!defined('ABSPATH')) {
 }
 
 const PHOENIX_ACC_TG_SECRET = 'phoenix_acc_tg_secret';
+
+function phoenix_acc_tg_shared() {
+    return phoenix_acc_setting('tg_mode') === 'shared';
+}
+
+/** رمزِ وبهوک/API — اگر نیست یا کوتاه است، تازه */
+function phoenix_acc_tg_secret() {
+    $secret = (string) get_option(PHOENIX_ACC_TG_SECRET, '');
+    if (strlen($secret) < 32) {
+        $secret = bin2hex(random_bytes(24));
+        update_option(PHOENIX_ACC_TG_SECRET, $secret, false);
+    }
+    return $secret;
+}
 
 function phoenix_acc_tg_token() {
     $conn = function_exists('phoenix_conn_runtime') ? phoenix_conn_runtime((string) phoenix_acc_setting('sms_conn')) : null;
@@ -169,16 +190,22 @@ function phoenix_acc_tg_routes() {
         'callback'            => 'phoenix_acc_tg_hook',
         'permission_callback' => 'phoenix_acc_tg_hook_permission',
     ));
+    register_rest_route(PHOENIX_ACC_NS, '/tg/link', array(
+        'methods'             => 'POST',
+        'callback'            => 'phoenix_acc_tg_link_api',
+        'permission_callback' => 'phoenix_acc_tg_link_permission',
+    ));
     phoenix_api_route('/account/sms/telegram', 'GET', 'phoenix_acc_admin_tg_get');
     phoenix_api_route('/account/sms/telegram', 'POST', 'phoenix_acc_admin_tg_act', array(
-        'act' => array('type' => 'string', 'enum' => array('connect', 'disconnect'), 'required' => true),
+        'act' => array('type' => 'string', 'enum' => array('connect', 'disconnect', 'rotate'), 'required' => true),
     ));
 }
 
 function phoenix_acc_tg_hook_permission(WP_REST_Request $r) {
     $secret = (string) get_option(PHOENIX_ACC_TG_SECRET, '');
     $got    = (string) $r->get_header('X-Telegram-Bot-Api-Secret-Token');
-    if ($secret === '' || $got === '' || !hash_equals($secret, $got)) {
+    /* رباتِ موجود: تلگرام به این‌جا نمی‌فرستد و رمز دستِ برنامه‌ی آن ربات است — بسته */
+    if (phoenix_acc_tg_shared() || $secret === '' || $got === '' || !hash_equals($secret, $got)) {
         return new WP_Error('phoenix_acc_tg_forbidden', 'forbidden', array('status' => 403));
     }
     return true;
@@ -191,6 +218,47 @@ function phoenix_acc_tg_hook(WP_REST_Request $r) {
         phoenix_acc_tg_handle($u);
     }
     return rest_ensure_response(array('ok' => true));
+}
+
+/* ============================================================
+   رباتِ موجود — ‎POST /tg/link‎
+   ============================================================ */
+
+/** فقط در حالتِ ‎shared‎، و فقط با رمز در ‎X-Phoenix-Secret‎ */
+function phoenix_acc_tg_link_permission(WP_REST_Request $r) {
+    $secret = (string) get_option(PHOENIX_ACC_TG_SECRET, '');
+    $got    = (string) $r->get_header('X-Phoenix-Secret');
+    if (!phoenix_acc_tg_shared() || strlen($secret) < 32 || $got === '' || !hash_equals($secret, $got)) {
+        return new WP_Error('phoenix_acc_tg_forbidden', 'forbidden', array('status' => 403));
+    }
+    return true;
+}
+
+/**
+ * رباتِ فروشگاه مخاطبِ مشتری را گرفته؛ این‌جا پیوند می‌خورد و اگر کدی
+ * منتظر بود همان لحظه در همان گفتگو فرستاده می‌شود. ‎message‎ متنی است
+ * که آن ربات می‌تواند به مشتری نشان دهد.
+ */
+function phoenix_acc_tg_link_api(WP_REST_Request $r) {
+    $T = PHOENIX_ACC_TG_TEXT;
+    $v = phoenix_acc_tg_link_input($r->get_json_params());
+    if (!$v['ok']) {
+        $msg = array('not_own' => $T['not_own'], 'not_ir' => $T['not_ir'])[$v['error']] ?? 'درخواست نامعتبر است.';
+        return new WP_Error('phoenix_acc_tg_' . $v['error'], $msg, array('status' => 422));
+    }
+    phoenix_acc_tg_link($v['phone'], $v['chat'], $v['user'], $v['username']);
+    $sent = false;
+    $code = phoenix_acc_tg_pending_take($v['phone']);
+    if ($code !== null && $code !== '') {
+        $s = phoenix_acc_tg_call('sendMessage', array('chat_id' => $v['chat'], 'text' => phoenix_acc_tg_code_text($code), 'protect_content' => true));
+        $sent = !is_wp_error($s);
+        if (!$sent) {
+            phoenix_acc_tg_pending_put($v['phone'], $code); // تلگرام در دسترس نبود — کد برای بارِ بعد
+        }
+    }
+    return rest_ensure_response(array(
+        'ok' => true, 'code_sent' => $sent, 'message' => $sent ? $T['linked_sent'] : $T['linked'],
+    ));
 }
 
 function phoenix_acc_tg_say($chat, $text, $markup = null) {
@@ -239,8 +307,26 @@ function phoenix_acc_tg_default_hook() {
 }
 
 function phoenix_acc_admin_tg_status() {
+    if (phoenix_acc_tg_shared()) {
+        /* وبهوکِ این ربات مالِ برنامه‌ی خودِ آن است. فقط می‌سنجیم به تلگرام
+           می‌رسیم، و اینکه وبهوک اشتباهاً هنوز روی همین سایت نمانده باشد
+           (اگر قبلاً در حالتِ «رباتِ جدا» وصلش کرده‌اند). */
+        $info = phoenix_acc_tg_call('getWebhookInfo');
+        $url  = is_wp_error($info) ? '' : (string) ($info['url'] ?? '');
+        return array(
+            'mode'        => 'shared',
+            'bot'         => (string) phoenix_acc_setting('tg_bot'),
+            'linked'      => phoenix_acc_tg_count(),
+            'error'       => is_wp_error($info) ? $info->get_error_message() : '',
+            'link_url'    => rest_url(PHOENIX_ACC_NS . '/tg/link'),
+            'secret'      => phoenix_acc_tg_secret(),
+            'hook_is_ours'=> $url !== '' && strpos($url, '/' . PHOENIX_ACC_NS . '/tg/hook') !== false,
+            'hook'        => null,
+        );
+    }
     $info = phoenix_acc_tg_call('getWebhookInfo');
     return array(
+        'mode'     => 'own',
         'bot'      => (string) phoenix_acc_setting('tg_bot'),
         'linked'   => phoenix_acc_tg_count(),
         'expected' => (string) (phoenix_acc_setting('tg_hook') ?: phoenix_acc_tg_default_hook()),
@@ -259,12 +345,19 @@ function phoenix_acc_admin_tg_get(WP_REST_Request $r) {
 }
 
 function phoenix_acc_admin_tg_act(WP_REST_Request $r) {
-    if ((string) $r['act'] === 'disconnect') {
-        $d = phoenix_acc_tg_call('deleteWebhook', array('drop_pending_updates' => true));
-        if (is_wp_error($d)) {
-            return phoenix_api_fail('phoenix_acc_tg', $d->get_error_message(), 502);
+    $act    = (string) $r['act'];
+    $shared = phoenix_acc_tg_shared();
+    if ($act === 'disconnect') {
+        /* ⚠ رباتِ موجود: وبهوکش مالِ برنامه‌ی خودش است — دست نمی‌زنیم */
+        if (!$shared) {
+            $d = phoenix_acc_tg_call('deleteWebhook', array('drop_pending_updates' => true));
+            if (is_wp_error($d)) {
+                return phoenix_api_fail('phoenix_acc_tg', $d->get_error_message(), 502);
+            }
         }
-        phoenix_audit('setting', 'account.telegram', null, 'off', 'وبهوکِ ربات برداشته شد');
+        /* سایت دیگر مشتری را به این ربات نفرستد */
+        phoenix_acc_settings_save(array('tg_bot' => ''));
+        phoenix_audit('setting', 'account.telegram', null, 'off', $shared ? 'رباتِ موجود جدا شد' : 'وبهوکِ ربات برداشته شد');
         return phoenix_api_ok(phoenix_acc_admin_tg_status());
     }
 
@@ -272,11 +365,20 @@ function phoenix_acc_admin_tg_act(WP_REST_Request $r) {
     if (is_wp_error($me)) {
         return phoenix_api_fail('phoenix_acc_tg', $me->get_error_message(), 502);
     }
-    $secret = (string) get_option(PHOENIX_ACC_TG_SECRET, '');
-    if (strlen($secret) < 32) {
-        $secret = bin2hex(random_bytes(24));
-        update_option(PHOENIX_ACC_TG_SECRET, $secret, false);
+    /* رمزِ تازه فقط بعد از موفقیت ذخیره می‌شود — شکست، ربات را قفل نکند */
+    $secret = $act === 'rotate' ? bin2hex(random_bytes(24)) : phoenix_acc_tg_secret();
+    $bot    = preg_replace('/[^A-Za-z0-9_]/', '', (string) ($me['username'] ?? ''));
+
+    if ($shared) {
+        if ($act === 'rotate') {
+            update_option(PHOENIX_ACC_TG_SECRET, $secret, false);
+        }
+        phoenix_acc_settings_save(array('tg_bot' => $bot));
+        phoenix_audit('setting', 'account.telegram', null, '@' . $bot,
+            $act === 'rotate' ? 'رمزِ API ربات عوض شد' : 'رباتِ موجود وصل شد (بی‌وبهوک)');
+        return phoenix_api_ok(phoenix_acc_admin_tg_status());
     }
+
     $set = phoenix_acc_tg_call('setWebhook', array(
         'url'                  => (string) (phoenix_acc_setting('tg_hook') ?: phoenix_acc_tg_default_hook()),
         'secret_token'         => $secret,
@@ -287,7 +389,9 @@ function phoenix_acc_admin_tg_act(WP_REST_Request $r) {
     if (is_wp_error($set)) {
         return phoenix_api_fail('phoenix_acc_tg', $set->get_error_message(), 502);
     }
-    $bot = preg_replace('/[^A-Za-z0-9_]/', '', (string) ($me['username'] ?? ''));
+    if ($act === 'rotate') {
+        update_option(PHOENIX_ACC_TG_SECRET, $secret, false);
+    }
     phoenix_acc_settings_save(array('tg_bot' => $bot));
     phoenix_audit('setting', 'account.telegram', null, '@' . $bot, 'ربات وصل شد');
     return phoenix_api_ok(phoenix_acc_admin_tg_status());

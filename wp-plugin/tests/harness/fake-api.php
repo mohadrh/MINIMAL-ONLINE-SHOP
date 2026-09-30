@@ -1186,16 +1186,26 @@ function h_acc_payload() {
         'devlog' => $s['sms_provider'] === 'dev' ? phoenix_acc_log_fresh($GLOBALS['S']['acc_dev'] ?? array(), 1800, time()) : array(),
         'log' => $GLOBALS['S']['acc_log'] ?? array(), 'bridge_debug' => false,
         'telegram' => array('bot' => $s['tg_bot'] ?? '', 'linked' => $GLOBALS['S']['tg_linked'] ?? 0,
-            'hook_default' => 'https://panel.phonixmarket.com/wp-json/phoenix-account/v1/tg/hook'));
+            'mode' => ($s['tg_mode'] ?? 'own') === 'shared' ? 'shared' : 'own',
+            'hook_default' => 'https://panel.phonixmarket.com/wp-json/phoenix-account/v1/tg/hook',
+            'link_url' => 'https://panel.phonixmarket.com/wp-json/phoenix-account/v1/tg/link'));
 }
 /* ربات تلگرامِ ساختگی: «وصل کردن» نام را می‌گذارد؛ وضعیت همیشه سالم */
 if ($path === '/account/sms/telegram') {
     $s = array_merge(phoenix_acc_defaults(), $GLOBALS['S']['acc'] ?? array());
-    if ($method === 'POST' && ($body['act'] ?? '') === 'connect') {
+    $act = $method === 'POST' ? ($body['act'] ?? '') : '';
+    if ($act === 'connect' || $act === 'rotate') {
         if (($s['sms_provider'] ?? '') !== 'telegram' || empty($s['sms_conn'])) h_fail('phoenix_acc_tg', 'توکنِ ربات تنظیم نشده یا شکلش درست نیست.', 502);
-        $GLOBALS['S']['acc']['tg_bot'] = 'PhoenixShopLoginBot';
+        $bot = $s['tg_mode'] === 'shared' ? 'PhoenixAIShopBot' : 'PhoenixShopLoginBot';
+        $GLOBALS['S']['acc']['tg_bot'] = $bot;
         $GLOBALS['S']['tg_linked'] = 3;
-        $s['tg_bot'] = 'PhoenixShopLoginBot';
+        $s['tg_bot'] = $bot;
+    }
+    if ($act === 'rotate' || empty($GLOBALS['S']['tg_secret'])) $GLOBALS['S']['tg_secret'] = bin2hex(random_bytes(24));
+    if ($s['tg_mode'] === 'shared') {
+        h_ok(array('mode' => 'shared', 'bot' => $s['tg_bot'] ?? '', 'linked' => $GLOBALS['S']['tg_linked'] ?? 0, 'error' => '',
+            'link_url' => 'https://panel.phonixmarket.com/wp-json/phoenix-account/v1/tg/link',
+            'secret' => $GLOBALS['S']['tg_secret'], 'hook_is_ours' => false, 'hook' => null));
     }
     $hook = $s['tg_hook'] ?: 'https://panel.phonixmarket.com/wp-json/phoenix-account/v1/tg/hook';
     h_ok(array('bot' => $s['tg_bot'] ?? '', 'linked' => $GLOBALS['S']['tg_linked'] ?? 0, 'expected' => $hook, 'error' => '',
@@ -1207,7 +1217,8 @@ if ($path === '/account/sms' && $method === 'POST') {
     if (!$c['ok']) h_fail('phoenix_invalid', 'بعضی فیلدها درست نیستند.', 422, array('errors' => $c['errors']));
     /* مثلِ افزونه: ادغام، و توکنِ تازه نامِ ربات را پاک می‌کند */
     $prev = $GLOBALS['S']['acc'] ?? array();
-    if ((string) $c['data']['sms_conn'] !== (string) ($prev['sms_conn'] ?? '')) $c['data']['tg_bot'] = '';
+    if ((string) $c['data']['sms_conn'] !== (string) ($prev['sms_conn'] ?? '')
+        || $c['data']['tg_mode'] !== ($prev['tg_mode'] ?? 'own')) $c['data']['tg_bot'] = '';
     $GLOBALS['S']['acc'] = array_merge($prev, $c['data']);
     /* شبیه‌سازیِ چند درخواستِ ورود، تا کدهای حالتِ آزمایشی دیده شوند */
     if ($c['data']['sms_provider'] === 'dev' && empty($GLOBALS['S']['acc_dev'])) {

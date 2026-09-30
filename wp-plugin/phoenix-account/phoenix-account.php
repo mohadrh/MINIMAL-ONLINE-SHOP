@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Phoenix Account
  * Description: پنلِ مشتریِ فروشگاه فونیکس — ورود با رمز یا پیامک، بازیابیِ رمز، سفارش‌ها، تحویل‌ها، اشتراک‌ها، تیکت و چتِ آنلاین؛ و برای مدیر پنلِ جدای «مشتریان». کنارِ Phoenix Bridge کار می‌کند.
- * Version:     0.4.0
+ * Version:     0.5.0
  * Requires PHP: 7.4
  * Requires Plugins: phoenix-bridge
  * Author:      Phoenix Shop
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('PHOENIX_ACC_VERSION', '0.4.0');
+define('PHOENIX_ACC_VERSION', '0.5.0');
 define('PHOENIX_ACC_FILE', __FILE__);
 define('PHOENIX_ACC_NEEDS_BRIDGE', '1.6.1');
 

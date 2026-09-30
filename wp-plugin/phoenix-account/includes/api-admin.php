@@ -367,8 +367,10 @@ function phoenix_acc_admin_sms_payload() {
         /* ربات تلگرام — بی‌تماس با تلگرام؛ وضعیتِ زنده با ‎GET /account/sms/telegram‎ */
         'telegram'    => array(
             'bot'          => (string) phoenix_acc_setting('tg_bot'),
+            'mode'         => phoenix_acc_setting('tg_mode') === 'shared' ? 'shared' : 'own',
             'linked'       => phoenix_acc_tg_count(),
             'hook_default' => phoenix_acc_tg_default_hook(),
+            'link_url'     => rest_url(PHOENIX_ACC_NS . '/tg/link'),
         ),
         'bridge_debug'=> defined('WP_DEBUG') && WP_DEBUG,
     );
@@ -383,8 +385,10 @@ function phoenix_acc_admin_sms_save(WP_REST_Request $r) {
     if (!$c['ok']) {
         return new WP_Error('phoenix_invalid', 'بعضی فیلدها درست نیستند.', array('status' => 422, 'errors' => $c['errors']));
     }
-    /* توکنِ تازه = شاید رباتِ دیگر: نامِ قبلی به مشتری نشان داده نشود تا دوباره «وصل کردن» */
-    if ((string) $c['data']['sms_conn'] !== (string) phoenix_acc_setting('sms_conn')) {
+    /* توکنِ تازه (شاید رباتِ دیگر) یا نوعِ دیگرِ ربات: نامِ قبلی به مشتری
+       نشان داده نشود تا دوباره «وصل کردن» زده شود */
+    if ((string) $c['data']['sms_conn'] !== (string) phoenix_acc_setting('sms_conn')
+        || (string) $c['data']['tg_mode'] !== (string) (phoenix_acc_setting('tg_mode') ?: 'own')) {
         $c['data']['tg_bot'] = '';
     }
     phoenix_acc_settings_save($c['data']);

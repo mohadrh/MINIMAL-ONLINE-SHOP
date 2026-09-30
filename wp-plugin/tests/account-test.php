@@ -305,5 +305,28 @@ is_same('واسطه‌ی https پذیرفته', phoenix_acc_settings_clean(array
 is_same('متنِ کد', strpos(phoenix_acc_tg_code_text('482913'), '482913') !== false, true);
 is_same('کیبورد فقط شماره‌ی خودش را می‌خواهد', phoenix_acc_tg_contact_keyboard()['keyboard'][0][0]['request_contact'], true);
 
+/* ============================================================ */
+section('تلگرام: رباتِ موجود (‎/tg/link‎)');
+
+$ok = array('chat_id' => 555, 'user_id' => 555, 'contact_user_id' => 555, 'phone' => '+989121234567', 'username' => 'ali_r');
+$v = phoenix_acc_tg_link_input($ok);
+is_same('درست → پیوند', array($v['ok'], $v['phone'], $v['chat'], $v['user'], $v['username']), array(true, '09121234567', 555, 555, 'ali_r'));
+is_same('شناسه به‌صورتِ رشته هم', phoenix_acc_tg_link_input(array_merge($ok, array('chat_id' => '555', 'user_id' => '555', 'contact_user_id' => '555')))['ok'], true);
+is_same('مخاطبِ کسِ دیگر رد', phoenix_acc_tg_link_input(array_merge($ok, array('contact_user_id' => 777)))['error'], 'not_own');
+is_same('مخاطبِ بی‌حساب رد', phoenix_acc_tg_link_input(array_diff_key($ok, array('contact_user_id' => 1)))['error'], 'not_own');
+is_same('گفتگوی دیگر (گروه یا کسِ دیگر) رد', phoenix_acc_tg_link_input(array_merge($ok, array('chat_id' => 999)))['error'], 'not_own');
+is_same('گروهِ منفی رد', phoenix_acc_tg_link_input(array_merge($ok, array('chat_id' => -100123)))['error'], 'bad_request');
+is_same('شماره‌ی خارجی رد', phoenix_acc_tg_link_input(array_merge($ok, array('phone' => '14155552671')))['error'], 'not_ir');
+is_same('بی‌شماره رد', phoenix_acc_tg_link_input(array_diff_key($ok, array('phone' => 1)))['error'], 'not_ir');
+is_same('شناسه‌ی اعشاری رد', phoenix_acc_tg_link_input(array_merge($ok, array('user_id' => 555.5)))['error'], 'bad_request');
+is_same('شناسه‌ی متنی رد', phoenix_acc_tg_link_input(array_merge($ok, array('user_id' => '555 OR 1')))['error'], 'bad_request');
+is_same('ورودیِ غیرِ آرایه رد', phoenix_acc_tg_link_input('x')['error'], 'bad_request');
+is_same('نامِ کاربریِ عجیب دور ریخته', phoenix_acc_tg_link_input(array_merge($ok, array('username' => '<b>x</b>')))['username'], '');
+
+$c = phoenix_acc_settings_clean(array('sms_provider' => 'telegram', 'sms_conn' => 'k_bot', 'tg_mode' => 'shared', 'tg_hook' => 'https://x.dev/hook'), array('k_bot'));
+is_same('حالتِ رباتِ موجود ذخیره، وبهوکِ واسطه بی‌معنا', array($c['ok'], $c['data']['tg_mode'], $c['data']['tg_hook']), array(true, 'shared', ''));
+is_same('پیش‌فرض رباتِ جدا', phoenix_acc_settings_clean(array())['data']['tg_mode'], 'own');
+is_same('نوعِ ناشناخته رد', isset(phoenix_acc_settings_clean(array('tg_mode' => 'evil'))['errors']['tg_mode']), true);
+
 printf("\n%d قبول، %d مردود\n", $GLOBALS['pass'], $GLOBALS['fail']);
 exit($GLOBALS['fail'] ? 1 : 0);
