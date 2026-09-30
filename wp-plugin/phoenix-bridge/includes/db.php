@@ -158,6 +158,33 @@ function phoenix_db_install() {
 }
 
 /* ------------------------------------------------------------
+   قفلِ اتمی
+
+   ⚠ ‎GET_LOCK‎ی خودِ MySQL، نه transient. «ببین نیست، بعد بگذار» با
+   transient دو قدم است و دو درخواستِ هم‌زمان هر دو «نیست» می‌بینند.
+   ‎GET_LOCK‎ یک قدم است، با پایانِ اتصال خودش آزاد می‌شود (درخواستی
+   که وسطِ کار مُرد قفل را گیر نمی‌اندازد)، و پیشوندِ جدول‌ها نام را
+   از سایت‌های دیگرِ همان سرورِ پایگاه داده جدا می‌کند.
+   ------------------------------------------------------------ */
+
+function phoenix_db_lock_name($name) {
+    global $wpdb;
+    $full = $wpdb->prefix . $name;
+    return strlen($full) <= 64 ? $full : substr($full, 0, 31) . md5($full); // سقفِ MySQL: ۶۴
+}
+
+/** @return bool ‎false‎ یعنی در ‎$wait‎ ثانیه قفل نشد */
+function phoenix_db_lock($name, $wait = 5) {
+    global $wpdb;
+    return (string) $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, %d)', phoenix_db_lock_name($name), (int) $wait)) === '1';
+}
+
+function phoenix_db_unlock($name) {
+    global $wpdb;
+    $wpdb->query($wpdb->prepare('SELECT RELEASE_LOCK(%s)', phoenix_db_lock_name($name)));
+}
+
+/* ------------------------------------------------------------
    تنظیمات
 
    یک option برای همه‌ی تنظیماتِ موتور. ‎autoload‎ روشن است چون
@@ -343,7 +370,7 @@ function phoenix_audit_read($kind = '', $limit = 50) {
 
     $limit = max(1, min(500, (int) $limit));
     $table = phoenix_table_audit();
-    $kinds = array('setting', 'rate', 'price', 'discount', 'queue', 'product', 'customer', 'ticket');
+    $kinds = array('setting', 'rate', 'price', 'discount', 'queue', 'product', 'customer', 'ticket', 'chat');
 
     if ($kind !== '' && in_array($kind, $kinds, true)) {
         return $wpdb->get_results($wpdb->prepare(

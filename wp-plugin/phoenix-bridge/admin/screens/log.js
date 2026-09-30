@@ -14,6 +14,7 @@ const SETTING = {
   pick: 'روش انتخاب نرخ', min_sources: 'حداقل منبع', floor_percent: 'کف قیمت',
   cart_lock_min: 'قفل سبد', spread_max: 'فاصله‌ی مجاز', rate_ttl: 'عمر کش نرخ',
   sane_min: 'کف بازه', sane_max: 'سقف بازه', fulfil_fail_stop: 'توقف بعد از شکست',
+  backup: 'پشتیبان‌گیری',
 };
 const toFa = (t) => String(t).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[d]);
 const iso = (t) => '⁨' + t + '⁩';

@@ -46,6 +46,7 @@ function phoenix_admin_sections() {
         'discounts' => 'تخفیف‌ها',
         'queue'     => 'صفِ تحویل',
         'log'       => 'تاریخچه',
+        'backup'    => 'پشتیبان‌گیری',
         'settings'  => 'تنظیمات',
     );
 }

@@ -83,22 +83,25 @@ function phoenix_sync_stock($product_id) {
  * ⚠ قفل لازم است.
  *
  * دو سفارشِ هم‌زمان می‌توانند هر دو «اولین کدِ آزاد» را ببینند و
- * یک کد به دو نفر برسد. قفلِ ووکامرس روی همان کلید، دومی را
+ * یک کد به دو نفر برسد. ‎phoenix_db_lock‎ (‎GET_LOCK‎ی MySQL) دومی را
  * منتظر می‌گذارد تا اولی تمام شود.
+ *
+ * ⚠ اگر قفل نشد، کدی برداشته نمی‌شود (‎false‎) — نه اینکه بی‌قفل ادامه
+ *   دهد. تحویلِ دستی بهتر از یک کد برای دو نفر است. (نسخه‌ی قبل با
+ *   transient بود: «ببین، بعد بگذار» دو قدم بود و بعد از پنج ثانیه
+ *   بی‌قفل ادامه می‌داد.)
+ *
+ * @return string|null|false کد، ‎null‎ اگر کدِ آزاد نیست، ‎false‎ اگر قفل نشد
  */
 function phoenix_claim_code($product_id, $order_id) {
-    $lock = 'phoenix_lock_' . $product_id;
-
-    /* قفلِ ساده با transient — تا پنج ثانیه صبر می‌کند */
-    for ($i = 0; $i < 50; $i++) {
-        if (get_transient($lock) === false) {
-            break;
-        }
-        usleep(100000); // صدم ثانیه
+    $lock = 'phoenix_codes_' . (int) $product_id;
+    if (!phoenix_db_lock($lock, 5)) {
+        return false;
     }
-    set_transient($lock, 1, 10);
 
     try {
+        /* خواندنِ تازه — نه نسخه‌ای که همین درخواست پیش از قفل کش کرده */
+        wp_cache_delete($product_id, 'post_meta');
         $codes = phoenix_get_codes($product_id);
         foreach ($codes as $idx => $c) {
             if (empty($c['used'])) {
@@ -111,7 +114,7 @@ function phoenix_claim_code($product_id, $order_id) {
         }
         return null;
     } finally {
-        delete_transient($lock);
+        phoenix_db_unlock($lock);
     }
 }
 
@@ -180,6 +183,12 @@ function phoenix_codes_save($post_id) {
 
     $raw   = (string) wp_unslash($_POST['phoenix_new_codes']);
     $lines = preg_split('/\r\n|\r|\n/', $raw);
+    /* زیرِ همان قفلِ فروش — وگرنه کدی که همین لحظه فروخته شد با فهرستِ
+       قدیمی رونویسی و دوباره آزاد می‌شد */
+    if (!phoenix_db_lock('phoenix_codes_' . (int) $post_id, 10)) {
+        return;
+    }
+    wp_cache_delete($post_id, 'post_meta');
     $codes = phoenix_get_codes($post_id);
 
     /* تکراری اضافه نمی‌شود — ادمین گاهی یک فهرست را دو بار پیست
@@ -203,6 +212,7 @@ function phoenix_codes_save($post_id) {
     }
 
     phoenix_save_codes($post_id, $codes);
+    phoenix_db_unlock('phoenix_codes_' . (int) $post_id);
 }
 
 /* ============================================================
@@ -222,6 +232,21 @@ function phoenix_codes_save($post_id) {
 add_action('woocommerce_order_status_processing', 'phoenix_deliver_order');
 add_action('woocommerce_order_status_completed', 'phoenix_deliver_order');
 function phoenix_deliver_order($order_id) {
+    /* ⚠ دو قلاب (processing و completed) می‌توانند هم‌زمان برسند — هر دو
+       «هنوز تحویل نشده» می‌دیدند و دو کد برمی‌داشتند. با قفل، دومی بعد از
+       اولی سفارشِ تازه را می‌خواند و علامتِ تحویل را می‌بیند. */
+    $lock = 'phoenix_deliver_' . (int) $order_id;
+    if (!phoenix_db_lock($lock, 15)) {
+        return; // دیگری همین حالا تحویلش می‌دهد
+    }
+    try {
+        phoenix_deliver_order_locked($order_id);
+    } finally {
+        phoenix_db_unlock($lock);
+    }
+}
+
+function phoenix_deliver_order_locked($order_id) {
     $order = wc_get_order($order_id);
     if (!$order || $order->get_meta(PHOENIX_DELIVERED_META)) {
         return;
@@ -242,10 +267,13 @@ function phoenix_deliver_order($order_id) {
             $qty = $item->get_quantity();
             for ($i = 0; $i < $qty; $i++) {
                 $code = phoenix_claim_code($target, $order_id);
-                if ($code === null) {
+                if ($code === null && $target !== $product_id) {
                     $code = phoenix_claim_code($product_id, $order_id);
                 }
-                if ($code !== null) {
+                if ($code === false) {
+                    $pending = true;
+                    $order->add_order_note('انبارِ کدِ «' . $item->get_name() . '» همین لحظه مشغول بود. تحویل دستی لازم است.');
+                } elseif ($code !== null) {
                     $item->add_meta_data('کد تحویل', $code, false);
                     $delivered[] = $item->get_name() . ': ' . $code;
                 } else {

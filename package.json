@@ -20,7 +20,7 @@
     "pack:account": "node scripts/pack-plugin.mjs phoenix-account",
     "pack:site": "node scripts/pack-site.mjs",
     "check:roundtrip": "node --experimental-strip-types --import ./scripts/ts-resolver.mjs scripts/check-roundtrip.mjs",
-    "test:plugin": "php wp-plugin/tests/pricing-test.php && php wp-plugin/tests/dashboard-test.php && php wp-plugin/tests/product-input-test.php && php wp-plugin/tests/rate-custom-test.php && php wp-plugin/tests/product-sources-test.php && php wp-plugin/tests/account-test.php && php wp-plugin/tests/delivery-test.php && php wp-plugin/tests/telegram-flow-test.php"
+    "test:plugin": "php wp-plugin/tests/pricing-test.php && php wp-plugin/tests/dashboard-test.php && php wp-plugin/tests/product-input-test.php && php wp-plugin/tests/rate-custom-test.php && php wp-plugin/tests/product-sources-test.php && php wp-plugin/tests/account-test.php && php wp-plugin/tests/delivery-test.php && php wp-plugin/tests/telegram-flow-test.php && php wp-plugin/tests/backup-test.php && node wp-plugin/tests/backup-crypto-test.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.8",

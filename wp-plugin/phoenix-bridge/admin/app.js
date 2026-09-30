@@ -134,6 +134,7 @@ const NAV = WORLD ? [] : [
   { id: 'discounts', label: 'تخفیف‌ها',   icon: 'tag' },
   { id: 'queue',     label: 'صفِ تحویل',  icon: 'inbox' },
   { id: 'log',       label: 'تاریخچه',    icon: 'clock' },
+  { id: 'backup',    label: 'پشتیبان‌گیری', icon: 'save' },
   { id: 'settings',  label: 'تنظیمات',    icon: 'sliders' },
 ];
 
