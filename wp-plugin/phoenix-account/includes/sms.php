@@ -29,6 +29,9 @@ const PHOENIX_ACC_SMSLOG = 'phoenix_acc_sms_log';
 add_filter('phoenix_send_otp', 'phoenix_acc_send_otp', 10, 3);
 function phoenix_acc_send_otp($sent, $phone, $code) {
     $provider = (string) phoenix_acc_setting('sms_provider');
+    if (!in_array($provider, PHOENIX_ACC_PROVIDERS, true)) {
+        $provider = 'off'; // مثلاً «telegram»ِ کهنه پیش از مهاجرت — کد به تلگرام نمی‌رود
+    }
     $email    = !empty(phoenix_acc_setting('otp_email'));
     if ($email) {
         phoenix_acc_otp_email_send((string) $phone, (string) $code);
@@ -38,9 +41,6 @@ function phoenix_acc_send_otp($sent, $phone, $code) {
            ایمیل داشته باشد چه نه — پاسخِ متفاوت می‌گفت حساب دارد یا نه.
            سایت می‌نویسد «اگر ایمیلی ثبت شده باشد». */
         return $email ? true : $sent;
-    }
-    if ($provider === 'telegram') {
-        return phoenix_acc_tg_send_code((string) $phone, (string) $code);
     }
     if ($provider === 'dev') {
         $list = get_option(PHOENIX_ACC_DEVLOG, array());

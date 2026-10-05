@@ -58,7 +58,7 @@ is_same('ایمیلی نرفت', count($GLOBALS['mail']), 0);
 
 echo "\n== کنارِ راهِ اصلی ==\n";
 $GLOBALS['opts']['acc'] = array('sms_provider' => 'telegram', 'otp_email' => true);
-is_same('تلگرام + ایمیل', array(phoenix_acc_send_otp(null, '09121111111', '666666'), count($GLOBALS['tg']), count($GLOBALS['mail'])), array(true, 1, 1));
+is_same('تنظیمِ کهنه‌ی «telegram»: فقط ایمیل — هیچ کدی به تلگرام نه', array(phoenix_acc_send_otp(null, '09121111111', '666666'), count($GLOBALS['tg']), count($GLOBALS['mail'])), array(true, 0, 1));
 $GLOBALS['opts']['acc'] = array('sms_provider' => 'dev', 'otp_email' => true);
 phoenix_acc_send_otp(null, '09121111111', '777777');
 is_same('آزمایشی + ایمیل: کد در پنل هم هست', array(count($GLOBALS['mail']), get_option(PHOENIX_ACC_DEVLOG)[0]['code']), array(2, '777777'));

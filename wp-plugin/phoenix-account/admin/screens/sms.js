@@ -3,16 +3,18 @@
 
    ⚠ این ماژول چیزی import نمی‌کند؛ همه‌چیز از ‎ctx‎ می‌آید — همان
    قراردادِ صفحه‌های Bridge (پوسته، کیت، API با nonce).
+
+   ⚠ از ۰٫۹٫۰ کدِ ورود به تلگرام نمی‌رود (خواسته‌ی فروشگاه). ربات
+   تلگرام فقط برای اعلان‌های مدیر است — صفحه‌ی «اعلان در تلگرام».
    ============================================================ */
 
 const PROVIDERS = [
   { value: 'off', label: 'خاموش' },
   { value: 'dev', label: 'آزمایشی' },
-  { value: 'telegram', label: 'ربات تلگرام (رایگان)' },
   { value: 'kavenegar', label: 'کاوه‌نگار' },
   { value: 'smsir', label: 'sms.ir' },
 ];
-const WORD = { off: ['وصل نیست', 'bad'], dev: ['آزمایشی', 'warn'], telegram: ['ربات تلگرام', 'good'], kavenegar: ['کاوه‌نگار', 'good'], smsir: ['sms.ir', 'good'] };
+const WORD = { off: ['وصل نیست', 'bad'], dev: ['آزمایشی', 'warn'], kavenegar: ['کاوه‌نگار', 'good'], smsir: ['sms.ir', 'good'] };
 
 export async function render(ctx) {
   const d = await ctx.api('GET', '/account/sms');
@@ -32,20 +34,18 @@ function paint(ctx, d) {
       h('p', { class: 'phx2-ratehero__v' }, sw),
       h('p', { class: 'phx2-ratehero__why' },
         s.sms_provider === 'off'
-          ? 'مشتری کدِ ورود نمی‌گیرد؛ پس نه وارد حسابش می‌شود نه سفارش ثبت می‌کند.'
+          ? (s.otp_email
+            ? 'کد فقط به ایمیلِ ثبت‌شده‌ی مشتری می‌رود. مشتریِ بی‌ایمیل با رمزِ عبور وارد می‌شود.'
+            : 'مشتری کدِ ورود نمی‌گیرد؛ فقط کسی که رمز گذاشته وارد می‌شود.')
           : s.sms_provider === 'dev'
             ? 'کد برای کسی فرستاده نمی‌شود — فقط پایینِ همین صفحه دیده می‌شود. برای امتحانِ پنلِ مشتری پیش از خریدِ سامانه.'
-            : s.sms_provider === 'telegram'
-              ? (d.telegram.bot
-                ? `کد در ربات @${d.telegram.bot} فرستاده می‌شود — رایگان. بارِ اول مشتری ربات را باز می‌کند و «ارسال شماره‌ی من» را می‌زند.`
-                : 'ربات هنوز وصل نشده — پایین «وصل کردنِ ربات» را بزن.')
-              : 'کدِ ورود با الگوی تأییدشده‌ی سامانه فرستاده می‌شود.'),
+            : 'کدِ ورود با الگوی تأییدشده‌ی سامانه فرستاده می‌شود.'),
     ),
     pill(sw, st),
   );
 
   /* ---------- تنظیمات ---------- */
-  const provider = kit.seg({ value: s.sms_provider, label: 'سامانه', options: PROVIDERS, onChange: () => paintFields() });
+  const provider = kit.seg({ value: WORD[s.sms_provider] ? s.sms_provider : 'off', label: 'سامانه', options: PROVIDERS, onChange: () => paintFields() });
   const conn = kit.select({
     value: s.sms_conn,
     options: [{ value: '', label: '— انتخاب کن —' },
@@ -55,38 +55,25 @@ function paint(ctx, d) {
   const param = kit.text({ value: s.sms_param, dir: 'ltr', max: 30, placeholder: 'CODE' });
   const days = kit.money({ value: s.session_days, unit: 'روز' });
   const otpEmail = kit.toggle({ checked: !!s.otp_email, label: 'کد به ایمیلِ مشتری هم فرستاده شود' });
-  const tgApi = kit.text({ value: s.tg_api || '', dir: 'ltr', max: 200, placeholder: 'https://api.telegram.org' });
-  const tgHook = kit.text({ value: s.tg_hook || '', dir: 'ltr', max: 200, placeholder: d.telegram.hook_default });
-  const tgMode = kit.seg({
-    value: s.tg_mode === 'shared' ? 'shared' : 'own', label: 'نوعِ ربات', onChange: () => paintFields(),
-    options: [{ value: 'own', label: 'رباتِ جدا برای ورود' }, { value: 'shared', label: 'رباتی که از قبل داریم' }],
-  });
 
   const F = {
     sms_provider: kit.field({ label: 'سامانه', wide: true }, provider.el),
     sms_conn: kit.field({ label: 'کلیدِ سامانه', hint: '' }, h('div', { class: 'phx2-stack' }, conn.el,
-      h('a', { href: ctx.worldUrl('store', 'rate/connections') || '#/rate/connections', class: 'phx2-td-muted' },'ساختنِ اتصالِ تازه در «منابعِ قیمت ← اتصال‌ها»'))),
+      h('a', { href: ctx.worldUrl('store', 'rate/connections') || '#/rate/connections', class: 'phx2-td-muted' }, 'ساختنِ اتصالِ تازه در «منابعِ قیمت ← اتصال‌ها»'))),
     sms_tpl_otp: kit.field({ label: 'الگو', hint: '…' }, tpl.el),
     sms_param: kit.field({ label: 'نامِ متغیرِ کد در الگو', hint: 'همان نامی که در متنِ الگو با ‎#…#‎ آمده.' }, param.el),
     otp_email: kit.field({ label: 'ایمیل', wide: true, hint: 'فقط به ایمیلی که در پرونده‌ی همان شماره است (مشتری بعد از ورود گذاشته، یا تو در «مشتریان»)، هرگز به ایمیلی که در صفحه‌ی ورود تایپ شود. اگر سامانه «خاموش» باشد، ایمیل تنها راه است. ایمیلِ وردپرس روی هاست‌های اشتراکی گاهی به هرزنامه می‌رود — افزونه‌ی SMTP کمک می‌کند.' }, otpEmail.el),
-    session_days: kit.field({ label: 'مشتری تا چند روز واردِ حسابش بماند', hint: 'بعد از این، دوباره کد می‌خواهد. «خروج از همه‌ی دستگاه‌ها» را خودِ مشتری هم دارد.' }, days.el),
-    tg_mode: kit.field({ label: 'نوعِ ربات', wide: true, hint: 'رباتِ جدا: این افزونه همه‌ی کارِ ربات را می‌کند. رباتی که از قبل داریم (مثلاً رباتِ فروش): آن ربات منو و برنامه‌ی خودش را نگه می‌دارد، یک دکمه‌ی «ورود به سایت» اضافه می‌کند و شماره‌ی مشتری را با API به این‌جا می‌دهد — راهنما در docs/TELEGRAM.md.' }, tgMode.el),
-    tg_api: kit.field({ label: 'واسطه‌ی تلگرام (اختیاری)', hint: 'فقط اگر هاست به تلگرام نمی‌رسد: نشانیِ Worker — راهنما در docs/TELEGRAM.md. خالی = مستقیم.' }, tgApi.el),
-    tg_hook: kit.field({ label: 'وبهوک از راهِ واسطه (اختیاری)', hint: 'اگر تلگرام نمی‌تواند به این سایت پیام برساند: نشانیِ ‎/hook‎ی همان Worker. خالی = مستقیم به این سایت.' }, tgHook.el),
+    session_days: kit.field({ label: 'مشتری تا چند روز واردِ حسابش بماند', hint: 'بعد از این، دوباره کد یا رمز می‌خواهد. «خروج از همه‌ی دستگاه‌ها» را خودِ مشتری هم دارد.' }, days.el),
   };
   /* راهنمای الگو با سامانه عوض می‌شود — همان عنصرِ ‎aria-describedby‎ */
   const tplHint = F.sms_tpl_otp.querySelector('.phx2-field__h');
-  const connLabel = F.sms_conn.querySelector('.phx2-field__l');
 
   function paintFields() {
     const p = provider.get();
     const real = p === 'kavenegar' || p === 'smsir';
-    F.sms_conn.hidden = !real && p !== 'telegram';
-    connLabel.textContent = p === 'telegram' ? 'توکنِ ربات (از @BotFather)' : 'کلیدِ سامانه';
+    F.sms_conn.hidden = !real;
     F.sms_tpl_otp.hidden = !real;
     F.sms_param.hidden = p !== 'smsir';
-    F.tg_api.hidden = F.tg_mode.hidden = p !== 'telegram';
-    F.tg_hook.hidden = p !== 'telegram' || tgMode.get() === 'shared';
     tplHint.textContent = p === 'kavenegar'
       ? 'در پنلِ کاوه‌نگار: «اعتبارسنجی ← الگوی جدید»، متن مثلاً «کد ورود فونیکس: %token». نامِ الگو را این‌جا بنویس.'
       : 'در پنلِ sms.ir: «ارسالِ سریع ← الگوی جدید»، متن مثلاً «کد ورود فونیکس: #CODE#». شناسه‌ی عددیِ الگو را این‌جا بنویس.';
@@ -99,8 +86,7 @@ function paint(ctx, d) {
     try {
       paint(ctx, await ctx.api('POST', '/account/sms', {
         sms_provider: provider.get(), sms_conn: conn.get(), sms_tpl_otp: tpl.get(),
-        sms_param: param.get(), session_days: days.get() || 30,
-        tg_api: tgApi.get(), tg_hook: tgHook.get(), tg_mode: tgMode.get(), otp_email: otpEmail.get(),
+        sms_param: param.get(), session_days: days.get() || 30, otp_email: otpEmail.get(),
       }));
       toast('ذخیره شد.', 'good');
     } catch (e) {
@@ -110,7 +96,7 @@ function paint(ctx, d) {
   }));
 
   const settings = card('تنظیم', 'کلیدِ سامانه در «اتصال‌ها» رمزنگاری‌شده می‌ماند؛ این‌جا فقط اسمش انتخاب می‌شود.',
-    h('div', { class: 'phx2-form' }, F.sms_provider, F.sms_conn, F.tg_mode, F.sms_tpl_otp, F.sms_param, F.tg_api, F.tg_hook, F.otp_email, F.session_days),
+    h('div', { class: 'phx2-form' }, F.sms_provider, F.sms_conn, F.sms_tpl_otp, F.sms_param, F.otp_email, F.session_days),
     h('div', { class: 'phx2-row phx2-row--end' }, save),
   );
 
@@ -135,53 +121,10 @@ function paint(ctx, d) {
     );
   }
 
-  /* ---------- ربات تلگرام ---------- */
-  let tgCard = null;
-  if (s.sms_provider === 'telegram' && d.telegram.mode === 'shared') {
-    tgCard = sharedBotCard(ctx, d);
-  } else if (s.sms_provider === 'telegram') {
-    const out = h('div', { class: 'phx2-stack', 'aria-live': 'polite' });
-    const paintTg = (t) => put(out,
-      h('dl', { class: 'phx2-kvs2' },
-        h('dt', null, 'ربات'), h('dd', null, t.bot ? h('a', { href: 'https://t.me/' + t.bot, target: '_blank', rel: 'noopener noreferrer', dir: 'ltr' }, '@' + t.bot) : '—'),
-        h('dt', null, 'مشتریِ وصل‌شده'), h('dd', { class: 'num' }, ctx.ui.fa(t.linked)),
-        t.hook ? [h('dt', null, 'وبهوک'), h('dd', { dir: 'ltr' }, t.hook.url || '— ثبت نشده')] : null,
-        t.hook && t.hook.pending ? [h('dt', null, 'پیامِ در صف'), h('dd', { class: 'num' }, ctx.ui.fa(t.hook.pending))] : null,
-        t.hook && t.hook.last_error ? [h('dt', null, 'آخرین خطای تلگرام'), h('dd', null, pill(t.hook.last_error, 'bad'))] : null,
-      ),
-      t.error ? h('div', { class: 'phx2-callout is-warn' }, icon('alert'),
-        h('span', null, t.error + ' — اگر هاست به تلگرام نمی‌رسد، «واسطه‌ی تلگرام» را تنظیم کن (docs/TELEGRAM.md).')) : null,
-      t.hook && t.hook.url && t.hook.url !== t.expected
-        ? h('div', { class: 'phx2-callout is-warn' }, icon('alert'), h('span', null, 'وبهوکِ ثبت‌شده با نشانیِ این سایت فرق دارد — «وصل کردنِ ربات» را دوباره بزن.')) : null,
-    );
-    paintTg({ bot: d.telegram.bot, linked: d.telegram.linked, expected: d.telegram.hook_default, hook: null, error: '' });
-
-    const tgAct = (label, cls, iconName, fn) => {
-      const b = h('button', { class: 'phx2-btn ' + cls, type: 'button' }, icon(iconName), label);
-      b.addEventListener('click', busyButton(b, async () => {
-        try { paintTg(await fn()); } catch (e) { toast(e.message, 'bad'); }
-      }));
-      return b;
-    };
-    tgCard = card('ربات تلگرام', 'بعد از ذخیره‌ی توکن، یک بار «وصل کردنِ ربات» را بزن. نامِ ربات خودکار خوانده می‌شود و وبهوک ثبت می‌شود.',
-      out,
-      h('div', { class: 'phx2-row phx2-row--end' },
-        tgAct('بررسیِ وضعیت', 'phx2-btn--ghost', 'refresh', () => ctx.api('GET', '/account/sms/telegram')),
-        tgAct('وصل کردنِ ربات', 'phx2-btn--primary', 'bolt', async () => {
-          const t = await ctx.api('POST', '/account/sms/telegram', { act: 'connect' });
-          toast('ربات @' + t.bot + ' وصل شد.', 'good');
-          return t;
-        }),
-      ),
-    );
-  }
-
   /* ---------- ارسالِ آزمایشی ---------- */
   const testPhone = kit.text({ dir: 'ltr', max: 15, placeholder: '09121234567', type: 'tel' });
   const testOut = h('div', { class: 'phx2-src__test', hidden: true, 'aria-live': 'polite' });
-  const testField = kit.field({ label: 'شماره', hint: s.sms_provider === 'telegram'
-    ? 'پیامی با عددِ نمونه‌ی ۱۲۳۴۵۶ در همان ربات فرستاده می‌شود.'
-    : 'عددِ نمونه‌ی ۱۲۳۴۵۶ با همان الگو فرستاده می‌شود.' }, testPhone.el);
+  const testField = kit.field({ label: 'شماره', hint: 'عددِ نمونه‌ی ۱۲۳۴۵۶ با همان الگو فرستاده می‌شود.' }, testPhone.el);
   const testBtn = h('button', { class: 'phx2-btn', type: 'button' }, icon('message'), 'بفرست');
   testBtn.addEventListener('click', busyButton(testBtn, async () => {
     testField.setError('');
@@ -194,10 +137,8 @@ function paint(ctx, d) {
       toast(e.message, 'bad');
     }
   }));
-  const real = s.sms_provider === 'kavenegar' || s.sms_provider === 'smsir' || s.sms_provider === 'telegram';
-  const test = real && card('ارسالِ آزمایشی', s.sms_provider === 'telegram'
-    ? 'به شماره‌ای که ربات را باز کرده و «ارسال شماره‌ی من» زده — مثلاً شماره‌ی خودت.'
-    : 'پیش از روشن کردن برای مشتری‌ها، یک بار به شماره‌ی خودت.',
+  const real = s.sms_provider === 'kavenegar' || s.sms_provider === 'smsir';
+  const test = real && card('ارسالِ آزمایشی', 'پیش از روشن کردن برای مشتری‌ها، یک بار به شماره‌ی خودت.',
     h('div', { class: 'phx2-form' }, testField),
     testOut,
     h('div', { class: 'phx2-row phx2-row--end' }, testBtn),
@@ -207,7 +148,7 @@ function paint(ctx, d) {
   const log = card('آخرین ارسال‌ها', 'بدونِ خودِ کد — فقط اینکه رسید یا نه و چرا.',
     d.log.length
       ? h('div', { class: 'phx2-tablewrap' }, h('table', { class: 'phx2-table' },
-        h('thead', null, h('tr', null, h('th', null, 'شماره'), h('th', null, 'نتیجه'), h('th', null, 'پاسخِ سامانه'), h('th', null, 'کِی'))),
+        h('thead', null, h('tr', null, h('th', null, 'شماره'), h('th', null, 'نتیجه'), h('th', null, 'پاسخ'), h('th', null, 'کِی'))),
         h('tbody', null, d.log.map((r) => h('tr', null,
           h('td', { class: 'num', dir: 'ltr' }, digits(r.phone)),
           h('td', null, pill(r.ok ? 'رسید' : 'نرسید', r.ok ? 'good' : 'bad')),
@@ -218,79 +159,8 @@ function paint(ctx, d) {
   );
 
   put(ctx.view,
-    kit.pageHead({ title: 'پیامک و ورود', sub: 'کدِ ورودِ مشتری‌ها با کدام سامانه فرستاده شود — از افزونه‌ی Phoenix Account.' }),
+    kit.pageHead({ title: 'پیامک و ورود', sub: 'کدِ ورودِ مشتری‌ها با کدام راه فرستاده شود — از افزونه‌ی Phoenix Account.' }),
     status,
-    h('div', { class: 'phx2-grid phx2-grid--halves' }, settings, h('div', { class: 'phx2-grid' }, tgCard, devCard, test, log)),
-  );
-}
-
-/* ============================================================
-   رباتِ موجود — نشانی و رمزِ API برای برنامه‌ی آن ربات
-   ============================================================ */
-
-/** کپی در کلیپ‌بورد؛ اگر مرورگر اجازه نداد، متن انتخاب می‌شود تا دستی کپی شود */
-function copyField(ctx, value, { secret = false } = {}) {
-  const { h, icon, toast } = ctx.ui;
-  const input = h('input', { class: 'phx2-in', dir: 'ltr', readonly: true, value, type: secret ? 'password' : 'text', spellcheck: 'false' });
-  const copy = h('button', { class: 'phx2-btn phx2-btn--sm', type: 'button' }, icon('layers'), 'کپی');
-  copy.addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(value); toast('کپی شد.', 'good'); }
-    catch { input.type = 'text'; input.select(); toast('با Ctrl+C کپی کن.', 'warn'); }
-  });
-  const row = h('div', { class: 'phx2-row' }, input, copy);
-  if (secret) {
-    const show = h('button', { class: 'phx2-btn phx2-btn--sm phx2-btn--ghost', type: 'button' }, icon('eye'), 'نمایش');
-    show.addEventListener('click', () => {
-      input.type = input.type === 'password' ? 'text' : 'password';
-      show.lastChild.textContent = input.type === 'password' ? 'نمایش' : 'پنهان';
-    });
-    row.append(show);
-  }
-  return row;
-}
-
-function sharedBotCard(ctx, d) {
-  const { h, icon, put, toast, busyButton, card, pill } = ctx.ui;
-  const out = h('div', { class: 'phx2-stack', 'aria-live': 'polite' });
-  const paint = (t) => put(out,
-    h('dl', { class: 'phx2-kvs2' },
-      h('dt', null, 'ربات'), h('dd', null, t.bot ? h('a', { href: 'https://t.me/' + t.bot, target: '_blank', rel: 'noopener noreferrer', dir: 'ltr' }, '@' + t.bot) : pill('هنوز روشن نشده', 'warn')),
-      h('dt', null, 'مشتریِ وصل‌شده'), h('dd', { class: 'num' }, ctx.ui.fa(t.linked)),
-    ),
-    h('div', { class: 'phx2-stack' }, h('b', null, 'نشانیِ API'), copyField(ctx, t.link_url)),
-    t.secret
-      ? h('div', { class: 'phx2-stack' }, h('b', null, 'رمز — در هدرِ ‎X-Phoenix-Secret‎'), copyField(ctx, t.secret, { secret: true }))
-      : h('p', { class: 'phx2-td-muted' }, 'برای دیدنِ رمز «بررسیِ وضعیت» را بزن.'),
-    t.hook_is_ours ? h('div', { class: 'phx2-callout is-warn' }, icon('alert'),
-      h('span', null, 'وبهوکِ این ربات هنوز روی همین سایت است (از حالتِ «رباتِ جدا»). تا برنامه‌ی ربات وبهوکِ خودش را دوباره ثبت نکند، ربات به پیام‌های دیگر جواب نمی‌دهد.')) : null,
-    t.error ? h('div', { class: 'phx2-callout is-warn' }, icon('alert'),
-      h('span', null, t.error + ' — اگر هاست به تلگرام نمی‌رسد، «واسطه‌ی تلگرام» را تنظیم کن (docs/TELEGRAM.md).')) : null,
-  );
-  paint({ bot: d.telegram.bot, linked: d.telegram.linked, link_url: d.telegram.link_url, secret: '' });
-
-  const act = (label, cls, iconName, fn) => {
-    const b = h('button', { class: 'phx2-btn ' + cls, type: 'button' }, icon(iconName), label);
-    b.addEventListener('click', busyButton(b, async () => {
-      try { const t = await fn(); if (t) paint(t); } catch (e) { toast(e.message, 'bad'); }
-    }));
-    return b;
-  };
-  return card('رباتِ موجود (با API)',
-    'رباتِ فروش دکمه‌ی «ورود به سایت» را نشان می‌دهد و شماره‌ی مشتری را به این نشانی می‌فرستد؛ کدهای ورود با همان ربات می‌روند. وبهوکِ ربات دست نمی‌خورد. «روشن کردن» را وقتی بزن که دکمه در ربات آماده است — از همان لحظه سایت مشتری را به ربات می‌فرستد.',
-    out,
-    h('div', { class: 'phx2-row phx2-row--end' },
-      act('بررسیِ وضعیت', 'phx2-btn--ghost', 'refresh', () => ctx.api('GET', '/account/sms/telegram')),
-      act('رمزِ تازه', 'phx2-btn--ghost', 'lock', async () => {
-        if (!confirm('رمزِ فعلی همین حالا باطل می‌شود و رباتِ فروش تا رمزِ تازه را نگیرد نمی‌تواند شماره بفرستد. ادامه؟')) return null;
-        const t = await ctx.api('POST', '/account/sms/telegram', { act: 'rotate' });
-        toast('رمزِ تازه ساخته شد — در برنامه‌ی ربات بگذارش.', 'good');
-        return t;
-      }),
-      act('روشن کردن', 'phx2-btn--primary', 'bolt', async () => {
-        const t = await ctx.api('POST', '/account/sms/telegram', { act: 'connect' });
-        toast('ربات @' + t.bot + ' روشن شد.', 'good');
-        return t;
-      }),
-    ),
+    h('div', { class: 'phx2-grid phx2-grid--halves' }, settings, h('div', { class: 'phx2-grid' }, devCard, test, log)),
   );
 }

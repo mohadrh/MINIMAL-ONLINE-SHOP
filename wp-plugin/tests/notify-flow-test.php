@@ -152,7 +152,8 @@ require_once __DIR__ . '/../phoenix-account/includes/core.php';
 require_once __DIR__ . '/../phoenix-account/includes/telegram.php';
 require_once __DIR__ . '/../phoenix-account/includes/notify.php';
 
-$GLOBALS['opts']['acc'] = array('sms_provider' => 'telegram', 'sms_conn' => 'k_login', 'tg_mode' => 'own', 'tg_bot' => 'PhoenixShopBot', 'tg_api' => '');
+/* از ۰٫۹٫۰ کدِ ورود به تلگرام نمی‌رود؛ ربات فقط مالِ اعلان‌هاست */
+$GLOBALS['opts']['acc'] = array('sms_provider' => 'off');
 $GLOBALS['opts'][PHOENIX_ACC_TG_SECRET] = str_repeat('ab', 24);
 
 $GLOBALS['pass'] = 0;
@@ -166,7 +167,14 @@ function section($t) { echo "\n== {$t} ==\n"; }
 function rows() { return array_values($GLOBALS['wpdb']->rows); }
 function by_dest($d) { foreach (rows() as $r) { if ($r->dest === $d) return $r; } return null; }
 function sent_tg() { return array_values(array_filter($GLOBALS['http'], function ($h) { return strpos($h['url'], 'api.telegram.org') !== false; })); }
-function save(array $in) { $c = phoenix_acc_notify_clean($in, array('k_login', 'k_notify')); phoenix_acc_notify_save($c['data']); return $c; }
+/** ذخیره مثلِ پنل؛ رباتِ ‎k_login‎ «وصل‌شده» فرض می‌شود (وبهوکش این‌جاست) */
+function save(array $in) {
+    $in += array('tg_conn' => 'k_login');
+    $c = phoenix_acc_notify_clean($in, array('k_login', 'k_notify'));
+    $c['data']['tg_bot'] = $c['data']['tg_conn'] === 'k_login' ? 'PhoenixShopBot' : '';
+    phoenix_acc_notify_save($c['data']);
+    return $c;
+}
 function run_due() { foreach ($GLOBALS['wpdb']->rows as $r) { if ($r->status === 'pending') $r->next_at = '2000-01-01 00:00:00'; } phoenix_acc_notify_run(); }
 
 /* ============================================================ */
@@ -198,7 +206,7 @@ is_same('API ۵۰۳: دوباره، یک دقیقه بعد', array($h->status, $
 $tg = sent_tg();
 $msg = json_decode($tg[0]['args']['body'], true);
 is_same('پیام: HTML، بی‌پیش‌نمایش، با جزئیات و پیوند', array($msg['parse_mode'], $msg['disable_web_page_preview'], strpos($msg['text'], 'اسپاتیفای') !== false, strpos($msg['text'], 'hunter2'), strpos($msg['text'], 'باز کردن در پنل') !== false), array('HTML', true, true, false, true));
-is_same('رباتِ ورود فرستاد', strpos($tg[0]['url'], '/bot111111111:') !== false, true);
+is_same('با توکنِ رباتِ اعلان', strpos($tg[0]['url'], '/bot111111111:') !== false, true);
 
 phoenix_acc_notify_run(); // هنوز وقتش نشده
 is_same('پیش از موعد دوباره فرستاده نشد', by_dest('hook')->tries, 1);
@@ -267,9 +275,9 @@ $hook = phoenix_acc_tg_hook(new Req(array('message' => array('chat' => array('id
 is_same('گروه از راهِ وبهوکِ ربات اضافه شد', phoenix_acc_notify_settings()['tg_chats'], array(array('id' => '-1009876543210', 'title' => 'فروش')));
 is_same('ربات در همان گروه تأیید کرد', json_decode(sent_tg()[0]['args']['body'], true)['chat_id'], '-1009876543210');
 is_same('کد یک‌بارمصرف', phoenix_acc_notify_catch(array('message' => array('chat' => array('id' => 9, 'type' => 'private'), 'text' => '/start ' . $code))), false);
-$GLOBALS['opts']['acc']['tg_mode'] = 'shared';
-is_same('رباتِ موجودِ فروشگاه: اتصال با کد نه', phoenix_acc_admin_notify_act(new Req(array('act' => 'link'))) instanceof WP_Error, true);
-$GLOBALS['opts']['acc']['tg_mode'] = 'own';
+$GLOBALS['opts']['phoenix_acc_notify']['tg_bot'] = '';
+is_same('رباتِ وصل‌نشده (مثلاً رباتِ فروش): اتصال با کد نه', phoenix_acc_admin_notify_act(new Req(array('act' => 'link'))) instanceof WP_Error, true);
+$GLOBALS['opts']['phoenix_acc_notify']['tg_bot'] = 'PhoenixShopBot';
 
 section('ارسالِ آزمایشی');
 $GLOBALS['wpdb']->rows = array();

@@ -60,23 +60,52 @@ function phoenix_acc_notify_secret($fresh = false) {
     return $s;
 }
 
-/** توکنِ رباتِ اعلان — اتصالِ جدا، یا همان رباتِ ورود */
+/** توکنِ رباتِ اعلان — از «اتصال‌ها» */
 function phoenix_acc_notify_token(array $s) {
-    $slug = $s['tg_conn'] !== '' ? $s['tg_conn'] : (string) phoenix_acc_setting('sms_conn');
+    $slug = (string) ($s['tg_conn'] ?? '');
     $conn = $slug !== '' && function_exists('phoenix_conn_runtime') ? phoenix_conn_runtime($slug) : null;
     return $conn ? trim((string) $conn['key']) : '';
 }
 
 /**
- * «اتصال با کد» فقط وقتی پیام‌های این ربات به همین سایت می‌رسد: همان
- * رباتِ ورود، در حالتِ «رباتِ جدا» و وصل‌شده. رباتِ موجودِ فروشگاه
- * (‎shared‎) پیام‌هایش مالِ برنامه‌ی خودش است — آن‌جا شناسه دستی.
+ * «اتصال با کد» فقط وقتی پیام‌های ربات به همین سایت می‌رسد — یعنی ربات
+ * با «وصل کردن» وبهوکش را این‌جا گذاشته (‎tg_bot‎). رباتی که برنامه‌ی
+ * خودش را دارد (رباتِ فروش) وصل نمی‌شود؛ آن‌جا شناسه دستی.
  */
 function phoenix_acc_notify_can_link(array $s) {
-    return ($s['tg_conn'] === '' || $s['tg_conn'] === (string) phoenix_acc_setting('sms_conn'))
-        && phoenix_acc_setting('sms_provider') === 'telegram'
-        && phoenix_acc_setting('tg_mode') !== 'shared'
-        && (string) phoenix_acc_setting('tg_bot') !== '';
+    return ($s['tg_conn'] ?? '') !== '' && ($s['tg_bot'] ?? '') !== '';
+}
+
+/**
+ * ⚠ یک‌باره، از نسخه‌های پیش از ۰٫۹٫۰: اگر کدِ ورود روی تلگرام بود، خاموش
+ *   می‌شود (خواسته‌ی فروشگاه: کد دیگر به تلگرام نرود) و همان ربات —
+ *   توکن، وبهوک، واسطه — برای اعلان‌ها می‌ماند، تا اعلان‌ها قطع نشوند.
+ */
+function phoenix_acc_notify_migrate_tg_login() {
+    $acc = get_option(PHOENIX_ACC_OPTION);
+    if (!is_array($acc) || ($acc['sms_provider'] ?? '') !== 'telegram') {
+        return false;
+    }
+    $n = phoenix_acc_notify_settings();
+    if ($n['tg_conn'] === '' && !empty($acc['sms_conn'])) {
+        $n['tg_conn'] = (string) $acc['sms_conn'];
+        if ($n['tg_bot'] === '' && ($acc['tg_mode'] ?? 'own') !== 'shared') {
+            $n['tg_bot'] = (string) ($acc['tg_bot'] ?? ''); // وبهوکش همین‌جاست
+        }
+        foreach (array('tg_api', 'tg_hook') as $k) {
+            if ($n[$k] === '' && !empty($acc[$k])) {
+                $n[$k] = (string) $acc[$k];
+            }
+        }
+        phoenix_acc_notify_save($n);
+    }
+    $acc['sms_provider'] = 'off';
+    $acc['sms_conn']     = '';
+    update_option(PHOENIX_ACC_OPTION, $acc, false);
+    if (function_exists('phoenix_audit')) {
+        phoenix_audit('setting', 'account.sms_provider', 'telegram', 'off', 'کدِ ورود دیگر به تلگرام نمی‌رود؛ ربات برای اعلان‌ها ماند');
+    }
+    return true;
 }
 
 /** گیرنده‌های فعلی — هر کدام یک ردیف در صندوق */
@@ -433,7 +462,7 @@ function phoenix_acc_admin_notify_payload($extra = array()) {
         'settings'    => $s,
         'events'      => $events,
         'connections' => $conns,
-        'login_bot'   => (string) phoenix_acc_setting('tg_bot'),
+        'hook_default'=> phoenix_acc_tg_default_hook(),
         'can_link'    => phoenix_acc_notify_can_link($s),
         'hook_secret' => phoenix_acc_notify_secret(),
         'failed_24h'  => (int) $wpdb->get_var("SELECT COUNT(*) FROM {$t} WHERE status = 'failed' AND created_at > DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)"),
@@ -451,6 +480,8 @@ function phoenix_acc_admin_notify_save(WP_REST_Request $r) {
         return new WP_Error('phoenix_invalid', 'بعضی فیلدها درست نیستند.', array('status' => 422, 'errors' => $c['errors']));
     }
     $before = phoenix_acc_notify_settings();
+    /* نامِ ربات را فقط «وصل کردن» می‌گذارد؛ با همان توکن می‌ماند، با توکنِ دیگر نه */
+    $c['data']['tg_bot'] = $c['data']['tg_conn'] === $before['tg_conn'] ? $before['tg_bot'] : '';
     phoenix_acc_notify_save($c['data']);
     if ($before['on'] !== $c['data']['on'] || $before['hook_url'] !== $c['data']['hook_url']) {
         phoenix_audit('setting', 'account.notify', $before['on'] ? 'on' : 'off', $c['data']['on'] ? 'on' : 'off', 'تنظیمِ اعلان‌ها');
@@ -480,11 +511,11 @@ function phoenix_acc_admin_notify_act(WP_REST_Request $r) {
 
     if ($act === 'link') {
         if (!phoenix_acc_notify_can_link($s)) {
-            return phoenix_api_fail('phoenix_acc_notify', 'اتصال با کد فقط با همان رباتِ ورود (در حالتِ «رباتِ جدا» و وصل‌شده) کار می‌کند. شناسه‌ی گفتگو را دستی وارد کن.', 409);
+            return phoenix_api_fail('phoenix_acc_notify', 'اول ربات را با «وصل کردنِ ربات» وصل کن؛ یا اگر رباتِ برنامه‌ی دیگری است، شناسه‌ی گفتگو را دستی وارد کن.', 409);
         }
         $code = 'ph_' . strtolower(substr(preg_replace('/[^a-z0-9]/i', '', base64_encode(random_bytes(12))), 0, 10));
         set_transient(PHOENIX_ACC_NOTIFY_CODE, array('code' => $code, 'at' => time()), 15 * MINUTE_IN_SECONDS);
-        $bot = (string) phoenix_acc_setting('tg_bot');
+        $bot = (string) $s['tg_bot'];
         return phoenix_api_ok(phoenix_acc_admin_notify_payload(array('link' => array(
             'code' => $code, 'bot' => $bot, 'url' => 'https://t.me/' . $bot . '?start=' . $code,
             'group' => '/start@' . $bot . ' ' . $code, 'ttl' => 15 * MINUTE_IN_SECONDS,

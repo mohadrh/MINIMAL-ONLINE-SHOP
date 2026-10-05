@@ -11,7 +11,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-const PHOENIX_ACC_PROVIDERS = array('off', 'dev', 'telegram', 'kavenegar', 'smsir');
+/* ⚠ تلگرام از ۰٫۹٫۰ برای کدِ ورود نیست — فقط اعلان‌های مدیر (telegram.php) */
+const PHOENIX_ACC_PROVIDERS = array('off', 'dev', 'kavenegar', 'smsir');
 
 /* ============================================================
    تنظیمات
@@ -24,9 +25,6 @@ function phoenix_acc_defaults() {
         'sms_tpl_otp'  => '',     // نامِ الگو (کاوه‌نگار) یا شناسه‌ی الگو (sms.ir)
         'sms_param'    => 'CODE', // نامِ متغیرِ کد در الگوی sms.ir
         'session_days' => 30,
-        'tg_api'       => '',     // واسطه‌ی Bot API اگر هاست به تلگرام نمی‌رسد؛ خالی = api.telegram.org
-        'tg_hook'      => '',     // نشانیِ وبهوک برای تلگرام اگر از واسطه می‌گذرد؛ خالی = همین سایت
-        'tg_mode'      => 'own',  // own = رباتِ جدا (وبهوک با ما) | shared = رباتِ موجود (پیوند با API)
         'otp_email'    => false,  // کد به ایمیلِ ثبت‌شده‌ی مشتری هم برود
     );
 }
@@ -48,25 +46,6 @@ function phoenix_acc_settings_clean(array $in, array $conns = array()) {
     $conn  = isset($in['sms_conn']) ? (string) $in['sms_conn'] : '';
     $tpl   = trim((string) (isset($in['sms_tpl_otp']) ? $in['sms_tpl_otp'] : ''));
     $param = trim((string) (isset($in['sms_param']) ? $in['sms_param'] : $d['sms_param']));
-
-    if ($provider === 'telegram' && ($conn === '' || !in_array($conn, $conns, true))) {
-        $err['sms_conn'] = 'توکنِ ربات را از «اتصال‌ها» انتخاب کن — اگر نیست، اول آن‌جا بسازش (توکن را @BotFather می‌دهد).';
-    }
-    $tg = array();
-    foreach (array('tg_api', 'tg_hook') as $k) {
-        $v = rtrim(trim((string) (isset($in[$k]) ? $in[$k] : '')), '/');
-        if ($v !== '' && !preg_match('#^https://[A-Za-z0-9.\-]+(:\d+)?(/[^\s?\#]*)?$#', $v)) {
-            $err[$k] = 'نشانیِ کاملِ https، بی‌پارامتر — یا خالی.';
-            $v = '';
-        }
-        $tg[$k] = $v;
-    }
-
-    $mode = isset($in['tg_mode']) ? (string) $in['tg_mode'] : $d['tg_mode'];
-    if (!in_array($mode, array('own', 'shared'), true)) {
-        $err['tg_mode'] = 'نوعِ ربات ناشناخته.';
-        $mode = 'own';
-    }
 
     if (in_array($provider, array('kavenegar', 'smsir'), true)) {
         if ($conn === '' || !in_array($conn, $conns, true)) {
@@ -96,13 +75,10 @@ function phoenix_acc_settings_clean(array $in, array $conns = array()) {
         'errors' => $err,
         'data'   => array(
             'sms_provider' => $provider,
-            'sms_conn'     => in_array($provider, array('kavenegar', 'smsir', 'telegram'), true) ? $conn : '',
+            'sms_conn'     => in_array($provider, array('kavenegar', 'smsir'), true) ? $conn : '',
             'sms_tpl_otp'  => in_array($provider, array('kavenegar', 'smsir'), true) ? $tpl : '',
             'sms_param'    => $param !== '' ? $param : $d['sms_param'],
             'session_days' => $days,
-            'tg_api'       => $tg['tg_api'],
-            'tg_hook'      => $mode === 'shared' ? '' : $tg['tg_hook'],
-            'tg_mode'      => $mode,
             'otp_email'    => !empty($in['otp_email']),
         ),
     );
@@ -766,73 +742,8 @@ function phoenix_acc_chat_fill($text, $agent) {
 }
 
 /* ============================================================
-   کدِ ورود با تلگرام — رایگان، به‌جای پیامک
+   Bot API تلگرام — رباتِ اعلان‌ها (telegram.php)
    ============================================================ */
-
-/*
- * ⚠ ربات نمی‌تواند به «شماره» پیام بدهد؛ فقط به کسی که یک بار ربات را
- * باز کرده. پس مشتری بارِ اول ربات را باز می‌کند و با دکمه‌ی «ارسالِ
- * شماره‌ی من» شماره‌اش را می‌فرستد. تلگرام خودش مالکیتِ شماره را
- * تأیید کرده (همان شماره‌ی حسابِ تلگرامِ اوست) — به شرطِ آنکه مخاطبِ
- * فرستاده‌شده خودِ فرستنده باشد (‎contact.user_id === from.id‎)، نه
- * شماره‌ی کسِ دیگری که در مخاطبانش دارد.
- */
-
-const PHOENIX_ACC_TG_TEXT = array(
-    'welcome'  => "به ربات فونیکس شاپ خوش آمدید.\n\nبرای دریافت کدهای ورود، لطفاً با دکمه‌ی پایین شماره‌ی موبایل خود را ارسال کنید.",
-    'button'   => '📱 ارسال شماره‌ی من',
-    'linked'   => "شماره‌ی شما تأیید شد. از این پس کدهای ورود فونیکس شاپ همین‌جا ارسال می‌شود.\n\nاکنون به سایت برگردید و «ارسال کد تأیید» را بزنید.",
-    'not_own'  => 'لطفاً فقط شماره‌ی خودتان را با دکمه‌ی «ارسال شماره‌ی من» بفرستید.',
-    'not_ir'   => 'در حال حاضر فقط شماره‌های موبایل ایران (۰۹…) پشتیبانی می‌شود.',
-    'help'     => 'برای دریافت کد ورود، به سایت فونیکس شاپ برگردید و «ارسال کد تأیید» را بزنید؛ کد همین‌جا ارسال می‌شود.',
-    'linked_sent' => 'شماره‌ی شما تأیید شد و کد ورود همین حالا برایتان ارسال شد. از این پس کدهای ورود فونیکس شاپ همین‌جا ارسال می‌شود.',
-);
-
-/** متنِ پیامِ کد */
-function phoenix_acc_tg_code_text($code) {
-    return "کد ورود شما به فونیکس شاپ: " . $code . "\n\nاین کد را به هیچ‌کس ندهید؛ پشتیبانی فونیکس هرگز کد را از شما نمی‌خواهد.";
-}
-
-/** شماره از تلگرام (‎989121234567‎ یا ‎+98…‎) → ‎09…‎؛ خالی اگر موبایلِ ایران نیست */
-function phoenix_acc_tg_phone($raw) {
-    $d = preg_replace('/\D/', '', (string) $raw);
-    if (strlen($d) === 12 && strpos($d, '98') === 0) {
-        $d = '0' . substr($d, 2);
-    } elseif (strlen($d) === 14 && strpos($d, '0098') === 0) {
-        $d = '0' . substr($d, 4);
-    } elseif (strlen($d) === 10 && $d[0] === '9') {
-        $d = '0' . $d;
-    }
-    return preg_match('/^09\d{9}$/', $d) ? $d : '';
-}
-
-/**
- * آپدیتِ تلگرام → فقط آنچه لازم داریم.
- *
- * @return array|null ‎{chat, from, kind: start|contact|text, phone?, own?, username?}‎
- */
-function phoenix_acc_tg_parse($update) {
-    if (!is_array($update) || !isset($update['message']) || !is_array($update['message'])) {
-        return null;
-    }
-    $m    = $update['message'];
-    $chat = isset($m['chat']['id']) ? (int) $m['chat']['id'] : 0;
-    $from = isset($m['from']['id']) ? (int) $m['from']['id'] : 0;
-    /* فقط گفتگوی خصوصی — نه گروه */
-    if (!$chat || !$from || ($m['chat']['type'] ?? '') !== 'private') {
-        return null;
-    }
-    $out = array('chat' => $chat, 'from' => $from, 'username' => substr((string) ($m['from']['username'] ?? ''), 0, 64));
-    if (isset($m['contact']) && is_array($m['contact'])) {
-        $out['kind']  = 'contact';
-        $out['phone'] = phoenix_acc_tg_phone($m['contact']['phone_number'] ?? '');
-        $out['own']   = isset($m['contact']['user_id']) && (int) $m['contact']['user_id'] === $from;
-        return $out;
-    }
-    $text = (string) ($m['text'] ?? '');
-    $out['kind'] = preg_match('#^/start(\s|$)#', $text) ? 'start' : 'text';
-    return $out;
-}
 
 /**
  * درخواستِ Bot API.
@@ -848,56 +759,6 @@ function phoenix_acc_tg_request($api, $token, $method, array $params) {
     return array(
         'url'  => $base . '/bot' . $token . '/' . $method,
         'body' => json_encode($params, JSON_UNESCAPED_UNICODE),
-    );
-}
-
-/**
- * ورودیِ ‎POST /tg/link‎ — وقتی رباتِ موجودِ فروشگاه (نه این افزونه)
- * شماره‌ی مشتری را گرفته و به ما می‌دهد.
- *
- * ⚠ همان قاعده‌ی وبهوک: شماره فقط از ‎message.contact‎ و فقط وقتی
- *   ‎contact.user_id === from.id‎. و گفتگو همان کاربر است
- *   (در گفتگوی خصوصی ‎chat.id === from.id‎) — پس کد به کسی می‌رسد
- *   که صاحبِ همان شماره است، نه جای دیگر.
- *
- * @return array{ok:bool, error?:string, phone?:string, chat?:int, user?:int, username?:string}
- */
-function phoenix_acc_tg_link_input($in) {
-    if (!is_array($in)) {
-        return array('ok' => false, 'error' => 'bad_request');
-    }
-    $id = function ($v) {
-        if (is_int($v)) {
-            return $v > 0 ? $v : 0;
-        }
-        return is_string($v) && preg_match('/^[1-9]\d{0,15}$/', $v) ? (int) $v : 0;
-    };
-    $chat    = $id($in['chat_id'] ?? null);
-    $user    = $id($in['user_id'] ?? null);
-    $contact = $id($in['contact_user_id'] ?? null);
-    if (!$chat || !$user) {
-        return array('ok' => false, 'error' => 'bad_request');
-    }
-    if ($chat !== $user || $contact !== $user) {
-        return array('ok' => false, 'error' => 'not_own');
-    }
-    $phone = phoenix_acc_tg_phone($in['phone'] ?? '');
-    if ($phone === '') {
-        return array('ok' => false, 'error' => 'not_ir');
-    }
-    $u = (string) ($in['username'] ?? '');
-    return array(
-        'ok' => true, 'phone' => $phone, 'chat' => $chat, 'user' => $user,
-        'username' => preg_match('/^[A-Za-z0-9_]{1,64}$/', $u) ? $u : '',
-    );
-}
-
-/** کیبوردِ «ارسالِ شماره‌ی من» — فقط یک دکمه، یک‌بارمصرف */
-function phoenix_acc_tg_contact_keyboard() {
-    return array(
-        'keyboard'          => array(array(array('text' => PHOENIX_ACC_TG_TEXT['button'], 'request_contact' => true))),
-        'resize_keyboard'   => true,
-        'one_time_keyboard' => true,
     );
 }
 
@@ -930,7 +791,10 @@ function phoenix_acc_notify_defaults() {
     return array(
         'on'           => false,
         'tg_on'        => true,
-        'tg_conn'      => '',      // خالی = همان رباتِ ورود
+        'tg_conn'      => '',      // اسلاگِ «اتصال» با توکنِ ربات
+        'tg_bot'       => '',      // نامِ ربات — با «وصل کردن» (وبهوک روی همین سایت)؛ از ورودی نه
+        'tg_api'       => '',      // واسطه‌ی Bot API اگر هاست به تلگرام نمی‌رسد؛ خالی = api.telegram.org
+        'tg_hook'      => '',      // نشانیِ وبهوک از راهِ واسطه؛ خالی = همین سایت
         'tg_chats'     => array(), // ‎[{id, title}]‎
         'hook_on'      => false,
         'hook_url'     => '',
@@ -962,10 +826,23 @@ function phoenix_acc_notify_clean(array $in, array $conns = array()) {
 
     $conn = isset($in['tg_conn']) ? (string) $in['tg_conn'] : '';
     if ($conn !== '' && !in_array($conn, $conns, true)) {
-        $err['tg_conn'] = 'این اتصال نیست — از «اتصال‌ها» انتخاب کن، یا خالی برای همان رباتِ ورود.';
+        $err['tg_conn'] = 'این اتصال نیست — توکنِ ربات را در «منابعِ قیمت ← اتصال‌ها» بساز و این‌جا انتخاب کن.';
         $conn = '';
     }
     $out['tg_conn'] = $conn;
+    $out['tg_bot']  = ''; // فقط «وصل کردن» می‌گذاردش — ذخیره نگهش می‌دارد (notify.php)
+    foreach (array('tg_api', 'tg_hook') as $k) {
+        $v = rtrim(trim((string) ($in[$k] ?? '')), '/');
+        if ($v !== '' && !preg_match('#^https://[A-Za-z0-9.\-]+(:\d+)?(/[^\s?\#]*)?$#', $v)) {
+            $err[$k] = 'نشانیِ کاملِ https، بی‌پارامتر — یا خالی.';
+            $v = '';
+        }
+        $out[$k] = $v;
+    }
+    $wants_tg = $out['tg_on'] && !empty($in['tg_chats']) && is_array($in['tg_chats']);
+    if ($wants_tg && $conn === '' && empty($err['tg_conn'])) {
+        $err['tg_conn'] = 'برای فرستادن به تلگرام، توکنِ ربات را انتخاب کن.';
+    }
 
     $chats = array();
     $seen  = array();

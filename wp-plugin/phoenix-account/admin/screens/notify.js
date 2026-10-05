@@ -57,9 +57,44 @@ function paint(ctx, d) {
   const tgOn = kit.toggle({ checked: s.tg_on, label: 'به تلگرام بفرست' });
   const conn = kit.select({
     value: s.tg_conn,
-    options: [{ value: '', label: 'همان رباتِ ورود' + (d.login_bot ? ' (@' + d.login_bot + ')' : '') },
+    options: [{ value: '', label: '— انتخاب کن —' },
       ...d.connections.map((c) => ({ value: c.slug, label: c.label + (c.key === 'ok' ? '' : ' — کلید خراب') }))],
   });
+  const tgApi = kit.text({ value: s.tg_api || '', dir: 'ltr', max: 200, placeholder: 'https://api.telegram.org' });
+  const tgHook = kit.text({ value: s.tg_hook || '', dir: 'ltr', max: 200, placeholder: d.hook_default });
+
+  /* وصل کردن = وبهوکِ ربات روی همین سایت؛ برای «اتصال با کد» لازم است */
+  const botOut = h('div', { class: 'phx2-stack', 'aria-live': 'polite' });
+  const paintBot = (t) => put(botOut,
+    h('dl', { class: 'phx2-kvs2' },
+      h('dt', null, 'ربات'), h('dd', null, t.bot
+        ? h('a', { href: 'https://t.me/' + t.bot, target: '_blank', rel: 'noopener noreferrer', dir: 'ltr' }, '@' + t.bot)
+        : pill(s.tg_conn ? 'وصل نشده' : 'توکن انتخاب نشده', 'warn')),
+      t.hook ? [h('dt', null, 'وبهوک'), h('dd', { dir: 'ltr' }, t.hook.url || '— ثبت نشده')] : null,
+      t.hook && t.hook.last_error ? [h('dt', null, 'آخرین خطای تلگرام'), h('dd', null, pill(t.hook.last_error, 'bad'))] : null,
+    ),
+    t.error ? h('div', { class: 'phx2-callout is-warn' }, icon('alert'),
+      h('span', null, t.error + ' — اگر هاست به تلگرام نمی‌رسد، «واسطه» را پایین تنظیم کن (docs/NOTIFY.md).')) : null,
+    t.hook && t.hook.url && t.expected && t.hook.url !== t.expected && t.bot
+      ? h('div', { class: 'phx2-callout is-warn' }, icon('alert'), h('span', null, 'وبهوکِ ربات جای دیگری است — «وصل کردنِ ربات» را دوباره بزن.')) : null,
+  );
+  paintBot({ bot: s.tg_bot, hook: null, error: '', expected: '' });
+  const botAct = (label, cls, iconName, fn) => {
+    const b = h('button', { class: 'phx2-btn phx2-btn--sm ' + cls, type: 'button' }, icon(iconName), label);
+    b.addEventListener('click', busyButton(b, async () => { try { await fn(); } catch (e) { toast(e.message, 'bad'); } }));
+    return b;
+  };
+  const botBtns = h('div', { class: 'phx2-row' },
+    botAct('بررسیِ وضعیت', 'phx2-btn--ghost', 'refresh', async () => paintBot(await ctx.api('GET', '/account/notify/bot'))),
+    botAct('وصل کردنِ ربات', 'phx2-btn--primary', 'bolt', async () => {
+      const ok = await confirmBox({ title: 'وبهوکِ ربات روی همین سایت گذاشته شود؟',
+        text: 'برای رباتی که فقط برای اعلان ساخته‌ای. اگر این ربات برنامه‌ی دیگری دارد (مثلاً رباتِ فروش)، وصلش نکن — از کار می‌افتد؛ گیرنده‌ها را دستی بنویس.', ok: 'وصل کن' });
+      if (!ok) return;
+      const t = await ctx.api('POST', '/account/notify/bot', { act: 'connect' });
+      toast('ربات @' + t.bot + ' وصل شد.', 'good');
+      paint(ctx, await ctx.api('GET', '/account/notify'));
+    }),
+  );
   const list = h('div', { class: 'phx2-stack' });
   const paintList = () => put(list, chats.length
     ? h('div', { class: 'phx2-tablewrap' }, h('table', { class: 'phx2-table' },
@@ -117,15 +152,20 @@ function paint(ctx, d) {
   });
 
   const F = {
-    tg_conn: kit.field({ label: 'ربات', hint: 'پیش‌فرض همان رباتِ کدِ ورود. اگر رباتِ دیگری برای اعلان‌ها ساختی، توکنش را در «منابعِ قیمت ← اتصال‌ها» بگذار و این‌جا انتخابش کن.' }, conn.el),
+    tg_conn: kit.field({ label: 'توکنِ ربات', hint: 'ربات را با ‎@BotFather‎ بساز، توکنش را در «منابعِ قیمت ← اتصال‌ها» بگذار و این‌جا انتخاب کن؛ «ذخیره»، بعد «وصل کردنِ ربات».' }, conn.el),
+    tg_api: kit.field({ label: 'واسطه‌ی تلگرام (اختیاری)', hint: 'فقط اگر هاست به تلگرام نمی‌رسد: نشانیِ Worker. خالی = مستقیم.' }, tgApi.el),
+    tg_hook: kit.field({ label: 'وبهوک از راهِ واسطه (اختیاری)', hint: 'اگر تلگرام به این سایت نمی‌رسد: نشانیِ ‎/hook‎ی همان Worker. خالی = مستقیم.' }, tgHook.el),
     tg_chats: kit.field({ label: 'گیرنده‌ها', wide: true, hint: 'گفتگوی خصوصی، گروهِ مدیران یا کانال — حداکثر ۱۰.' }, list),
   };
   const tgCard = card('تلگرام', 'جزئیاتِ هر خرید در گفتگوی خودت، گروهِ فروش، یا یک کانالِ خصوصی.',
-    h('div', { class: 'phx2-form' }, kit.field({ label: 'وضعیت', wide: true }, tgOn.el), F.tg_conn, F.tg_chats),
+    h('div', { class: 'phx2-form' }, kit.field({ label: 'وضعیت', wide: true }, tgOn.el), F.tg_conn),
+    botOut, botBtns,
+    h('div', { class: 'phx2-form' }, F.tg_chats),
     d.can_link ? h('div', { class: 'phx2-row' }, linkBtn) : h('div', { class: 'phx2-callout' }, icon('info'), h('span', null,
-      'اتصال با کد فقط با رباتِ ورود در حالتِ «رباتِ جدا» کار می‌کند — چون پیام‌های رباتِ دیگر به این سایت نمی‌رسد. این‌جا شناسه را دستی وارد کن.')),
+      'اتصال با کد بعد از «وصل کردنِ ربات» فعال می‌شود. رباتی که برنامه‌ی خودش را دارد وصل نمی‌شود — آن‌جا شناسه را دستی وارد کن.')),
     linkOut,
     manField, h('div', { class: 'phx2-row phx2-row--end' }, manAdd),
+    h('details', { class: 'phx2-stack' }, h('summary', null, 'اگر هاست به تلگرام نمی‌رسد'), h('div', { class: 'phx2-form' }, F.tg_api, F.tg_hook)),
   );
 
   /* ---------- رویدادها و حریمِ خصوصی ---------- */
@@ -161,7 +201,7 @@ function paint(ctx, d) {
     for (const f of Object.values(F)) f.setError('');
     try {
       paint(ctx, await ctx.api('POST', '/account/notify', {
-        on: on.get(), tg_on: tgOn.get(), tg_conn: conn.get(), tg_chats: chats,
+        on: on.get(), tg_on: tgOn.get(), tg_conn: conn.get(), tg_chats: chats, tg_api: tgApi.get(), tg_hook: tgHook.get(),
         hook_on: hookOn.get(), hook_url: hookUrl.get(),
         events: Object.fromEntries([...evT].map(([id, t]) => [id, t.get()])),
         show_contact: contact.get(), show_inputs: inputs.get(),

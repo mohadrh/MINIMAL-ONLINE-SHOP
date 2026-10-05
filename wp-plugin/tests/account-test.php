@@ -263,70 +263,24 @@ is_same('بی‌فعال → «پشتیبانی»', phoenix_acc_chat_pick_agent(
 is_same('{agent} جایگزین', phoenix_acc_chat_fill('وصلت می‌کنم به {agent}.', 'سارا'), 'وصلت می‌کنم به سارا.');
 
 /* ============================================================ */
-section('تلگرام: شماره');
+section('تلگرام: فقط رباتِ اعلان‌ها');
 
-is_same('‎98…‎ → ‎09…‎', phoenix_acc_tg_phone('989121234567'), '09121234567');
-is_same('با + و فاصله', phoenix_acc_tg_phone('+98 912 123 4567'), '09121234567');
-is_same('با ‎0098‎', phoenix_acc_tg_phone('00989121234567'), '09121234567');
-is_same('بی‌صفر', phoenix_acc_tg_phone('9121234567'), '09121234567');
-is_same('شماره‌ی خارجی رد', phoenix_acc_tg_phone('14155552671'), '');
-is_same('ناقص رد', phoenix_acc_tg_phone('0912'), '');
-
-section('تلگرام: آپدیت');
-
-$priv = array('id' => 555, 'type' => 'private');
-$from = array('id' => 555, 'username' => 'ali_r');
-$u = phoenix_acc_tg_parse(array('message' => array('chat' => $priv, 'from' => $from, 'text' => '/start login')));
-is_same('/start', array($u['kind'], $u['chat'], $u['from']), array('start', 555, 555));
-$u = phoenix_acc_tg_parse(array('message' => array('chat' => $priv, 'from' => $from, 'contact' => array('phone_number' => '989121234567', 'user_id' => 555))));
-is_same('شماره‌ی خودش', array($u['kind'], $u['phone'], $u['own']), array('contact', '09121234567', true));
-$u = phoenix_acc_tg_parse(array('message' => array('chat' => $priv, 'from' => $from, 'contact' => array('phone_number' => '989351112233', 'user_id' => 777))));
-is_same('مخاطبِ کسِ دیگر = خودش نیست', $u['own'], false);
-$u = phoenix_acc_tg_parse(array('message' => array('chat' => $priv, 'from' => $from, 'contact' => array('phone_number' => '989351112233'))));
-is_same('مخاطبِ بی‌حسابِ تلگرام = خودش نیست', $u['own'], false);
-is_same('گروه نادیده', phoenix_acc_tg_parse(array('message' => array('chat' => array('id' => -1, 'type' => 'group'), 'from' => $from, 'text' => '/start'))), null);
-is_same('آپدیتِ غیرِ پیام نادیده', phoenix_acc_tg_parse(array('callback_query' => array())), null);
-is_same('ورودیِ خراب نادیده', phoenix_acc_tg_parse('x'), null);
-is_same('متنِ آزاد', phoenix_acc_tg_parse(array('message' => array('chat' => $priv, 'from' => $from, 'text' => 'سلام')))['kind'], 'text');
-
-section('تلگرام: درخواست و تنظیمات');
-
-$r = phoenix_acc_tg_request('', '123:ABC', 'sendMessage', array('text' => 'کد'));
+$r = phoenix_acc_tg_request('', '123:ABC', 'sendMessage', array('text' => 'سفارش'));
 is_same('پیش‌فرض api.telegram.org', $r['url'], 'https://api.telegram.org/bot123:ABC/sendMessage');
-is_same('متنِ فارسی خوانا در بدنه', strpos($r['body'], 'کد') !== false, true);
+is_same('متنِ فارسی خوانا در بدنه', strpos($r['body'], 'سفارش') !== false, true);
 is_same('واسطه با / آخر', phoenix_acc_tg_request('https://tg.example.workers.dev/', 't', 'getMe', array())['url'], 'https://tg.example.workers.dev/bott/getMe');
-$c = phoenix_acc_settings_clean(array('sms_provider' => 'telegram'), array('k_bot'));
-is_same('تلگرام بی‌توکن رد', isset($c['errors']['sms_conn']), true);
 $c = phoenix_acc_settings_clean(array('sms_provider' => 'telegram', 'sms_conn' => 'k_bot'), array('k_bot'));
-is_same('تلگرام با توکن درست، بی‌الگو', array($c['ok'], $c['data']['sms_conn'], $c['data']['sms_tpl_otp']), array(true, 'k_bot', ''));
-is_same('واسطه‌ی http رد', isset(phoenix_acc_settings_clean(array('tg_api' => 'http://x.dev'))['errors']['tg_api']), true);
-is_same('واسطه با پارامتر رد', isset(phoenix_acc_settings_clean(array('tg_hook' => 'https://x.dev/hook?to=evil'))['errors']['tg_hook']), true);
-is_same('واسطه‌ی https پذیرفته', phoenix_acc_settings_clean(array('tg_api' => 'https://tg.x.workers.dev/'))['data']['tg_api'], 'https://tg.x.workers.dev');
-is_same('متنِ کد', strpos(phoenix_acc_tg_code_text('482913'), '482913') !== false, true);
-is_same('کیبورد فقط شماره‌ی خودش را می‌خواهد', phoenix_acc_tg_contact_keyboard()['keyboard'][0][0]['request_contact'], true);
-
-/* ============================================================ */
-section('تلگرام: رباتِ موجود (‎/tg/link‎)');
-
-$ok = array('chat_id' => 555, 'user_id' => 555, 'contact_user_id' => 555, 'phone' => '+989121234567', 'username' => 'ali_r');
-$v = phoenix_acc_tg_link_input($ok);
-is_same('درست → پیوند', array($v['ok'], $v['phone'], $v['chat'], $v['user'], $v['username']), array(true, '09121234567', 555, 555, 'ali_r'));
-is_same('شناسه به‌صورتِ رشته هم', phoenix_acc_tg_link_input(array_merge($ok, array('chat_id' => '555', 'user_id' => '555', 'contact_user_id' => '555')))['ok'], true);
-is_same('مخاطبِ کسِ دیگر رد', phoenix_acc_tg_link_input(array_merge($ok, array('contact_user_id' => 777)))['error'], 'not_own');
-is_same('مخاطبِ بی‌حساب رد', phoenix_acc_tg_link_input(array_diff_key($ok, array('contact_user_id' => 1)))['error'], 'not_own');
-is_same('گفتگوی دیگر (گروه یا کسِ دیگر) رد', phoenix_acc_tg_link_input(array_merge($ok, array('chat_id' => 999)))['error'], 'not_own');
-is_same('گروهِ منفی رد', phoenix_acc_tg_link_input(array_merge($ok, array('chat_id' => -100123)))['error'], 'bad_request');
-is_same('شماره‌ی خارجی رد', phoenix_acc_tg_link_input(array_merge($ok, array('phone' => '14155552671')))['error'], 'not_ir');
-is_same('بی‌شماره رد', phoenix_acc_tg_link_input(array_diff_key($ok, array('phone' => 1)))['error'], 'not_ir');
-is_same('شناسه‌ی اعشاری رد', phoenix_acc_tg_link_input(array_merge($ok, array('user_id' => 555.5)))['error'], 'bad_request');
-is_same('شناسه‌ی متنی رد', phoenix_acc_tg_link_input(array_merge($ok, array('user_id' => '555 OR 1')))['error'], 'bad_request');
-is_same('ورودیِ غیرِ آرایه رد', phoenix_acc_tg_link_input('x')['error'], 'bad_request');
-is_same('نامِ کاربریِ عجیب دور ریخته', phoenix_acc_tg_link_input(array_merge($ok, array('username' => '<b>x</b>')))['username'], '');
-
-$c = phoenix_acc_settings_clean(array('sms_provider' => 'telegram', 'sms_conn' => 'k_bot', 'tg_mode' => 'shared', 'tg_hook' => 'https://x.dev/hook'), array('k_bot'));
-is_same('حالتِ رباتِ موجود ذخیره، وبهوکِ واسطه بی‌معنا', array($c['ok'], $c['data']['tg_mode'], $c['data']['tg_hook']), array(true, 'shared', ''));
-is_same('پیش‌فرض رباتِ جدا', phoenix_acc_settings_clean(array())['data']['tg_mode'], 'own');
-is_same('نوعِ ناشناخته رد', isset(phoenix_acc_settings_clean(array('tg_mode' => 'evil'))['errors']['tg_mode']), true);
+is_same('کدِ ورود با تلگرام دیگر پذیرفته نیست', array($c['ok'], $c['data']['sms_provider'], $c['data']['sms_conn']), array(false, 'off', ''));
+is_same('کلیدهای قدیمیِ تلگرام در تنظیماتِ ورود نیست', array_key_exists('tg_mode', phoenix_acc_settings_clean(array())['data']), false);
+is_same('واسطه‌ی http رد (اعلان‌ها)', isset(phoenix_acc_notify_clean(array('tg_api' => 'http://x.dev'))['errors']['tg_api']), true);
+is_same('وبهوکِ واسطه با پارامتر رد', isset(phoenix_acc_notify_clean(array('tg_hook' => 'https://x.dev/hook?to=evil'))['errors']['tg_hook']), true);
+is_same('واسطه‌ی https پذیرفته', phoenix_acc_notify_clean(array('tg_api' => 'https://tg.x.workers.dev/'))['data']['tg_api'], 'https://tg.x.workers.dev');
+is_same('نامِ ربات از ورودی گرفته نمی‌شود', phoenix_acc_notify_clean(array('tg_bot' => 'EvilBot'))['data']['tg_bot'], '');
+is_same('گیرنده بی‌توکن رد', isset(phoenix_acc_notify_clean(array('tg_chats' => array(array('id' => '5550001'))), array('k'))['errors']['tg_conn']), true);
+is_same('تلگرام خاموش: بی‌توکن مجاز', phoenix_acc_notify_clean(array('tg_on' => false, 'tg_chats' => array(array('id' => '5550001'))), array('k'))['ok'], true);
+foreach (array('phoenix_acc_tg_phone', 'phoenix_acc_tg_parse', 'phoenix_acc_tg_link_input', 'phoenix_acc_tg_code_text', 'phoenix_acc_tg_contact_keyboard') as $gone) {
+    is_same('برداشته شد: ' . $gone, function_exists($gone), false);
+}
 
 /* ============================================================ */
 section('اعلان‌ها: تنظیمات');
