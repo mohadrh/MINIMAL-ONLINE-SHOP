@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Phoenix Account
  * Description: پنلِ مشتریِ فروشگاه فونیکس — ورود با رمز یا پیامک، بازیابیِ رمز، سفارش‌ها، تحویل‌ها، اشتراک‌ها، تیکت و چتِ آنلاین؛ و برای مدیر پنلِ جدای «مشتریان». کنارِ Phoenix Bridge کار می‌کند.
- * Version:     0.6.0
+ * Version:     0.7.0
  * Requires PHP: 7.4
  * Requires Plugins: phoenix-bridge
  * Author:      Phoenix Shop
@@ -21,9 +21,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('PHOENIX_ACC_VERSION', '0.6.0');
+define('PHOENIX_ACC_VERSION', '0.7.0');
 define('PHOENIX_ACC_FILE', __FILE__);
-define('PHOENIX_ACC_NEEDS_BRIDGE', '1.6.1');
+define('PHOENIX_ACC_NEEDS_BRIDGE', '1.7.0');
 
 $phoenix_acc_dir = plugin_dir_path(__FILE__);
 require_once $phoenix_acc_dir . 'includes/core.php';
@@ -31,6 +31,15 @@ require_once $phoenix_acc_dir . 'includes/db.php';
 require_once $phoenix_acc_dir . 'includes/backup-sections.php';
 
 register_activation_hook(__FILE__, 'phoenix_acc_install');
+
+/* کارهای زمان‌بندی‌شده‌ی اعلان‌ها با غیرفعال شدن می‌روند؛ داده می‌ماند */
+register_deactivation_hook(__FILE__, 'phoenix_acc_deactivate');
+function phoenix_acc_deactivate() {
+    foreach (array('phoenix_acc_notify_tick', 'phoenix_acc_notify_run') as $hook) {
+        wp_clear_scheduled_hook($hook);
+        wp_clear_scheduled_hook($hook, array('now'));
+    }
+}
 
 /**
  * ⚠ بقیه فقط وقتی Bridge هست.
@@ -49,7 +58,8 @@ function phoenix_acc_boot() {
         && function_exists('phoenix_conn_runtime')
         /* ⚠ فقط تابع‌هایی که روی هر درخواست بار می‌شوند — ‎includes/admin/‎ی
            Bridge فقط در پیشخوان است و REST آن را ندارد */
-        && function_exists('phoenix_order_view');
+        && function_exists('phoenix_order_view')
+        && function_exists('phoenix_db_lock');
     if (!$ok) {
         add_action('admin_notices', 'phoenix_acc_need_bridge');
         return;
@@ -61,6 +71,7 @@ function phoenix_acc_boot() {
     require_once $dir . 'includes/tickets.php';
     require_once $dir . 'includes/chat.php';
     require_once $dir . 'includes/telegram.php';
+    require_once $dir . 'includes/notify.php';
     require_once $dir . 'includes/sms.php';
     require_once $dir . 'includes/api-customer.php';
     require_once $dir . 'includes/api-admin.php';

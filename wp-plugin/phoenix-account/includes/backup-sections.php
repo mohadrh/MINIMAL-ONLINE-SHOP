@@ -43,7 +43,7 @@ function phoenix_acc_backup_versions($v) {
 /* نامِ خامِ option‌ها: ثابت‌های chat.php و telegram.php هنوز بار نشده‌اند */
 add_filter('phoenix_backup_snapshot_options', 'phoenix_acc_backup_snapshot_options');
 function phoenix_acc_backup_snapshot_options($list) {
-    return array_merge((array) $list, array(PHOENIX_ACC_OPTION, 'phoenix_acc_chat', 'phoenix_acc_tg_secret'));
+    return array_merge((array) $list, array(PHOENIX_ACC_OPTION, 'phoenix_acc_chat', 'phoenix_acc_tg_secret', 'phoenix_acc_notify', 'phoenix_acc_notify_secret'));
 }
 
 add_filter('phoenix_backup_sections', 'phoenix_acc_backup_sections');
@@ -52,11 +52,13 @@ function phoenix_acc_backup_sections($list) {
     $msg = array('id' => 'uint', 'author' => 'str:10', 'staff' => 'str:60', 'body' => 'text', 'created_at' => 'datetime');
 
     $list['account.settings'] = array(
-        'label' => 'تنظیماتِ مشتریان — پیامک و تلگرام، چتِ آنلاین', 'group' => $g, 'kind' => 'option',
+        'label' => 'تنظیماتِ مشتریان — پیامک و تلگرام، چتِ آنلاین، اعلان‌ها', 'group' => $g, 'kind' => 'option',
         'options' => array(
             PHOENIX_ACC_OPTION      => 'phoenix_acc_defaults',
             'phoenix_acc_chat'      => 'phoenix_acc_chat_defaults',
             'phoenix_acc_tg_secret' => 'secret',
+            'phoenix_acc_notify'    => 'phoenix_acc_notify_defaults',
+            'phoenix_acc_notify_secret' => 'secret',
         ),
     );
     /* مشتری ستونِ «آخرین تغییر» ندارد: در ادغام، پرونده‌ی فعلی (رمزِ تازه، یادداشت) می‌ماند */

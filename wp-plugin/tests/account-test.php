@@ -328,5 +328,73 @@ is_same('حالتِ رباتِ موجود ذخیره، وبهوکِ واسطه �
 is_same('پیش‌فرض رباتِ جدا', phoenix_acc_settings_clean(array())['data']['tg_mode'], 'own');
 is_same('نوعِ ناشناخته رد', isset(phoenix_acc_settings_clean(array('tg_mode' => 'evil'))['errors']['tg_mode']), true);
 
+/* ============================================================ */
+section('اعلان‌ها: تنظیمات');
+
+$c = phoenix_acc_notify_clean(array(), array());
+is_same('پیش‌فرض: خاموش، پرداخت و منتظرِ تأیید روشن، ثبتِ بی‌پرداخت خاموش', array($c['ok'], $c['data']['on'], $c['data']['events']['order_paid'], $c['data']['events']['order_on_hold'], $c['data']['events']['order_new'], $c['data']['show_inputs']), array(true, false, true, true, false, false));
+$c = phoenix_acc_notify_clean(array('on' => true, 'tg_conn' => 'k_bot', 'tg_chats' => array(
+    array('id' => '123456789', 'title' => 'من'), array('id' => '-1001234567890', 'title' => '<b>گروه</b>'), array('id' => '@phoenix_sales'), array('id' => '123456789'),
+)), array('k_bot'));
+is_same('سه گیرنده، تکراری حذف', array($c['ok'], array_column($c['data']['tg_chats'], 'id')), array(true, array('123456789', '-1001234567890', '@phoenix_sales')));
+is_same('عنوان بی‌برچسب', $c['data']['tg_chats'][1]['title'] !== '<b>گروه</b>', true);
+is_same('شناسه‌ی خراب رد', isset(phoenix_acc_notify_clean(array('tg_chats' => array(array('id' => '12; DROP'))))['errors']['tg_chats']), true);
+is_same('اتصالِ ناموجود رد', isset(phoenix_acc_notify_clean(array('tg_conn' => 'nope'), array('k_bot'))['errors']['tg_conn']), true);
+$many = array(); for ($k = 0; $k < 12; $k++) { $many[] = array('id' => (string) (100000 + $k)); }
+is_same('بیش از ۱۰ گیرنده رد', array(isset(phoenix_acc_notify_clean(array('tg_chats' => $many))['errors']['tg_chats']), count(phoenix_acc_notify_clean(array('tg_chats' => $many))['data']['tg_chats'])), array(true, 10));
+is_same('API: http رد', isset(phoenix_acc_notify_clean(array('hook_url' => 'http://x.dev/h'))['errors']['hook_url']), true);
+is_same('API: نام‌کاربری در نشانی رد', isset(phoenix_acc_notify_clean(array('hook_url' => 'https://u:p@x.dev/h'))['errors']['hook_url']), true);
+is_same('API روشن بی‌نشانی رد', isset(phoenix_acc_notify_clean(array('hook_on' => true))['errors']['hook_url']), true);
+is_same('API با پارامتر پذیرفته', phoenix_acc_notify_clean(array('hook_on' => true, 'hook_url' => 'https://bot.x.dev/hook?k=1'))['ok'], true);
+
+section('اعلان‌ها: متن');
+$order = array('id' => 77, 'number' => '1204', 'total' => 1290000, 'currency' => 'IRT',
+    'customer' => array('name' => 'علی <script>', 'phone' => '09121234567', 'email' => 'a@b.co'),
+    'payment' => array('method' => 'زرین‌پال', 'transaction_id' => 'A1&B2'),
+    'items' => array(array('item_id' => 1, 'name' => 'اسپاتیفای', 'qty' => 2, 'total' => 1040000,
+        'inputs' => array(array('key' => 'ایمیلِ اکانت', 'value' => 'x@y.z'), array('key' => 'رمزِ اکانت', 'value' => 'hunter2'), array('key' => 'Password', 'value' => 'p')),
+        'deliveries' => array(array('secret' => 'X')), 'stock_codes' => array('CODE-1'))),
+    'admin_url' => 'https://panel.example/wp-admin/admin.php?page=phoenix-customers#/orders/77');
+$sh = phoenix_acc_notify_shape($order, array('show_contact' => true, 'show_inputs' => true));
+$tx = phoenix_acc_notify_text('order_paid', $sh);
+is_same('عنوان و شماره‌ی سفارش و مبلغ', array(strpos($tx, 'پرداخت شد') !== false, strpos($tx, '#۱۲۰۴') !== false, strpos($tx, '۱٬۲۹۰٬۰۰۰ تومان') !== false), array(true, true, true));
+is_same('نامِ مشتری escape شد', array(strpos($tx, '<script>'), strpos($tx, '&lt;script&gt;') !== false), array(false, true));
+is_same('رمزِ اکانت هرگز در پیام', array(strpos($tx, 'hunter2'), strpos($tx, '>p<'), strpos($tx, 'x@y.z') !== false), array(false, false, true));
+is_same('کد و رازِ تحویل حذف', array(isset($sh['items'][0]['deliveries']), isset($sh['items'][0]['stock_codes'])), array(false, false));
+is_same('کدِ پیگیری escape', strpos($tx, 'A1&amp;B2') !== false, true);
+is_same('پیوندِ پنل', strpos($tx, '<a href="https://panel.example/wp-admin/admin.php?page=phoenix-customers#/orders/77">') !== false, true);
+$sh = phoenix_acc_notify_shape($order, array('show_contact' => false, 'show_inputs' => false));
+$tx = phoenix_acc_notify_text('order_paid', $sh);
+is_same('بی‌تماس و بی‌ورودی: نام می‌ماند', array(strpos($tx, '۰۹۱۲'), strpos($tx, 'a@b.co'), strpos($tx, 'x@y.z'), isset($sh['items'][0]['inputs']), strpos($tx, 'علی') !== false), array(false, false, false, false, true));
+$big = $order; $big['items'] = array();
+for ($k = 0; $k < 40; $k++) { $big['items'][] = array('name' => str_repeat('محصولِ بسیار طولانی ', 12), 'qty' => 1, 'total' => 1000); }
+$tx = phoenix_acc_notify_text('order_paid', phoenix_acc_notify_shape($big, array()));
+is_same('سفارشِ بزرگ زیرِ سقفِ تلگرام، پیوند می‌ماند', array(strlen($tx) <= 3800, strpos($tx, 'باز کردن در پنل') !== false, strpos($tx, 'قلمِ دیگر') !== false), array(true, true, true));
+is_same('پیوندِ غیرِ http نه', strpos(phoenix_acc_notify_text('order_paid', array('admin_url' => 'javascript:alert(1)')), 'href'), false);
+$tx = phoenix_acc_notify_text('ticket', array('ticket_id' => 9, 'subject' => 'کد کار نمی‌کند', 'phone' => '0912', 'excerpt' => 'سلام <i>'));
+is_same('تیکت', array(strpos($tx, '#۹') !== false, strpos($tx, '&lt;i&gt;') !== false), array(true, true));
+is_same('ریال', phoenix_acc_notify_money(5000, 'IRR'), '۵٬۰۰۰ ریال');
+is_same('رمزگونه‌ها', array(phoenix_acc_notify_secretish('رمز عبور'), phoenix_acc_notify_secretish('کلمه‌ی عبور'), phoenix_acc_notify_secretish('PIN'), phoenix_acc_notify_secretish('کد تأیید'), phoenix_acc_notify_secretish('ایمیل'), phoenix_acc_notify_secretish('نام کاربری')), array(true, true, true, true, false, false));
+
+section('اعلان‌ها: دوباره یا نه، امضا، کد');
+is_same('شبکه → دوباره', phoenix_acc_notify_tg_verdict('phoenix_acc_tg_net', 'cURL error 28'), array('retry' => true, 'after' => 0));
+is_same('۴۲۹ → دوباره بعد از retry_after', phoenix_acc_notify_tg_verdict('phoenix_acc_tg_api', 'Too Many Requests: retry after 30'), array('retry' => true, 'after' => 31));
+is_same('ربات بیرون‌شده → نه', phoenix_acc_notify_tg_verdict('phoenix_acc_tg_api', 'Forbidden: bot was kicked from the group chat')['retry'], false);
+is_same('گفتگو نیست → نه', phoenix_acc_notify_tg_verdict('phoenix_acc_tg_api', 'Bad Request: chat not found')['retry'], false);
+is_same('۵۰۲ → دوباره', phoenix_acc_notify_tg_verdict('phoenix_acc_tg_api', 'HTTP 502')['retry'], true);
+is_same('API: ۲۰۰/۴۰۴/۴۲۹/۵۰۳/شبکه', array_map('phoenix_acc_notify_hook_verdict', array(200, 404, 429, 503, 0)), array('sent', 'failed', 'retry', 'retry', 'retry'));
+is_same('فاصله‌ها', array_map('phoenix_acc_notify_backoff', array(1, 2, 3, 4, 5, 9)), array(60, 300, 900, 3600, 10800, 10800));
+is_same('امضا = HMAC(زمان.بدنه)', phoenix_acc_notify_sign('s3cret', 1700000000, '{"a":1}'), 'sha256=' . hash_hmac('sha256', '1700000000.{"a":1}', 's3cret'));
+$code = 'ph_ab12cd34ef';
+$u = array('message' => array('chat' => array('id' => 555, 'type' => 'private', 'first_name' => 'علی'), 'text' => '/start ' . $code));
+is_same('کد در گفتگوی خصوصی', phoenix_acc_notify_find_code($u, $code), array('id' => '555', 'title' => 'علی', 'type' => 'private'));
+$u = array('message' => array('chat' => array('id' => -1009876543210, 'type' => 'supergroup', 'title' => 'فروش'), 'text' => '/start@PhoenixShopBot ' . $code));
+is_same('کد در گروه', phoenix_acc_notify_find_code($u, $code)['id'], '-1009876543210');
+$u = array('channel_post' => array('chat' => array('id' => -1001, 'type' => 'channel', 'title' => 'سفارش‌ها'), 'text' => $code));
+is_same('کد در کانال', phoenix_acc_notify_find_code($u, $code)['title'], 'سفارش‌ها');
+is_same('کدِ دیگر نه', phoenix_acc_notify_find_code(array('message' => array('chat' => array('id' => 1), 'text' => '/start ph_zzzzzzzzzz')), $code), null);
+is_same('کد چسبیده به متنِ دیگر نه', phoenix_acc_notify_find_code(array('message' => array('chat' => array('id' => 1), 'text' => 'x' . $code)), $code), null);
+is_same('کدِ بدشکل نه', phoenix_acc_notify_find_code(array('message' => array('chat' => array('id' => 1), 'text' => '.*')), '.*'), null);
+
 printf("\n%d قبول، %d مردود\n", $GLOBALS['pass'], $GLOBALS['fail']);
 exit($GLOBALS['fail'] ? 1 : 0);

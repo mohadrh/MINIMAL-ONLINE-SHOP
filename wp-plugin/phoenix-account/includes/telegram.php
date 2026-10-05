@@ -59,9 +59,13 @@ function phoenix_acc_tg_redact($text, $token) {
     return $token === '' ? (string) $text : str_replace($token, '***', (string) $text);
 }
 
-/** یک فراخوانیِ Bot API — نتیجه، یا ‎WP_Error‎ با پیامِ بی‌توکن */
-function phoenix_acc_tg_call($method, array $params = array()) {
-    $token = phoenix_acc_tg_token();
+/**
+ * یک فراخوانیِ Bot API — نتیجه، یا ‎WP_Error‎ با پیامِ بی‌توکن.
+ *
+ * @param string|null $token ‎null‎ = رباتِ ورود؛ اعلان‌ها می‌توانند رباتِ دیگری داشته باشند
+ */
+function phoenix_acc_tg_call($method, array $params = array(), $token = null) {
+    $token = $token === null ? phoenix_acc_tg_token() : trim((string) $token);
     if (!preg_match('/^\d{5,16}:[A-Za-z0-9_-]{30,80}$/', $token)) {
         return new WP_Error('phoenix_acc_tg_token', 'توکنِ ربات تنظیم نشده یا شکلش درست نیست.');
     }
@@ -213,7 +217,12 @@ function phoenix_acc_tg_hook_permission(WP_REST_Request $r) {
 
 /** همیشه ۲۰۰ — وگرنه تلگرام همان پیام را بارها دوباره می‌فرستد */
 function phoenix_acc_tg_hook(WP_REST_Request $r) {
-    $u = phoenix_acc_tg_parse((array) $r->get_json_params());
+    $raw = (array) $r->get_json_params();
+    /* کدِ «اتصالِ گفتگو برای اعلان‌ها» — در گروه و کانال هم (notify.php) */
+    if (function_exists('phoenix_acc_notify_catch') && phoenix_acc_notify_catch($raw)) {
+        return rest_ensure_response(array('ok' => true));
+    }
+    $u = phoenix_acc_tg_parse($raw);
     if ($u) {
         phoenix_acc_tg_handle($u);
     }
@@ -382,7 +391,7 @@ function phoenix_acc_admin_tg_act(WP_REST_Request $r) {
     $set = phoenix_acc_tg_call('setWebhook', array(
         'url'                  => (string) (phoenix_acc_setting('tg_hook') ?: phoenix_acc_tg_default_hook()),
         'secret_token'         => $secret,
-        'allowed_updates'      => array('message'),
+        'allowed_updates'      => array('message', 'channel_post'), // کانال: فقط برای کدِ اتصالِ اعلان‌ها
         'drop_pending_updates' => true,
         'max_connections'      => 10,
     ));

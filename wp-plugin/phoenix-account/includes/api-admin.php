@@ -439,6 +439,7 @@ function phoenix_acc_admin_world($list) {
         'customers' => array('مشتریان', 'users'),
         'tickets'   => array('تیکت‌ها', 'inbox'),
         'sms'       => array('پیامک و ورود', 'lock'),
+        'notify'    => array('اعلان در تلگرام', 'bolt'),
     ) as $id => $meta) {
         $sections[] = array(
             'id'     => $id,
@@ -478,6 +479,16 @@ function phoenix_acc_dash_alerts($alerts) {
         $alerts[] = array('level' => 'medium', 'title' => 'تیکتِ منتظرِ پاسخ',
             'text' => strtr((string) $waiting, array('0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹')) . ' تیکت منتظرِ جوابِ پشتیبانی است.',
             'action' => array('label' => 'تیکت‌ها', 'go' => 'tickets', 'world' => 'customers'));
+    }
+    if (function_exists('phoenix_acc_table_notify')) {
+        global $wpdb;
+        $t = phoenix_acc_table_notify();
+        $failed = (int) $wpdb->get_var("SELECT COUNT(*) FROM {$t} WHERE status = 'failed' AND created_at > DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)");
+        if ($failed > 0) {
+            $alerts[] = array('level' => 'medium', 'title' => 'اعلانِ ناموفق',
+                'text' => strtr((string) $failed, array('0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹')) . ' اعلانِ سفارش در ۲۴ ساعتِ گذشته به تلگرام یا API نرسید.',
+                'action' => array('label' => 'اعلان در تلگرام', 'go' => 'notify', 'world' => 'customers'));
+        }
     }
     $p = (string) phoenix_acc_setting('sms_provider');
     if ($p === 'telegram' && (string) phoenix_acc_setting('tg_bot') === '') {

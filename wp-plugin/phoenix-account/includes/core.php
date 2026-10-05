@@ -898,3 +898,319 @@ function phoenix_acc_tg_contact_keyboard() {
         'one_time_keyboard' => true,
     );
 }
+
+/* ============================================================
+   اعلان‌ها — خرید و پشتیبانی در تلگرامِ مدیر، یا API برای برنامه‌ی دیگر
+   ============================================================ */
+
+/*
+ * ⚠ همه‌ی متن‌ها و تصمیم‌ها این‌جا، خالص؛ notify.php فقط به وردپرس و
+ * تلگرام وصلشان می‌کند (tests/account-test.php، tests/notify-flow-test.php).
+ */
+
+/** رویداد => ‎[برچسب در پنل، پیش‌فرض، عنوانِ پیام]‎ */
+const PHOENIX_ACC_NOTIFY_EVENTS = array(
+    'order_paid'    => array('سفارشِ پرداخت‌شده', true, '🛒 سفارشِ تازه — پرداخت شد'),
+    'order_on_hold' => array('سفارشِ منتظرِ تأییدِ پرداخت (کارت‌به‌کارت)', true, '⏳ سفارش منتظرِ تأییدِ پرداخت'),
+    'order_new'     => array('سفارشِ ثبت‌شده، هنوز پرداخت‌نشده', false, '🆕 سفارشِ ثبت‌شده — هنوز پرداخت نشده'),
+    'input_fixed'   => array('مشتری اطلاعاتِ تحویل را اصلاح کرد', true, '✏️ مشتری اطلاعاتِ تحویل را اصلاح کرد'),
+    'ticket'        => array('پیامِ تازه‌ی مشتری در تیکت', false, '🎫 پیامِ تازه در تیکت'),
+    'chat'          => array('گفتگوی تازه در چتِ آنلاین', false, '💬 گفتگوی تازه در چت'),
+);
+
+const PHOENIX_ACC_NOTIFY_MAX_CHATS = 10;
+
+function phoenix_acc_notify_defaults() {
+    $ev = array();
+    foreach (PHOENIX_ACC_NOTIFY_EVENTS as $id => $e) {
+        $ev[$id] = $e[1];
+    }
+    return array(
+        'on'           => false,
+        'tg_on'        => true,
+        'tg_conn'      => '',      // خالی = همان رباتِ ورود
+        'tg_chats'     => array(), // ‎[{id, title}]‎
+        'hook_on'      => false,
+        'hook_url'     => '',
+        'events'       => $ev,
+        'show_contact' => true,    // شماره و ایمیلِ مشتری در پیام
+        'show_inputs'  => false,   // ورودی‌های سفارش (رمزها همیشه پوشیده)
+    );
+}
+
+/** شناسه‌ی گفتگوی تلگرام: عددی (کاربر، گروه ‎-…‎، کانال ‎-100…‎) یا ‎@کانال‎ */
+function phoenix_acc_notify_chat_id_ok($id) {
+    return is_string($id) && preg_match('/^(-?\d{5,20}|@[A-Za-z][A-Za-z0-9_]{4,31})$/', $id) === 1;
+}
+
+/**
+ * @param string[] $conns اسلاگِ اتصال‌های Bridge
+ * @return array{ok:bool, data:array, errors:array<string,string>}
+ */
+function phoenix_acc_notify_clean(array $in, array $conns = array()) {
+    $d   = phoenix_acc_notify_defaults();
+    $err = array();
+    $out = array(
+        'on'           => !empty($in['on']),
+        'tg_on'        => array_key_exists('tg_on', $in) ? !empty($in['tg_on']) : $d['tg_on'],
+        'hook_on'      => !empty($in['hook_on']),
+        'show_contact' => array_key_exists('show_contact', $in) ? !empty($in['show_contact']) : $d['show_contact'],
+        'show_inputs'  => !empty($in['show_inputs']),
+    );
+
+    $conn = isset($in['tg_conn']) ? (string) $in['tg_conn'] : '';
+    if ($conn !== '' && !in_array($conn, $conns, true)) {
+        $err['tg_conn'] = 'این اتصال نیست — از «اتصال‌ها» انتخاب کن، یا خالی برای همان رباتِ ورود.';
+        $conn = '';
+    }
+    $out['tg_conn'] = $conn;
+
+    $chats = array();
+    $seen  = array();
+    foreach (isset($in['tg_chats']) && is_array($in['tg_chats']) ? $in['tg_chats'] : array() as $c) {
+        $id = is_array($c) && isset($c['id']) && is_scalar($c['id']) ? trim((string) $c['id']) : '';
+        if (!phoenix_acc_notify_chat_id_ok($id)) {
+            $err['tg_chats'] = 'شناسه‌ی گفتگو عددی است (مثلاً ‎123456789‎ یا ‎-1001234567890‎) یا ‎@نامِ‌کانال‎.';
+            continue;
+        }
+        if (isset($seen[$id])) {
+            continue;
+        }
+        $seen[$id] = true;
+        $chats[] = array('id' => $id, 'title' => phoenix_acc_text(is_array($c) ? ($c['title'] ?? '') : '', 64));
+    }
+    if (count($chats) > PHOENIX_ACC_NOTIFY_MAX_CHATS) {
+        $err['tg_chats'] = 'حداکثر ' . PHOENIX_ACC_NOTIFY_MAX_CHATS . ' گیرنده.';
+        $chats = array_slice($chats, 0, PHOENIX_ACC_NOTIFY_MAX_CHATS);
+    }
+    $out['tg_chats'] = $chats;
+
+    $url = trim((string) ($in['hook_url'] ?? ''));
+    if ($url !== '' && (!preg_match('#^https://[A-Za-z0-9.\-]+(:\d+)?(/[^\s]*)?$#', $url) || strlen($url) > 500 || strpos($url, '@') !== false)) {
+        $err['hook_url'] = 'نشانیِ کاملِ https — بی‌نام‌کاربری و رمز در خودِ نشانی.';
+        $url = '';
+    }
+    $out['hook_url'] = $url;
+    if ($out['hook_on'] && $url === '') {
+        $err['hook_url'] = 'برای API نشانی لازم است.';
+    }
+
+    $ev = array();
+    foreach (PHOENIX_ACC_NOTIFY_EVENTS as $id => $e) {
+        $ev[$id] = isset($in['events']) && is_array($in['events']) && array_key_exists($id, $in['events'])
+            ? !empty($in['events'][$id]) : $e[1];
+    }
+    $out['events'] = $ev;
+
+    return array('ok' => !$err, 'data' => $out, 'errors' => $err);
+}
+
+function phoenix_acc_notify_fa($s) {
+    return strtr((string) $s, array('0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹'));
+}
+
+function phoenix_acc_notify_money($n, $currency = 'IRT') {
+    $unit = array('IRT' => 'تومان', 'IRR' => 'ریال', 'IRHT' => 'هزار تومان')[$currency] ?? $currency;
+    return phoenix_acc_notify_fa(number_format((float) $n, 0, '.', '٬')) . ' ' . $unit;
+}
+
+function phoenix_acc_notify_esc($s) {
+    return htmlspecialchars((string) $s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+/** ورودی‌ای که شبیهِ رمز است هرگز به تلگرام یا API نمی‌رود */
+function phoenix_acc_notify_secretish($key) {
+    return preg_match('/(رمز|پسورد|گذرواژه|کلمه.?ی?.?عبور|password|passwd|pass\b|pwd|pin\b|otp|cvv|کد.?(امنیتی|تأیید|تایید|ورود|یکبار))/iu', (string) $key) === 1;
+}
+
+/** ورودی‌ها پیش از رفتن — رمزگونه‌ها پوشیده */
+function phoenix_acc_notify_inputs(array $list) {
+    $out = array();
+    foreach ($list as $kv) {
+        if (!is_array($kv) || !isset($kv['key'])) {
+            continue;
+        }
+        $k = (string) $kv['key'];
+        $out[] = array('key' => $k, 'value' => phoenix_acc_notify_secretish($k) ? '••••••' : (string) ($kv['value'] ?? ''));
+    }
+    return $out;
+}
+
+/**
+ * دادهٔ رویداد پس از تنظیماتِ حریمِ خصوصی — همان چیزی که هم به تلگرام
+ * و هم به API می‌رود.
+ */
+function phoenix_acc_notify_shape(array $d, array $opt) {
+    if (isset($d['customer']) && is_array($d['customer']) && empty($opt['show_contact'])) {
+        unset($d['customer']['phone'], $d['customer']['email']);
+    }
+    if (isset($d['phone']) && empty($opt['show_contact'])) {
+        unset($d['phone']);
+    }
+    if (isset($d['items']) && is_array($d['items'])) {
+        foreach ($d['items'] as $i => $it) {
+            if (!empty($opt['show_inputs']) && isset($it['inputs']) && is_array($it['inputs'])) {
+                $d['items'][$i]['inputs'] = phoenix_acc_notify_inputs($it['inputs']);
+            } else {
+                unset($d['items'][$i]['inputs']);
+            }
+            unset($d['items'][$i]['deliveries'], $d['items'][$i]['stock_codes']);
+        }
+    }
+    return $d;
+}
+
+/**
+ * متنِ پیامِ تلگرام (HTML) — زیرِ ۳۸۰۰ نویسه، زیرِ سقفِ ۴۰۹۶ تلگرام.
+ * ‎$d‎ پیش‌تر از ‎phoenix_acc_notify_shape‎ گذشته است.
+ *
+ * ⚠ سرِ پیام (سفارش، مشتری) و تهِ آن (پرداخت، پیوندِ پنل) همیشه کامل؛
+ *   قلم‌ها در فضای باقی‌مانده، و اگر جا نشد «… و N قلمِ دیگر» — تا مدیر
+ *   بداند چیزی جا مانده.
+ */
+function phoenix_acc_notify_text($event, array $d) {
+    $e   = 'phoenix_acc_notify_esc';
+    $fa  = 'phoenix_acc_notify_fa';
+    $cur = (string) ($d['currency'] ?? 'IRT');
+    $head = array('<b>' . $e(PHOENIX_ACC_NOTIFY_EVENTS[$event][2] ?? $event) . '</b>');
+    $body = array(); // قلم‌ها — هر کدام چند سطر
+    $foot = array();
+
+    if (strpos($event, 'order_') === 0 || $event === 'input_fixed') {
+        $head[] = 'سفارشِ ' . $fa('#' . $e($d['number'] ?? $d['id'] ?? '')) . (isset($d['total']) ? ' · ' . phoenix_acc_notify_money($d['total'], $cur) : '');
+        $c = isset($d['customer']) && is_array($d['customer']) ? $d['customer'] : array();
+        $who = array_filter(array(
+            trim((string) ($c['name'] ?? '')) !== '' ? $e($c['name']) : '',
+            !empty($c['phone']) ? $fa($e($c['phone'])) : '',
+            !empty($c['email']) ? $e($c['email']) : '',
+        ));
+        if ($who) {
+            $head[] = '👤 ' . implode(' · ', $who);
+        }
+        if ($event === 'input_fixed' && !empty($d['item'])) {
+            $head[] = 'قلم: ' . $e($d['item']);
+        }
+        foreach (isset($d['items']) && is_array($d['items']) ? $d['items'] : array() as $it) {
+            $q = (int) ($it['qty'] ?? 1);
+            $block = array('• ' . $e($it['name'] ?? '') . ($q > 1 ? ' ×' . $fa($q) : '')
+                . (isset($it['total']) ? ' — ' . phoenix_acc_notify_money($it['total'], $cur) : ''));
+            foreach (isset($it['inputs']) && is_array($it['inputs']) ? array_slice($it['inputs'], 0, 6) : array() as $kv) {
+                $block[] = '    ' . $e($kv['key']) . ': <code>' . $e($kv['value']) . '</code>';
+            }
+            $body[] = implode("\n", $block);
+        }
+        $p = isset($d['payment']) && is_array($d['payment']) ? $d['payment'] : array();
+        $pay = array_filter(array(
+            !empty($p['method']) ? $e($p['method']) : '',
+            !empty($p['transaction_id']) ? 'کدِ پیگیری <code>' . $e($p['transaction_id']) . '</code>' : '',
+        ));
+        if ($pay) {
+            $foot[] = '💳 ' . implode(' · ', $pay);
+        }
+        if (!empty($d['note'])) {
+            $foot[] = '📝 ' . $e(phoenix_acc_text($d['note'], 300, true));
+        }
+    } elseif ($event === 'ticket') {
+        $head[] = 'تیکتِ ' . $fa('#' . (int) ($d['ticket_id'] ?? 0)) . ' — ' . $e($d['subject'] ?? '');
+        if (!empty($d['phone'])) {
+            $head[] = '👤 ' . $fa($e($d['phone']));
+        }
+        if (!empty($d['excerpt'])) {
+            $body[] = '«' . $e($d['excerpt']) . '»';
+        }
+    } elseif ($event === 'chat') {
+        $head[] = 'کارشناس: ' . $e($d['agent'] ?? '—') . (!empty($d['phone']) ? ' · 👤 ' . $fa($e($d['phone'])) : '');
+        if (!empty($d['excerpt'])) {
+            $body[] = '«' . $e($d['excerpt']) . '»';
+        }
+        if (!empty($d['page'])) {
+            $foot[] = 'صفحه: ' . $e($d['page']);
+        }
+    }
+    if (!empty($d['admin_url']) && preg_match('#^https?://#', (string) $d['admin_url'])) {
+        $foot[] = '<a href="' . $e($d['admin_url']) . '">باز کردن در پنل</a>';
+    }
+
+    $headS  = implode("\n", $head);
+    $footS  = $foot ? "\n\n" . implode("\n", $foot) : '';
+    $budget = 3800 - strlen($headS) - strlen($footS) - 80; // ۸۰: جای «… و N قلمِ دیگر»
+    $kept = array();
+    foreach ($body as $i => $b) {
+        $len = strlen(implode("\n", $kept)) + strlen($b) + 1;
+        if ($len > $budget || count($kept) >= 12) {
+            $kept[] = '… و ' . $fa(count($body) - $i) . (strpos($event, 'order_') === 0 || $event === 'input_fixed' ? ' قلمِ دیگر' : ' سطرِ دیگر');
+            break;
+        }
+        $kept[] = $b;
+    }
+    return $headS . ($kept ? "\n\n" . implode("\n", $kept) : '') . $footS;
+}
+
+/** چند ثانیه تا تلاشِ بعد — ۱ دقیقه، ۵، ۱۵، یک ساعت، سه ساعت */
+function phoenix_acc_notify_backoff($tries) {
+    $steps = array(60, 300, 900, 3600, 10800);
+    return $steps[max(0, min(count($steps) - 1, (int) $tries - 1))];
+}
+
+const PHOENIX_ACC_NOTIFY_MAX_TRIES = 6;
+
+/**
+ * خطای تلگرام → دوباره یا نه.
+ *
+ * @return array{retry:bool, after:int}
+ */
+function phoenix_acc_notify_tg_verdict($code, $desc) {
+    $desc = (string) $desc;
+    if ($code === 'phoenix_acc_tg_net') {
+        return array('retry' => true, 'after' => 0);
+    }
+    if (preg_match('/retry after (\d+)/i', $desc, $m)) {
+        return array('retry' => true, 'after' => min(3600, (int) $m[1] + 1));
+    }
+    if ($code === 'phoenix_acc_tg_api' && preg_match('/^(HTTP )?5\d\d|Internal Server Error|Bad Gateway|Gateway/i', $desc)) {
+        return array('retry' => true, 'after' => 0);
+    }
+    return array('retry' => false, 'after' => 0); // توکن، ربات بیرون‌شده، گفتگوی ناموجود — تکرار فایده ندارد
+}
+
+/** امضای API: ‎sha256=HMAC(secret, "زمان.بدنه")‎ — زمان در امضا، تا پیامِ قدیمی دوباره پذیرفته نشود */
+function phoenix_acc_notify_sign($secret, $ts, $body) {
+    return 'sha256=' . hash_hmac('sha256', (int) $ts . '.' . (string) $body, (string) $secret);
+}
+
+/** پاسخِ وبهوک → دوباره یا نه (۴۰۸ و ۴۲۹ و ۵xx و خطای شبکه: دوباره) */
+function phoenix_acc_notify_hook_verdict($status) {
+    $status = (int) $status;
+    if ($status >= 200 && $status < 300) {
+        return 'sent';
+    }
+    return ($status === 0 || $status === 408 || $status === 429 || $status >= 500) ? 'retry' : 'failed';
+}
+
+/**
+ * پیامِ «اتصال» با کدِ یک‌بارمصرف — در گفتگوی خصوصی، گروه یا کانال.
+ *
+ * @return array|null ‎{id, title, type}‎
+ */
+function phoenix_acc_notify_find_code($update, $code) {
+    if (!is_array($update) || !is_string($code) || !preg_match('/^ph_[a-z0-9]{8,16}$/', $code)) {
+        return null;
+    }
+    foreach (array('message', 'channel_post') as $k) {
+        $m = isset($update[$k]) && is_array($update[$k]) ? $update[$k] : null;
+        if (!$m || !isset($m['chat']['id'])) {
+            continue;
+        }
+        $text = (string) ($m['text'] ?? '');
+        if (!preg_match('/(^|\s)' . preg_quote($code, '/') . '(\s|$)/', $text)) {
+            continue;
+        }
+        $c = $m['chat'];
+        $title = (string) ($c['title'] ?? trim(($c['first_name'] ?? '') . ' ' . ($c['last_name'] ?? '')));
+        if ($title === '' && !empty($c['username'])) {
+            $title = '@' . $c['username'];
+        }
+        return array('id' => (string) (int) $c['id'], 'title' => phoenix_acc_text($title, 64), 'type' => (string) ($c['type'] ?? ''));
+    }
+    return null;
+}

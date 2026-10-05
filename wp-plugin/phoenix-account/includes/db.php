@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-const PHOENIX_ACC_DB_VERSION = '4';
+const PHOENIX_ACC_DB_VERSION = '5';
 const PHOENIX_ACC_OPTION     = 'phoenix_account_settings';
 
 function phoenix_acc_table_sessions() {
@@ -41,6 +41,11 @@ function phoenix_acc_table_chats() {
 function phoenix_acc_table_chat_msgs() {
     global $wpdb;
     return $wpdb->prefix . 'phoenix_acc_chat_msgs';
+}
+
+function phoenix_acc_table_notify() {
+    global $wpdb;
+    return $wpdb->prefix . 'phoenix_acc_notify';
 }
 
 function phoenix_acc_table_tg() {
@@ -148,6 +153,27 @@ function phoenix_acc_install() {
         created_at datetime NOT NULL,
         PRIMARY KEY  (id),
         KEY chat_id (chat_id, id)
+    ) {$charset};");
+
+    /* صندوقِ خروجیِ اعلان‌ها (notify.php) — هر گیرنده یک ردیف؛ کلیدِ یکتا
+       یعنی یک رویداد برای یک گیرنده فقط یک بار، هر چند بار قلاب صدا زده شود */
+    $n = phoenix_acc_table_notify();
+    dbDelta("CREATE TABLE {$n} (
+        id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        event varchar(20) NOT NULL,
+        ref varchar(80) NOT NULL,
+        dest varchar(40) NOT NULL,
+        payload longtext NOT NULL,
+        status varchar(10) NOT NULL DEFAULT 'pending',
+        tries smallint(5) unsigned NOT NULL DEFAULT 0,
+        next_at datetime NOT NULL,
+        created_at datetime NOT NULL,
+        sent_at datetime DEFAULT NULL,
+        error varchar(255) NOT NULL DEFAULT '',
+        PRIMARY KEY  (id),
+        UNIQUE KEY once (event,ref,dest),
+        KEY due (status,next_at),
+        KEY created_at (created_at)
     ) {$charset};");
 
     /* ⚠ ‎token_hash‎ یکتا: دو نشست با یک ژتون ممکن نیست، و جست‌وجو

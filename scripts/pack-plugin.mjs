@@ -45,7 +45,7 @@ const PLUGINS = {
       'phoenix-account.php', 'CHANGELOG.md',
       'includes/core.php', 'includes/db.php', 'includes/sessions.php', 'includes/sms.php',
       'includes/telegram.php', 'includes/chat.php', 'includes/customers.php', 'includes/tickets.php',
-      'includes/backup-sections.php',
+      'includes/backup-sections.php', 'includes/notify.php', 'admin/screens/notify.js',
       'includes/api-customer.php', 'includes/api-admin.php', 'admin/screens/sms.js',
     ],
   },
