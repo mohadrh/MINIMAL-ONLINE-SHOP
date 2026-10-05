@@ -75,6 +75,38 @@ async function list(ctx) {
     finally { sync.lastChild.textContent = 'ساختن از سفارش‌های قبلی'; }
   }));
 
+  /* مشتریِ تازه از پنل — برای آزمایشِ ورود و خرید پیش از پیامک و درگاه */
+  const newBox = h('div');
+  const addBtn = h('button', { class: 'phx2-btn phx2-btn--sm phx2-btn--primary', type: 'button' }, icon('plus'), 'افزودنِ مشتری');
+  addBtn.addEventListener('click', () => {
+    if (newBox.firstChild) { put(newBox); return; }
+    const phone = kit.text({ dir: 'ltr', max: 15, type: 'tel', placeholder: '09121234567' });
+    const name = kit.text({ max: 100 });
+    const email = kit.text({ dir: 'ltr', max: 190, type: 'email', placeholder: 'name@example.com' });
+    const pass = kit.text({ dir: 'ltr', max: 64, type: 'password' });
+    const F = {
+      phone: kit.field({ label: 'موبایل', required: true }, phone.el),
+      name: kit.field({ label: 'نام' }, name.el),
+      email: kit.field({ label: 'ایمیل', hint: 'اگر «کد به ایمیل» روشن باشد، کدِ ورود به این‌جا هم می‌رود.' }, email.el),
+      password: kit.field({ label: 'رمزِ عبور', hint: 'اختیاری. اگر بگذاری، با شماره و همین رمز در سایت وارد می‌شود — بی‌پیامک. دست‌کم ۸ نویسه، حروفِ انگلیسی و عدد.' }, pass.el),
+    };
+    const make = h('button', { class: 'phx2-btn phx2-btn--primary', type: 'button' }, icon('check'), 'ساختن');
+    make.addEventListener('click', busyButton(make, async () => {
+      for (const f of Object.values(F)) f.setError('');
+      try {
+        const r = await ctx.api('POST', '/account/customers/new', { phone: phone.get(), name: name.get(), email: email.get(), password: pass.get() });
+        toast('مشتری ساخته شد.', 'good');
+        ctx.go('customers/' + r.customer.phone);
+      } catch (e) {
+        if (e.fields) for (const [k, m] of Object.entries(e.fields)) (F[k] || F.phone).setError(m);
+        toast(e.message, 'bad');
+      }
+    }));
+    put(newBox, ctx.ui.card('مشتریِ تازه', 'برای آزمایشِ ورود و خرید، یا ثبتِ دستیِ مشتری‌ای که تلفنی خرید کرده.',
+      h('div', { class: 'phx2-form' }, F.phone, F.name, F.email, F.password),
+      h('div', { class: 'phx2-row phx2-row--end' }, make)));
+  });
+
   async function reload() {
     const qs = new URLSearchParams({ q: state.q, sort: state.sort, page: String(state.page) });
     const d = await ctx.api('GET', '/account/customers?' + qs);
@@ -131,7 +163,8 @@ async function list(ctx) {
   }
 
   put(ctx.view,
-    kit.pageHead({ title: 'مشتریان', sub: 'هر مشتری با خریدها، تیکت‌ها و امنیتِ حسابش.', actions: [sync] }),
+    kit.pageHead({ title: 'مشتریان', sub: 'هر مشتری با خریدها، تیکت‌ها و امنیتِ حسابش.', actions: [addBtn, sync] }),
+    newBox,
     strip,
     h('div', { class: 'phx2-filters' }, h('span', { class: 'phx2-filters__s' }, icon('search'), search.el), sort.el),
     body,
@@ -215,6 +248,7 @@ function paint(ctx, d) {
       : h('p', { class: 'phx2-empty' }, 'تیکتی نفرستاده.'));
 
   /* ---------- امنیت ---------- */
+  const passBox = h('div');
   const security = card('امنیتِ حساب', 'هر کدام در «تاریخچه» با نامِ تو ثبت می‌شود.',
     h('dl', { class: 'phx2-kvs2' },
       h('dt', null, 'رمز'), h('dd', null, c.has_password ? 'گذاشته — ' + when(c.pass_set_at) : 'ندارد؛ با کدِ پیامکی وارد می‌شود'),
@@ -225,7 +259,20 @@ function paint(ctx, d) {
       ? h('ul', { class: 'phx2-linklist' }, d.sessions.map((s) => h('li', null,
         h('span', null, icon('phone'), ' ', s.device), h('span', { class: 'phx2-td-muted' }, 'آخرین بار ' + ago(s.last_seen)))))
       : h('p', { class: 'phx2-empty' }, 'هیچ دستگاهی الان وارد نیست.'),
+    passBox,
     h('div', { class: 'phx2-row' },
+      actBtn(c.has_password ? 'رمزِ تازه' : 'گذاشتنِ رمز', 'lock', '', async () => {
+        if (passBox.firstChild) { put(passBox); return; }
+        const pass = kit.text({ dir: 'ltr', max: 64, type: 'password' });
+        const F = kit.field({ label: 'رمزِ عبورِ تازه', hint: 'دست‌کم ۸ نویسه، حروفِ انگلیسی و عدد. مشتری از همه‌ی دستگاه‌ها بیرون می‌رود و با این رمز وارد می‌شود؛ رمز را از راهِ امن به او بده.' }, pass.el);
+        const go = h('button', { class: 'phx2-btn phx2-btn--sm phx2-btn--primary', type: 'button' }, icon('save'), 'گذاشتن');
+        go.addEventListener('click', busyButton(go, async () => {
+          F.setError('');
+          try { paint(ctx, await ctx.api('POST', '/account/customers/' + c.phone, { act: 'set_password', password: pass.get() })); toast('رمز گذاشته شد.', 'good'); }
+          catch (e) { F.setError(e.fields && e.fields.password ? e.fields.password : e.message); }
+        }));
+        put(passBox, h('div', { class: 'phx2-stack' }, F, h('div', { class: 'phx2-row phx2-row--end' }, go)));
+      }),
       d.sessions.length ? actBtn('خروج از همه‌ی دستگاه‌ها', 'power', '', () => act({ act: 'revoke' }, 'از همه‌ی دستگاه‌ها بیرون رفت.')) : null,
       c.locked_for > 0 ? actBtn('برداشتنِ قفل', 'lock', '', () => act({ act: 'unlock' }, 'قفل برداشته شد.')) : null,
       c.has_password ? actBtn('پاک کردنِ رمز', 'x', '', async () => {
@@ -241,6 +288,18 @@ function paint(ctx, d) {
     ),
   );
 
+  /* ---------- نام و ایمیل ---------- */
+  const pName = kit.text({ value: c.name, max: 100 });
+  const pEmail = kit.text({ value: c.email, dir: 'ltr', max: 190, type: 'email' });
+  const PF = { name: kit.field({ label: 'نام' }, pName.el), email: kit.field({ label: 'ایمیل', hint: 'کدِ ورود با ایمیل فقط به همین نشانی می‌رود.' }, pEmail.el) };
+  const saveProfile = h('button', { class: 'phx2-btn phx2-btn--sm', type: 'button' }, icon('save'), 'ذخیره');
+  saveProfile.addEventListener('click', busyButton(saveProfile, async () => {
+    PF.name.setError(''); PF.email.setError('');
+    try { paint(ctx, await ctx.api('POST', '/account/customers/' + c.phone, { act: 'profile', name: pName.get(), email: pEmail.get() })); toast('ذخیره شد.', 'good'); }
+    catch (e) { if (e.fields) for (const [k, m] of Object.entries(e.fields)) (PF[k] || PF.name).setError(m); toast(e.message, 'bad'); }
+  }));
+  const profile = card('نام و ایمیل', '', h('div', { class: 'phx2-form' }, PF.name, PF.email), h('div', { class: 'phx2-row phx2-row--end' }, saveProfile));
+
   /* ---------- یادداشتِ داخلی ---------- */
   const noteIn = kit.area({ value: c.note, rows: 3, max: 500, placeholder: 'فقط برای تیم — مشتری نمی‌بیند.' });
   const saveNote = h('button', { class: 'phx2-btn phx2-btn--sm', type: 'button' }, icon('save'), 'ذخیره‌ی یادداشت');
@@ -251,6 +310,6 @@ function paint(ctx, d) {
     kit.pageHead({ title: c.name || digits(c.phone), sub: 'پرونده‌ی مشتری', back: { href: '#/customers', label: 'همه‌ی مشتریان' } }),
     h('section', { class: 'phx2-card' }, h('div', { class: 'phx2-stack' }, who, strip)),
     orders,
-    h('div', { class: 'phx2-grid phx2-grid--halves' }, h('div', { class: 'phx2-grid' }, tickets, note), security),
+    h('div', { class: 'phx2-grid phx2-grid--halves' }, h('div', { class: 'phx2-grid' }, tickets, profile, note), security),
   );
 }

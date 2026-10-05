@@ -82,11 +82,18 @@ async function post<T>(path: string, body: unknown, extra: Record<string, string
  * ‎channel: 'telegram'‎ یعنی کد در ربات تلگرام رفت (نه پیامک)؛ ‎bot‎ نامِ
  * ربات است تا صفحه پیوندِ بازکردنش را نشان دهد.
  */
-export async function requestOtp(phone: string): Promise<{ ttl: number; channel?: string; bot?: string }> {
-  const r = await post<{ ttl: number; channel?: string; bot?: string }>('/otp/request', { phone });
+export async function requestOtp(phone: string): Promise<{ ttl: number; channel?: string; bot?: string; also?: string }> {
+  const r = await post<{ ttl: number; channel?: string; bot?: string; also?: string }>('/otp/request', { phone });
   /* نامِ ربات در پیوندِ ‎t.me‎ می‌نشیند — فقط شکلِ مجازِ نامِ کاربریِ تلگرام */
   if (r.bot !== undefined && !/^[A-Za-z0-9_]{1,40}$/.test(String(r.bot))) delete r.bot;
+  if (r.also !== undefined && r.also !== 'email') delete r.also;
   return r;
+}
+
+/** کد به ایمیل هم رفت؟ ‎only‎ = ایمیل تنها راه؛ ‎also‎ = کنارِ پیامک یا تلگرام */
+export function emailMode(r: { channel?: string; also?: string }): 'only' | 'also' | null {
+  if (r.channel === 'email') return 'only';
+  return r.also === 'email' ? 'also' : null;
 }
 
 /**

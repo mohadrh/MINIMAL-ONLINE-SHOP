@@ -132,7 +132,7 @@ async function list(ctx) {
 async function detail(ctx, id) {
   const d = await ctx.api('GET', '/account/orders/' + encodeURIComponent(id));
   if (!ctx.alive()) return;
-  const { h, icon, fa, digits, ago, pill, put } = ctx.ui;
+  const { h, icon, fa, digits, ago, pill, put, toast, busyButton, confirmBox } = ctx.ui;
   const { kit } = ctx;
   const o = d.order;
   const [sw, st] = STATUS[o.status] || [o.status_label, 'neutral'];
@@ -152,6 +152,29 @@ async function detail(ctx, id) {
       d.customer && d.customer.blocked && kv('حساب', pill('بسته‌شده', 'bad')),
     ));
 
+  /* کارت‌به‌کارت یا آزمایش بی‌درگاه: تأییدِ دستی — همان راهِ پرداختِ واقعی
+     (‎payment_complete‎): صفِ تحویل و اعلان‌ها هم راه می‌افتند */
+  let payActs = null;
+  if (o.status === 'pending' || o.status === 'on-hold') {
+    const ref = kit.text({ dir: 'auto', max: 100, placeholder: 'مثلاً ۴ رقمِ آخرِ کارت یا شماره‌ی پیگیری' });
+    const confirmBtn = h('button', { class: 'phx2-btn phx2-btn--sm phx2-btn--primary', type: 'button' }, icon('check'), 'تأییدِ پرداخت');
+    confirmBtn.addEventListener('click', busyButton(confirmBtn, async () => {
+      const ok = await confirmBox({ title: 'پرداختِ ' + money(o.total) + ' تأیید شود؟',
+        text: 'فقط وقتی پول واقعاً به حساب رسیده. سفارش «پرداخت‌شده» می‌شود، به صفِ تحویل می‌رود و اعلانِ خرید فرستاده می‌شود.', ok: 'تأیید', tone: 'brand' });
+      if (!ok) return;
+      try { await ctx.api('POST', '/account/orders/' + o.id, { act: 'confirm_payment', ref: ref.get() }); toast('پرداخت تأیید شد.', 'good'); detail(ctx, o.id); }
+      catch (e) { toast(e.message, 'bad'); }
+    }));
+    const cancelBtn = h('button', { class: 'phx2-btn phx2-btn--sm phx2-btn--ghost', type: 'button' }, icon('x'), 'لغوِ سفارش');
+    cancelBtn.addEventListener('click', busyButton(cancelBtn, async () => {
+      const ok = await confirmBox({ title: 'سفارش لغو شود؟', text: 'برای وقتی که پولی نرسیده یا مشتری منصرف شده. برگشت‌پذیر نیست.', ok: 'لغو کن', tone: 'bad' });
+      if (!ok) return;
+      try { await ctx.api('POST', '/account/orders/' + o.id, { act: 'cancel', ref: ref.get() }); toast('لغو شد.', 'good'); detail(ctx, o.id); }
+      catch (e) { toast(e.message, 'bad'); }
+    }));
+    payActs = h('div', { class: 'phx2-stack' }, kit.field({ label: 'مرجعِ پرداخت (اختیاری)' }, ref.el), h('div', { class: 'phx2-row' }, confirmBtn, cancelBtn));
+  }
+
   const payment = h('section', { class: 'phx2-jobsec' },
     h('h4', null, icon('dollar'), 'پرداخت'),
     h('dl', { class: 'phx2-kvs2' },
@@ -160,7 +183,8 @@ async function detail(ctx, id) {
       kv('شماره‌ی تراکنش', o.payment.transaction_id ? h('code', { dir: 'ltr' }, o.payment.transaction_id) : '—'),
       kv('زمانِ ثبت', when(o.created)),
       kv('زمانِ پرداخت', o.paid ? when(o.paid) : pill('پرداخت نشده', 'warn')),
-    ));
+    ),
+    payActs);
 
   const items = h('section', { class: 'phx2-jobsec is-wide' },
     h('h4', null, icon('box'), 'اقلام و تحویل'),

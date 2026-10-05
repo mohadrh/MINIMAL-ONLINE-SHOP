@@ -136,7 +136,7 @@ function phoenix_otp_request(WP_REST_Request $request) {
        که بگوید این شماره حساب دارد یا نه. */
     $extra = (array) apply_filters('phoenix_otp_response_extra', array(), $phone);
     $out   = array('ok' => true, 'ttl' => PHOENIX_OTP_TTL);
-    foreach (array('channel', 'bot') as $k) {
+    foreach (array('channel', 'bot', 'also') as $k) {
         if (isset($extra[$k]) && is_string($extra[$k]) && preg_match('/^[A-Za-z0-9_]{1,40}$/', $extra[$k])) {
             $out[$k] = $extra[$k];
         }

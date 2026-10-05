@@ -29,8 +29,15 @@ const PHOENIX_ACC_SMSLOG = 'phoenix_acc_sms_log';
 add_filter('phoenix_send_otp', 'phoenix_acc_send_otp', 10, 3);
 function phoenix_acc_send_otp($sent, $phone, $code) {
     $provider = (string) phoenix_acc_setting('sms_provider');
+    $email    = !empty(phoenix_acc_setting('otp_email'));
+    if ($email) {
+        phoenix_acc_otp_email_send((string) $phone, (string) $code);
+    }
     if ($provider === 'off') {
-        return $sent; // رفتارِ خودِ Bridge
+        /* ⚠ ایمیل تنها راه: برای سایت همیشه «فرستاده شد»، چه این شماره
+           ایمیل داشته باشد چه نه — پاسخِ متفاوت می‌گفت حساب دارد یا نه.
+           سایت می‌نویسد «اگر ایمیلی ثبت شده باشد». */
+        return $email ? true : $sent;
     }
     if ($provider === 'telegram') {
         return phoenix_acc_tg_send_code((string) $phone, (string) $code);
@@ -43,6 +50,29 @@ function phoenix_acc_send_otp($sent, $phone, $code) {
     }
     $r = phoenix_acc_sms_send($phone, $code);
     return $r['ok'];
+}
+
+/**
+ * کدِ ورود به ایمیلِ پرونده‌ی همین شماره — اگر هست (core.php: چرا فقط پرونده).
+ *
+ * @return bool|null ‎null‎ یعنی ایمیلی در پرونده نیست
+ */
+function phoenix_acc_otp_email_send($phone, $code) {
+    $c = function_exists('phoenix_acc_customer') ? phoenix_acc_customer($phone) : null;
+    $to = $c ? trim((string) $c->email) : '';
+    if ($to === '' || !is_email($to) || !empty($c->blocked)) {
+        return null;
+    }
+    $m  = phoenix_acc_otp_email_text($code, defined('PHOENIX_OTP_TTL') ? PHOENIX_OTP_TTL : 120);
+    $ok = (bool) wp_mail($to, $m['subject'], $m['body']);
+    phoenix_acc_sms_log($phone, array('ok' => $ok, 'note' => $ok ? 'ایمیل: فرستاده شد' : 'ایمیل: وردپرس نتوانست بفرستد (تنظیمِ SMTP)'));
+    return $ok;
+}
+
+/* سایت بداند کد به ایمیل هم رفته — همان پاسخ برای همه‌ی شماره‌ها */
+add_filter('phoenix_otp_response_extra', 'phoenix_acc_otp_email_extra_filter', 20, 2);
+function phoenix_acc_otp_email_extra_filter($extra, $phone) {
+    return phoenix_acc_otp_email_extra((array) $extra, (string) phoenix_acc_setting('sms_provider'), !empty(phoenix_acc_setting('otp_email')));
 }
 
 /**

@@ -1,0 +1,113 @@
+# انتشار روی phonixmarket.com — با «اوکی» از شما
+#
+# هر پوش روی main:
+#   ۱ بررسی: نوع‌ها، همه‌ی تست‌های افزونه، و بیلدِ نسخه‌ی دامنه‌ی اصلی.
+#     اگر یکی شکست، هیچ‌چیز روی سایت نمی‌رود.
+#   ۲ «اوکی»: کارِ انتشار منتظر می‌ماند تا یکی از تأییدکننده‌های
+#     محیطِ production در گیت‌هاب «Approve» بزند (ایمیل و اعلان می‌آید).
+#   ۳ آپلود با FTPِ رمزدار یا SFTP — اول فایل‌های _next، بعد صفحه‌ها، تا
+#     بازدیدکننده‌ای که وسطِ آپلود می‌آید صفحه‌ی بی‌استایل نبیند.
+#   ۴ بررسیِ سایتِ زنده: همان بیلد بالا آمده؟ وگرنه قرمز.
+#
+# تا وقتی متغیرِ DEPLOY_HOST تنظیم نشده، فقط بخشِ ۱ اجرا می‌شود.
+# راه‌اندازی: docs/DEPLOY.md
+
+name: Deploy to phonixmarket.com
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# آپلودِ نیمه‌کاره قطع نشود؛ پوش‌های بعدی پشتِ سرش می‌مانند
+concurrency:
+  group: deploy-host
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: بررسی و بیلد
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: نصب وابستگی‌ها
+        run: npm ci
+
+      - name: بررسیِ نوع‌ها
+        run: npm run lint
+
+      - name: تست‌های افزونه‌ها
+        run: npm run test:plugin
+
+      - name: بیلد برای phonixmarket.com
+        env:
+          # ⚠ نشانیِ پنل راز نیست — داخلِ فایل‌های سایت هم هست
+          NEXT_PUBLIC_BRIDGE_URL: https://panel.phonixmarket.com
+          PHOENIX_SITE_URL: https://phonixmarket.com
+        run: npm run build:host
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: out
+          include-hidden-files: true # ‎.htaccess‎
+          retention-days: 7
+
+  deploy:
+    name: انتشار (منتظرِ اوکی)
+    needs: check
+    if: ${{ vars.DEPLOY_HOST != '' }}
+    runs-on: ubuntu-latest
+    # ⚠ «اوکی» همین‌جاست: تأییدکننده‌های این محیط در تنظیماتِ مخزن.
+    #   رمزِ FTP هم فقط در همین محیط است — کارِ دیگری (حتی اگر کسی
+    #   گردش‌کار را عوض کند) بی‌تأیید به آن نمی‌رسد.
+    environment:
+      name: production
+      url: https://phonixmarket.com
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: out
+
+      - name: نصبِ lftp
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: آپلود
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_DIR: ${{ vars.DEPLOY_DIR || 'public_html' }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          LFTP_PASSWORD: ${{ secrets.DEPLOY_PASSWORD }}
+        run: |
+          # ⚠ بی‌--delete: چیزی روی هاست پاک نمی‌شود (پوشه‌های دیگرِ
+          #   public_html امن‌اند). فایل‌های کهنه‌ی _next بی‌ضررند.
+          lftp -e "
+            set net:max-retries 3; set net:timeout 30;
+            set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate true;
+            set sftp:auto-confirm yes;
+            open --env-password -u \"$DEPLOY_USER\" \"$DEPLOY_HOST\";
+            mirror --reverse --parallel=4 --no-perms --verbose=1 out/_next \"$DEPLOY_DIR/_next\";
+            mirror --reverse --parallel=4 --no-perms --verbose=1 --exclude ^_next/ out \"$DEPLOY_DIR\";
+            bye"
+
+      - name: بررسیِ سایتِ زنده
+        run: |
+          want=$(grep -oE '/_next/static/chunks/app/layout-[a-f0-9]+\.js' out/index.html | head -1)
+          for i in 1 2 3 4 5; do
+            if curl -fsS --max-time 30 https://phonixmarket.com/ | grep -q "$want"; then
+              echo "سایتِ زنده همین بیلد است: $want"; exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::سایتِ زنده هنوز بیلدِ قبلی را نشان می‌دهد ($want پیدا نشد) — کش یا مسیرِ آپلود (DEPLOY_DIR) را بررسی کنید."
+          exit 1

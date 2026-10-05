@@ -196,6 +196,7 @@ require_once $inc . 'api/product-input.php';
 require_once $inc . 'api/products.php';
 require_once __DIR__ . '/../../phoenix-account/includes/core.php';
 require_once $inc . 'delivery.php';
+require_once $inc . 'backup-core.php';
 
 /* ============================================================
    انبار
@@ -1252,6 +1253,139 @@ if ($path === '/account/sms/test') {
     h_ok(array_merge(h_acc_payload(), array('test' => $res, 'request_url' => strtok($req['url'], '?'))));
 }
 
+/* ---------- Phoenix Account: اعلان در تلگرام ---------- */
+
+function h_notify_payload($extra = array()) {
+    $s = array_merge(phoenix_acc_notify_defaults(), $GLOBALS['S']['notify'] ?? array());
+    $acc = array_merge(phoenix_acc_defaults(), $GLOBALS['S']['acc'] ?? array());
+    $conns = array();
+    foreach (phoenix_connections() as $slug => $row) {
+        $conns[] = array('slug' => $slug, 'label' => $row['label'], 'key' => phoenix_conn_key_state($row));
+    }
+    $events = array();
+    foreach (PHOENIX_ACC_NOTIFY_EVENTS as $id => $e) { $events[] = array('id' => $id, 'label' => $e[0]); }
+    if (empty($GLOBALS['S']['notify_secret'])) $GLOBALS['S']['notify_secret'] = bin2hex(random_bytes(24));
+    if (!isset($GLOBALS['S']['notify_log'])) {
+        $t = time();
+        $GLOBALS['S']['notify_log'] = array(
+            array('id' => 3, 'event' => 'order_paid', 'ref' => 'order:1204', 'dest' => 'hook', 'status' => 'failed', 'tries' => 6, 'error' => 'HTTP 404', 'created' => gmdate('c', $t - 600), 'next' => null),
+            array('id' => 2, 'event' => 'order_paid', 'ref' => 'order:1204', 'dest' => 'tg:5550001', 'status' => 'sent', 'tries' => 1, 'error' => '', 'created' => gmdate('c', $t - 600), 'next' => null),
+            array('id' => 1, 'event' => 'order_on_hold', 'ref' => 'order:1203', 'dest' => 'tg:5550001', 'status' => 'sent', 'tries' => 1, 'error' => '', 'created' => gmdate('c', $t - 7200), 'next' => null),
+        );
+    }
+    $failed = count(array_filter($GLOBALS['S']['notify_log'], function ($r) { return $r['status'] === 'failed'; }));
+    return array_merge(array(
+        'settings' => $s, 'events' => $events, 'connections' => $conns,
+        'login_bot' => $acc['tg_bot'] ?? '',
+        'can_link' => ($s['tg_conn'] === '' || $s['tg_conn'] === $acc['sms_conn']) && $acc['sms_provider'] === 'telegram' && ($acc['tg_mode'] ?? 'own') !== 'shared' && !empty($acc['tg_bot']),
+        'hook_secret' => $GLOBALS['S']['notify_secret'], 'failed_24h' => $failed, 'log' => $GLOBALS['S']['notify_log'],
+    ), $extra);
+}
+if ($path === '/account/notify' && $method === 'GET') {
+    /* شبیه‌سازیِ وبهوکِ ربات: کدِ منتظر از گروهِ فروش رسیده */
+    if (!empty($GLOBALS['S']['notify_code'])) {
+        $chats = $GLOBALS['S']['notify']['tg_chats'] ?? array();
+        $chats[] = array('id' => '-1009876543210', 'title' => 'گروهِ فروش');
+        $GLOBALS['S']['notify']['tg_chats'] = $chats;
+        unset($GLOBALS['S']['notify_code']);
+    }
+    h_ok(h_notify_payload());
+}
+if ($path === '/account/notify' && $method === 'POST') {
+    $c = phoenix_acc_notify_clean($body, array_keys(phoenix_connections()));
+    if (!$c['ok']) h_fail('phoenix_invalid', 'بعضی فیلدها درست نیستند.', 422, array('errors' => $c['errors']));
+    $GLOBALS['S']['notify'] = $c['data'];
+    h_ok(h_notify_payload());
+}
+if ($path === '/account/notify/act' && $method === 'POST') {
+    $act = $body['act'] ?? '';
+    $p = h_notify_payload();
+    if ($act === 'link') {
+        if (!$p['can_link']) h_fail('phoenix_acc_notify', 'اتصال با کد فقط با همان رباتِ ورود (در حالتِ «رباتِ جدا» و وصل‌شده) کار می‌کند. شناسه‌ی گفتگو را دستی وارد کن.', 409);
+        $code = 'ph_' . substr(bin2hex(random_bytes(5)), 0, 10);
+        $GLOBALS['S']['notify_code'] = $code;
+        $bot = $p['login_bot'];
+        h_ok(h_notify_payload(array('link' => array('code' => $code, 'bot' => $bot, 'url' => 'https://t.me/' . $bot . '?start=' . $code, 'group' => '/start@' . $bot . ' ' . $code, 'ttl' => 900))));
+    }
+    if ($act === 'secret') { $GLOBALS['S']['notify_secret'] = bin2hex(random_bytes(24)); h_ok(h_notify_payload()); }
+    if ($act === 'retry') {
+        foreach ($GLOBALS['S']['notify_log'] as &$r) { if ($r['id'] === (int) ($body['id'] ?? 0) && $r['status'] === 'failed') { $r['status'] = 'pending'; $r['tries'] = 0; $r['error'] = ''; } }
+        unset($r);
+        h_ok(h_notify_payload());
+    }
+    if ($act === 'test') {
+        $s = $p['settings'];
+        $out = array();
+        if (!empty($s['tg_on'])) foreach ($s['tg_chats'] as $c) { $out[] = array('dest' => 'tg:' . $c['id'], 'ok' => true, 'error' => ''); }
+        if (!empty($s['hook_on']) && $s['hook_url'] !== '') {
+            $bad = strpos($s['hook_url'], 'fail') !== false;
+            $out[] = array('dest' => 'hook', 'ok' => !$bad, 'error' => $bad ? 'HTTP 404' : '');
+        }
+        if (!$out) h_fail('phoenix_acc_notify', 'هیچ گیرنده‌ای نیست — یک گفتگوی تلگرام یا نشانیِ API اضافه و ذخیره کن.', 409);
+        h_ok(h_notify_payload(array('test' => $out)));
+    }
+    h_fail('phoenix_invalid', 'کارِ ناشناخته', 400);
+}
+
+/* ---------- پشتیبان‌گیری (Bridge) — ردیف‌ها از همین انبارِ آزمایشی ---------- */
+
+function h_backup_sections() {
+    $cust = array_values(array_map(function ($c) {
+        return array('phone' => $c['phone'], 'name' => $c['name'], 'email' => $c['email'], 'pass_hash' => $c['has_password'] ? '$2y$10$fakehash' : '',
+            'blocked' => $c['blocked'] ? 1 : 0, 'created_at' => substr(str_replace('T', ' ', $c['joined']), 0, 19));
+    }, $GLOBALS['S']['acc_customers'] ?? array()));
+    $codes = array();
+    for ($i = 1; $i <= 1200; $i++) { $codes[] = array('post_id' => 1000 + $i, 'type' => 'product', 'slug' => 'p' . $i, 'meta' => array('_phoenix_codes' => array(array('value' => 'CODE-' . $i, 'used' => $i % 3 === 0)))); }
+    return array(
+        'bridge.settings'   => array('label' => 'تنظیماتِ فروشگاه — قیمت، حاشیه، تخفیف، منابع و اتصال‌ها', 'group' => 'فروشگاه', 'kind' => 'option',
+            'rows' => array(array('name' => 'phoenix_pricing_settings', 'value' => $GLOBALS['S']['settings'] ?? array()))),
+        'bridge.codes'      => array('label' => 'انبارِ کد (کدهای آزاد و فروخته‌شده)', 'group' => 'فروشگاه', 'kind' => 'meta', 'rows' => $codes),
+        'bridge.audit'      => array('label' => 'تاریخچه‌ی تغییرات', 'group' => 'فروشگاه', 'kind' => 'table', 'rows' => array_slice($GLOBALS['S']['audit'] ?? array(), 0, 300)),
+        'account.settings'  => array('label' => 'تنظیماتِ مشتریان — پیامک و تلگرام، چتِ آنلاین، اعلان‌ها', 'group' => 'مشتریان', 'kind' => 'option',
+            'rows' => array(array('name' => 'phoenix_account_settings', 'value' => $GLOBALS['S']['acc'] ?? null), array('name' => 'phoenix_acc_notify', 'value' => $GLOBALS['S']['notify'] ?? null))),
+        'account.customers' => array('label' => 'مشتریان — پرونده، هشِ رمزِ عبور، آمارِ خرید', 'group' => 'مشتریان', 'kind' => 'table', 'rows' => $cust),
+    );
+}
+if ($path === '/backup' && $method === 'GET') {
+    h_acc_seed();
+    $sec = array();
+    foreach (h_backup_sections() as $id => $x) { $sec[] = array('id' => $id, 'label' => $x['label'], 'group' => $x['group'], 'kind' => $x['kind'], 'count' => count($x['rows'])); }
+    if (!isset($GLOBALS['S']['snaps'])) {
+        $GLOBALS['S']['snaps'] = array(array('id' => 'a1b2c3', 'at' => gmdate('c', time() - 86400), 'reason' => 'پیش از نسخه‌ی تازه: bridge 1.6.1 ← 1.7.0، account 0.6.0 ← 0.7.0', 'versions' => array('bridge' => '1.7.0', 'account' => '0.7.0')));
+    }
+    h_ok(array('site' => 'panel.phonixmarket.com', 'versions' => array('bridge' => '1.7.0', 'account' => '0.7.0'), 'format' => 'phoenix-backup', 'v' => 1,
+        'batch' => 500, 'sections' => $sec, 'snapshots' => $GLOBALS['S']['snaps']));
+}
+if ($path === '/backup/export' && $method === 'GET') {
+    h_acc_seed();
+    $all = h_backup_sections();
+    $id = (string) ($q['section'] ?? '');
+    if (!isset($all[$id])) h_fail('phoenix_backup_section', 'این بخش در این نسخه نیست.', 404);
+    $from = (int) ($q['cursor'] ?? 0);
+    $lim = max(1, min(500, (int) ($q['limit'] ?? 200)));
+    $rows = array_slice($all[$id]['rows'], $from, $lim);
+    h_ok(array('rows' => $rows, 'next' => $from + $lim < count($all[$id]['rows']) ? (string) ($from + $lim) : null));
+}
+if ($path === '/backup/import' && $method === 'POST') {
+    $rows = is_array($body['rows'] ?? null) ? $body['rows'] : array();
+    $n = count($rows);
+    $merge = ($body['mode'] ?? '') !== 'overwrite';
+    h_ok(array('inserted' => $merge ? 0 : 0, 'replaced' => $merge ? (int) floor($n / 3) : $n, 'skipped' => $merge ? $n - (int) floor($n / 3) : 0, 'rejected' => 0,
+        'notes' => ($body['section'] ?? '') === 'bridge.settings' ? array('کلیدِ ۱ اتصال در این سایت باز نمی‌شود (فایل از سایتِ دیگری است) — در «منابعِ قیمت ← اتصال‌ها» دوباره واردش کن.') : array()));
+}
+if ($path === '/backup/log' && $method === 'POST') h_ok(array('logged' => true));
+if ($path === '/backup/snapshot' && $method === 'POST') {
+    $snap = array('id' => bin2hex(random_bytes(3)), 'at' => gmdate('c'), 'reason' => ($body['act'] ?? '') === 'restore' ? 'پیش از بازگرداندنِ نسخه‌ی قبلی' : 'دستی از پنل', 'versions' => array('bridge' => '1.7.0', 'account' => '0.7.0'));
+    $GLOBALS['S']['snaps'] = phoenix_backup_snapshot_push($GLOBALS['S']['snaps'] ?? array(), $snap);
+    $_GET = array();
+    $method = 'GET';
+    $path = '/backup';
+    $sec = array();
+    foreach (h_backup_sections() as $id => $x) { $sec[] = array('id' => $id, 'label' => $x['label'], 'group' => $x['group'], 'kind' => $x['kind'], 'count' => count($x['rows'])); }
+    h_ok(array('site' => 'panel.phonixmarket.com', 'versions' => array('bridge' => '1.7.0', 'account' => '0.7.0'), 'format' => 'phoenix-backup', 'v' => 1,
+        'batch' => 500, 'sections' => $sec, 'snapshots' => $GLOBALS['S']['snaps']));
+}
+
 /* ---------- Phoenix Account: سفارش‌ها، مشتریان، تیکت‌ها ---------- */
 
 /* مشتریان و تیکت‌های نمونه — بارِ اول از روی سفارش‌های نمونه */
@@ -1377,6 +1511,19 @@ if ($path === '/account/orders' && $method === 'GET') {
     usort($rows, function ($a, $b) { return strcmp($b['created'], $a['created']); });
     h_ok(array('rows' => $rows, 'page' => 1, 'pages' => 1, 'total' => count($rows), 'counts' => $counts));
 }
+if (preg_match('#^/account/orders/(\d+)$#', $path, $m) && $method === 'POST') {
+    $oo = &$GLOBALS['S']['orders'][$m[1]];
+    if (!$oo) h_fail('phoenix_acc_nf', 'این سفارش پیدا نشد.', 404);
+    if (!in_array($oo['status'], array('pending', 'on-hold'), true)) h_fail('phoenix_acc_state', 'این سفارش در انتظارِ پرداخت نیست؛ تغییری داده نشد.', 409);
+    if (($body['act'] ?? '') === 'confirm_payment') {
+        $oo['status'] = 'processing'; $oo['status_label'] = 'در حال انجام'; $oo['paid'] = gmdate('c');
+        $oo['payment']['is_paid'] = true;
+        if (!empty($body['ref'])) $oo['payment']['transaction_id'] = (string) $body['ref'];
+    } else {
+        $oo['status'] = 'cancelled'; $oo['status_label'] = 'لغو شده';
+    }
+    unset($oo);
+}
 if (preg_match('#^/account/orders/(\d+)$#', $path, $m)) {
     $view = h_order_view((int) $m[1]);
     if (!$view) h_fail('phoenix_acc_nf', 'این سفارش پیدا نشد.', 404);
@@ -1404,6 +1551,17 @@ if ($path === '/account/customers' && $method === 'GET') {
         'customers' => count($all), 'buyers' => count(array_filter($all, function ($r) { return $r['orders_count'] > 0; })),
         'spent' => array_sum(array_column($all, 'paid_total')), 'with_password' => count(array_filter($all, function ($r) { return $r['has_password']; })))));
 }
+if ($path === '/account/customers/new' && $method === 'POST') {
+    $ph = preg_replace('/\D/', '', strtr((string) ($body['phone'] ?? ''), array('۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9')));
+    $ph = preg_match('/^9\d{9}$/', $ph) ? '0' . $ph : (preg_match('/^989\d{9}$/', $ph) ? '0' . substr($ph, 2) : $ph);
+    $v = phoenix_acc_admin_customer_clean($body, preg_match('/^09\d{9}$/', $ph) ? $ph : '');
+    if (!$v['ok']) h_fail('phoenix_invalid', 'بعضی فیلدها درست نیستند.', 422, array('errors' => $v['errors']));
+    if (isset($GLOBALS['S']['acc_customers'][$ph])) h_fail('phoenix_exists', 'این شماره پیش‌تر ثبت شده.', 409, array('errors' => array('phone' => 'این شماره پیش‌تر ثبت شده — از فهرست بازش کن.')));
+    $GLOBALS['S']['acc_customers'][$ph] = array('phone' => $ph, 'name' => $v['data']['name'], 'email' => $v['data']['email'],
+        'has_password' => $v['data']['password'] !== '', 'pass_set_at' => $v['data']['password'] !== '' ? gmdate('c') : null,
+        'blocked' => false, 'note' => 'ساخته‌شده در پنل', 'joined' => gmdate('c'), 'last_login' => null, 'locked_for' => 0);
+    h_ok(array('customer' => h_acc_customer_row($ph), 'orders' => array(), 'sessions' => array(), 'tickets' => array()));
+}
 if ($path === '/account/customers/sync') h_ok(array('page' => 1, 'pages' => 1, 'phones' => count($GLOBALS['S']['acc_customers']), 'done' => true));
 if (preg_match('#^/account/customers/(09\d{9})$#', $path, $m)) {
     $ph = $m[1];
@@ -1417,6 +1575,14 @@ if (preg_match('#^/account/customers/(09\d{9})$#', $path, $m)) {
             case 'clear_password': $cc['has_password'] = false; $cc['pass_set_at'] = null; $GLOBALS['S']['acc_sessions'][$ph] = array(); break;
             case 'unlock': $cc['locked_for'] = 0; break;
             case 'note': $cc['note'] = phoenix_acc_text($body['note'] ?? '', 500, true); break;
+            case 'set_password':
+                $bad = phoenix_acc_password_problem((string) ($body['password'] ?? ''), $ph);
+                if ($bad !== '') h_fail('phoenix_invalid', $bad, 422, array('errors' => array('password' => $bad)));
+                $cc['has_password'] = true; $cc['pass_set_at'] = gmdate('c'); $GLOBALS['S']['acc_sessions'][$ph] = array(); break;
+            case 'profile':
+                $v = phoenix_acc_admin_customer_clean(array('name' => $body['name'] ?? '', 'email' => $body['email'] ?? ''), $ph);
+                if (!$v['ok']) h_fail('phoenix_invalid', 'بعضی فیلدها درست نیستند.', 422, array('errors' => $v['errors']));
+                $cc['name'] = $v['data']['name']; $cc['email'] = $v['data']['email']; break;
             default: h_fail('rest_invalid_param', 'کنشِ نامعتبر.', 400);
         }
         unset($cc);

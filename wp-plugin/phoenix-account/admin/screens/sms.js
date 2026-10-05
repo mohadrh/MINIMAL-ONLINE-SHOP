@@ -54,6 +54,7 @@ function paint(ctx, d) {
   const tpl = kit.text({ value: s.sms_tpl_otp, dir: 'ltr', max: 40 });
   const param = kit.text({ value: s.sms_param, dir: 'ltr', max: 30, placeholder: 'CODE' });
   const days = kit.money({ value: s.session_days, unit: 'روز' });
+  const otpEmail = kit.toggle({ checked: !!s.otp_email, label: 'کد به ایمیلِ مشتری هم فرستاده شود' });
   const tgApi = kit.text({ value: s.tg_api || '', dir: 'ltr', max: 200, placeholder: 'https://api.telegram.org' });
   const tgHook = kit.text({ value: s.tg_hook || '', dir: 'ltr', max: 200, placeholder: d.telegram.hook_default });
   const tgMode = kit.seg({
@@ -67,6 +68,7 @@ function paint(ctx, d) {
       h('a', { href: ctx.worldUrl('store', 'rate/connections') || '#/rate/connections', class: 'phx2-td-muted' },'ساختنِ اتصالِ تازه در «منابعِ قیمت ← اتصال‌ها»'))),
     sms_tpl_otp: kit.field({ label: 'الگو', hint: '…' }, tpl.el),
     sms_param: kit.field({ label: 'نامِ متغیرِ کد در الگو', hint: 'همان نامی که در متنِ الگو با ‎#…#‎ آمده.' }, param.el),
+    otp_email: kit.field({ label: 'ایمیل', wide: true, hint: 'فقط به ایمیلی که در پرونده‌ی همان شماره است (مشتری بعد از ورود گذاشته، یا تو در «مشتریان»)، هرگز به ایمیلی که در صفحه‌ی ورود تایپ شود. اگر سامانه «خاموش» باشد، ایمیل تنها راه است. ایمیلِ وردپرس روی هاست‌های اشتراکی گاهی به هرزنامه می‌رود — افزونه‌ی SMTP کمک می‌کند.' }, otpEmail.el),
     session_days: kit.field({ label: 'مشتری تا چند روز واردِ حسابش بماند', hint: 'بعد از این، دوباره کد می‌خواهد. «خروج از همه‌ی دستگاه‌ها» را خودِ مشتری هم دارد.' }, days.el),
     tg_mode: kit.field({ label: 'نوعِ ربات', wide: true, hint: 'رباتِ جدا: این افزونه همه‌ی کارِ ربات را می‌کند. رباتی که از قبل داریم (مثلاً رباتِ فروش): آن ربات منو و برنامه‌ی خودش را نگه می‌دارد، یک دکمه‌ی «ورود به سایت» اضافه می‌کند و شماره‌ی مشتری را با API به این‌جا می‌دهد — راهنما در docs/TELEGRAM.md.' }, tgMode.el),
     tg_api: kit.field({ label: 'واسطه‌ی تلگرام (اختیاری)', hint: 'فقط اگر هاست به تلگرام نمی‌رسد: نشانیِ Worker — راهنما در docs/TELEGRAM.md. خالی = مستقیم.' }, tgApi.el),
@@ -98,7 +100,7 @@ function paint(ctx, d) {
       paint(ctx, await ctx.api('POST', '/account/sms', {
         sms_provider: provider.get(), sms_conn: conn.get(), sms_tpl_otp: tpl.get(),
         sms_param: param.get(), session_days: days.get() || 30,
-        tg_api: tgApi.get(), tg_hook: tgHook.get(), tg_mode: tgMode.get(),
+        tg_api: tgApi.get(), tg_hook: tgHook.get(), tg_mode: tgMode.get(), otp_email: otpEmail.get(),
       }));
       toast('ذخیره شد.', 'good');
     } catch (e) {
@@ -108,7 +110,7 @@ function paint(ctx, d) {
   }));
 
   const settings = card('تنظیم', 'کلیدِ سامانه در «اتصال‌ها» رمزنگاری‌شده می‌ماند؛ این‌جا فقط اسمش انتخاب می‌شود.',
-    h('div', { class: 'phx2-form' }, F.sms_provider, F.sms_conn, F.tg_mode, F.sms_tpl_otp, F.sms_param, F.tg_api, F.tg_hook, F.session_days),
+    h('div', { class: 'phx2-form' }, F.sms_provider, F.sms_conn, F.tg_mode, F.sms_tpl_otp, F.sms_param, F.tg_api, F.tg_hook, F.otp_email, F.session_days),
     h('div', { class: 'phx2-row phx2-row--end' }, save),
   );
 

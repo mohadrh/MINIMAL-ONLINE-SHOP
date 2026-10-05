@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Check, Eye, EyeOff, KeyRound, MessageSquare, RotateCcw } from 'lucide-react';
 import { otpOk, phoneOk } from '../../lib/account';
-import { BridgeError, requestOtp, verifyOtp } from '../../lib/api/bridge';
+import { BridgeError, emailMode, requestOtp, verifyOtp } from '../../lib/api/bridge';
 import {
   PASSWORD_RULE, fieldErrors, getSession, loginWithOtpToken, loginWithPassword,
   passwordProblem, resetPassword, setPassword,
@@ -53,6 +53,8 @@ export function LiveLogin() {
   const [hasPassword, setHasPassword] = useState(true);
   /** نامِ ربات، وقتی کد به‌جای پیامک در تلگرام می‌رود */
   const [tgBot, setTgBot] = useState<string | null>(null);
+  /** کد به ایمیل هم رفت؟ */
+  const [mail, setMail] = useState<'only' | 'also' | null>(null);
   const codeRef = useRef<HTMLInputElement>(null);
 
   const p = toLatin(phone.trim());
@@ -93,6 +95,7 @@ export function LiveLogin() {
   const askCode = () => run(async () => {
     const r = await requestOtp(p);
     setTgBot(r.channel === 'telegram' && r.bot ? r.bot : null);
+    setMail(emailMode(r));
     setLeft(r.ttl || 120);
     setCode('');
     setStage('code');
@@ -236,9 +239,10 @@ export function LiveLogin() {
                 value={code}
                 onChange={(e) => { setCode(e.target.value); setError(null); }}
               />
-              {!tgBot && <small>کد به شماره‌ی {p ? <span className="num" dir="ltr">{p.replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)])}</span> : 'شما'} ارسال شد.</small>}
+              {!tgBot && mail !== 'only' && <small>کد به شماره‌ی {p ? <span className="num" dir="ltr">{p.replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)])}</span> : 'شما'} ارسال شد.</small>}
             </label>
             {tgBot && <TelegramHint bot={tgBot} />}
+            {mail && <EmailHint mode={mail} />}
             <div className="login__resend">
               {left > 0
                 ? <span className="num">ارسال دوباره تا {left.toLocaleString('fa-IR')} ثانیه‌ی دیگر</span>
@@ -288,6 +292,20 @@ export function LiveLogin() {
  * دو حالت یک راهنما دارند: اگر کد نیامده، ربات را باز کنید و شماره را
  * بفرستید، کد همان‌جا می‌رسد.
  */
+/**
+ * کد به ایمیل هم رفته — ⚠ «اگر ثبت شده باشد»: سرور برای همه‌ی شماره‌ها
+ * همین را می‌گوید تا معلوم نشود کدام شماره حساب و ایمیل دارد.
+ */
+export function EmailHint({ mode }: { mode: 'only' | 'also' }) {
+  return (
+    <p className="login__mail" role="note">
+      {mode === 'only'
+        ? 'اگر برای این شماره ایمیلی ثبت شده باشد، کد تأیید به آن ارسال شد. لطفاً پوشه‌ی هرزنامه (Spam) را هم بررسی کنید.'
+        : 'اگر برای حساب شما ایمیلی ثبت شده باشد، کد تأیید به آن هم ارسال شده است.'}
+    </p>
+  );
+}
+
 export function TelegramHint({ bot }: { bot: string }) {
   return (
     <div className="login__tg" role="note">

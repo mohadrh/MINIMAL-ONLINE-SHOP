@@ -7,8 +7,8 @@ import {
   Package, Repeat, Send, ShieldCheck, Smartphone, User, Wallet, X,
 } from 'lucide-react';
 import { otpOk } from '../../lib/account';
-import { BridgeError, requestOtp, storedToken, verifyOtp } from '../../lib/api/bridge';
-import { TelegramHint } from './LiveLogin';
+import { BridgeError, emailMode, requestOtp, storedToken, verifyOtp } from '../../lib/api/bridge';
+import { EmailHint, TelegramHint } from './LiveLogin';
 import * as api from '../../lib/api/account';
 import { PASSWORD_RULE } from '../../lib/api/account';
 import type {
@@ -789,6 +789,7 @@ function PasswordCard({ me, onMe }: { me: Me; onMe: (m: Me, revoked: number) => 
   const [viaCode, setViaCode] = useState(!me.has_password);
   const [codeSent, setCodeSent] = useState(false);
   const [tgBot, setTgBot] = useState<string | null>(null);
+  const [mail, setMail] = useState<'only' | 'also' | null>(null);
   const [code, setCode] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -853,6 +854,7 @@ function PasswordCard({ me, onMe }: { me: Me; onMe: (m: Me, revoked: number) => 
             try {
               const r = await requestOtp(me.phone);
               setTgBot(r.channel === 'telegram' && r.bot ? r.bot : null);
+              setMail(emailMode(r));
               setCodeSent(true);
             } catch (e) { setErrors({ code: errText(e) }); }
           }}>{codeSent ? 'ارسال دوباره‌ی کد' : 'ارسال کد تأیید به ' + faDigits(me.phone)}</button>
@@ -863,6 +865,7 @@ function PasswordCard({ me, onMe }: { me: Me; onMe: (m: Me, revoked: number) => 
             </label>
           )}
           {codeSent && tgBot && <TelegramHint bot={tgBot} />}
+          {codeSent && mail && <EmailHint mode={mail} />}
           {errors.code && <em className="co__err">{errors.code}</em>}
         </div>
       )}

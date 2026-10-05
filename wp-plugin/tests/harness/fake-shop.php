@@ -228,7 +228,7 @@ function fail_hit($phone) {
 if ($uri === '/wp-json/phoenix/v1/otp/request') {
     if (norm_phone($body['phone'] ?? '') === '') fail('phoenix_bad_phone', 'شماره‌ی موبایل معتبر نیست.', 400);
     /* همان شکلِ ‎phoenix_otp_response_extra‎ی Phoenix Account وقتی کد در تلگرام می‌رود */
-    out(array('ok' => true, 'ttl' => 120, 'channel' => 'telegram', 'bot' => 'PhoenixShopLoginBot'));
+    out(array('ok' => true, 'ttl' => 120, 'channel' => 'telegram', 'bot' => 'PhoenixShopLoginBot', 'also' => 'email'));
 }
 if ($uri === '/wp-json/phoenix/v1/otp/verify') {
     $phone = norm_phone($body['phone'] ?? '');

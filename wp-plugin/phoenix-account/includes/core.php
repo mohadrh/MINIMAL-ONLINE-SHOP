@@ -27,6 +27,7 @@ function phoenix_acc_defaults() {
         'tg_api'       => '',     // واسطه‌ی Bot API اگر هاست به تلگرام نمی‌رسد؛ خالی = api.telegram.org
         'tg_hook'      => '',     // نشانیِ وبهوک برای تلگرام اگر از واسطه می‌گذرد؛ خالی = همین سایت
         'tg_mode'      => 'own',  // own = رباتِ جدا (وبهوک با ما) | shared = رباتِ موجود (پیوند با API)
+        'otp_email'    => false,  // کد به ایمیلِ ثبت‌شده‌ی مشتری هم برود
     );
 }
 
@@ -102,6 +103,7 @@ function phoenix_acc_settings_clean(array $in, array $conns = array()) {
             'tg_api'       => $tg['tg_api'],
             'tg_hook'      => $mode === 'shared' ? '' : $tg['tg_hook'],
             'tg_mode'      => $mode,
+            'otp_email'    => !empty($in['otp_email']),
         ),
     );
 }
@@ -1213,4 +1215,70 @@ function phoenix_acc_notify_find_code($update, $code) {
         return array('id' => (string) (int) $c['id'], 'title' => phoenix_acc_text($title, 64), 'type' => (string) ($c['type'] ?? ''));
     }
     return null;
+}
+
+/* ============================================================
+   کدِ ورود با ایمیل
+   ============================================================ */
+
+/*
+ * ⚠ فقط به ایمیلی که همین حالا در پرونده‌ی همان شماره است — هرگز به
+ * ایمیلی که در صفحه‌ی ورود تایپ شود. وگرنه هر کسی شماره‌ی دیگری را
+ * با ایمیلِ خودش می‌زد و کدِ ورودِ حسابِ او را می‌گرفت. ایمیلِ پرونده
+ * را یا خودِ مشتری بعد از ورود گذاشته، یا مدیر.
+ */
+
+/** @return array{subject:string, body:string} */
+function phoenix_acc_otp_email_text($code, $ttl) {
+    $min = max(1, (int) ceil((int) $ttl / 60));
+    $fa  = strtr((string) $min, array('0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴', '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹'));
+    return array(
+        'subject' => 'کد ورود فونیکس شاپ: ' . $code,
+        'body'    => "کد ورود شما به فونیکس شاپ:\n\n" . $code . "\n\n"
+            . 'این کد تا ' . $fa . " دقیقه معتبر است. لطفاً آن را در اختیار هیچ‌کس قرار ندهید؛ پشتیبانی فونیکس شاپ هرگز کد را از شما نمی‌خواهد.\n\n"
+            . 'اگر شما درخواست ورود نداده‌اید، این ایمیل را نادیده بگیرید.',
+    );
+}
+
+/**
+ * سایت چه بگوید — بی‌آنکه بگوید این شماره ایمیل دارد یا نه.
+ *
+ * @return array ‎channel: email‎ وقتی ایمیل تنها راه است؛ ‎also: email‎ وقتی کنارِ راهِ اصلی
+ */
+function phoenix_acc_otp_email_extra(array $extra, $provider, $on) {
+    if (!$on) {
+        return $extra;
+    }
+    if ($provider === 'off' && empty($extra['channel'])) {
+        $extra['channel'] = 'email';
+    } else {
+        $extra['also'] = 'email';
+    }
+    return $extra;
+}
+
+/**
+ * مشتریِ تازه از پنلِ مدیر — برای آزمایش یا ثبتِ دستی.
+ * شماره پیش‌تر با ‎phoenix_normalize_phone‎ی Bridge یکدست شده.
+ *
+ * @return array{ok:bool, data:array, errors:array<string,string>}
+ */
+function phoenix_acc_admin_customer_clean(array $in, $phone) {
+    $err = array();
+    if (!preg_match('/^09\d{9}$/', (string) $phone)) {
+        $err['phone'] = 'شماره‌ی موبایلِ ایران، مثلاً ۰۹۱۲۱۲۳۴۵۶۷.';
+    }
+    $name = phoenix_acc_text($in['name'] ?? '', 100);
+    $email = trim((string) ($in['email'] ?? ''));
+    if ($email !== '' && (strlen($email) > 190 || !preg_match('/^[^\s@<>"]+@[^\s@<>"]+\.[A-Za-z]{2,}$/', $email))) {
+        $err['email'] = 'ایمیل درست نیست.';
+    }
+    $pass = (string) ($in['password'] ?? '');
+    if ($pass !== '') {
+        $bad = phoenix_acc_password_problem($pass, $phone);
+        if ($bad !== '') {
+            $err['password'] = $bad;
+        }
+    }
+    return array('ok' => !$err, 'errors' => $err, 'data' => array('name' => $name, 'email' => strtolower($email), 'password' => $pass));
 }

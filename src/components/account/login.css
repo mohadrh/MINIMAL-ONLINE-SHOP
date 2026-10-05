@@ -172,3 +172,6 @@
   font-size: var(--text-sm); line-height: 1.9; text-align: start;
 }
 .login__tg b { font-size: var(--text-sm); }
+
+/* کد به ایمیل هم رفته — یادداشتِ آرام، نه هشدار */
+.login__mail { margin: var(--sp-2) 0 0; font-size: var(--text-sm); line-height: 1.9; color: var(--ink); }

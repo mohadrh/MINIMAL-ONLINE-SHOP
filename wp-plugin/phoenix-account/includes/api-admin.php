@@ -24,6 +24,10 @@ function phoenix_acc_admin_routes() {
         'page'   => array('type' => 'integer', 'minimum' => 1, 'maximum' => 1000, 'default' => 1),
     ));
     phoenix_api_route('/account/orders/(?P<id>\d+)', 'GET', 'phoenix_acc_admin_order');
+    phoenix_api_route('/account/orders/(?P<id>\d+)', 'POST', 'phoenix_acc_admin_order_act', array(
+        'act' => array('type' => 'string', 'enum' => array('confirm_payment', 'cancel'), 'required' => true),
+        'ref' => array('type' => 'string', 'default' => ''),
+    ));
 
     phoenix_api_route('/account/customers', 'GET', 'phoenix_acc_admin_customers', array(
         'q'    => array('type' => 'string', 'default' => ''),
@@ -33,10 +37,14 @@ function phoenix_acc_admin_routes() {
     phoenix_api_route('/account/customers/sync', 'POST', 'phoenix_acc_admin_customers_sync', array(
         'page' => array('type' => 'integer', 'minimum' => 1, 'maximum' => 1000, 'default' => 1),
     ));
+    phoenix_api_route('/account/customers/new', 'POST', 'phoenix_acc_admin_customer_new');
     phoenix_api_route('/account/customers/(?P<phone>09\d{9})', 'GET', 'phoenix_acc_admin_customer');
     phoenix_api_route('/account/customers/(?P<phone>09\d{9})', 'POST', 'phoenix_acc_admin_customer_act', array(
-        'act'  => array('type' => 'string', 'enum' => array('block', 'unblock', 'revoke', 'clear_password', 'unlock', 'note'), 'required' => true),
+        'act'  => array('type' => 'string', 'enum' => array('block', 'unblock', 'revoke', 'clear_password', 'unlock', 'note', 'set_password', 'profile'), 'required' => true),
         'note' => array('type' => 'string', 'default' => ''),
+        'password' => array('type' => 'string', 'default' => ''),
+        'name'  => array('type' => 'string', 'default' => ''),
+        'email' => array('type' => 'string', 'default' => ''),
     ));
 
     phoenix_api_route('/account/tickets', 'GET', 'phoenix_acc_admin_tickets', array(
@@ -167,6 +175,54 @@ function phoenix_acc_admin_order(WP_REST_Request $r) {
         'customer' => $cust ? array('phone' => $phone, 'orders_count' => (int) $cust->orders_count, 'paid_total' => (int) $cust->paid_total, 'blocked' => (bool) $cust->blocked) : ($phone !== '' ? array('phone' => $phone) : null),
         'tickets'  => $phone !== '' ? phoenix_acc_tickets_admin('', $phone, 1)['rows'] : array(),
     ));
+}
+
+/**
+ * تأییدِ دستیِ پرداخت (کارت‌به‌کارت، یا آزمایش بی‌درگاه) و لغو.
+ *
+ * ⚠ ‎payment_complete‎ی خودِ ووکامرس — همان راهی که درگاه می‌رود: وضعیت،
+ *   تاریخِ پرداخت، صفِ تحویل و اعلان‌ها همه مثلِ پرداختِ واقعی. فقط از
+ *   «در انتظارِ پرداخت» یا «در انتظارِ بررسی»؛ پرداخت‌شده دوباره نه.
+ */
+function phoenix_acc_admin_order_act(WP_REST_Request $r) {
+    $order = wc_get_order((int) $r['id']);
+    if (!$order || $order->get_type() !== 'shop_order') {
+        return phoenix_api_fail('phoenix_acc_nf', 'این سفارش پیدا نشد.', 404);
+    }
+    if (!in_array($order->get_status(), array('pending', 'on-hold'), true)) {
+        return phoenix_api_fail('phoenix_acc_state', 'این سفارش در انتظارِ پرداخت نیست؛ تغییری داده نشد.', 409);
+    }
+    $user = wp_get_current_user();
+    $who  = $user && $user->ID ? $user->user_login : 'مدیر';
+    $ref  = phoenix_acc_text($r['ref'], 100);
+    if ((string) $r['act'] === 'confirm_payment') {
+        $order->add_order_note('پرداخت را ' . $who . ' دستی تأیید کرد' . ($ref !== '' ? ' — مرجع: ' . $ref : '') . '.');
+        $order->payment_complete($ref !== '' ? substr(preg_replace('/[^A-Za-z0-9\-_.]/', '', $ref), 0, 60) : '');
+        phoenix_audit('queue', 'order:' . $order->get_id(), 'awaiting', 'paid', 'پرداخت دستی تأیید شد' . ($ref !== '' ? ' (' . $ref . ')' : ''));
+    } else {
+        $order->update_status('cancelled', 'لغو از پنل توسطِ ' . $who . ($ref !== '' ? ' — ' . $ref : '') . '.');
+        phoenix_audit('queue', 'order:' . $order->get_id(), $order->get_status(), 'cancelled', 'سفارش از پنل لغو شد');
+    }
+    return phoenix_acc_admin_order($r); // همان شناسه — صفحه‌ی سفارش با وضعیتِ تازه
+}
+
+/** مشتریِ تازه از پنل — برای آزمایش یا ثبتِ دستی */
+function phoenix_acc_admin_customer_new(WP_REST_Request $r) {
+    $b     = (array) $r->get_json_params();
+    $phone = function_exists('phoenix_normalize_phone') ? phoenix_normalize_phone((string) ($b['phone'] ?? '')) : '';
+    $v     = phoenix_acc_admin_customer_clean($b, $phone);
+    if (!$v['ok']) {
+        return new WP_Error('phoenix_invalid', 'بعضی فیلدها درست نیستند.', array('status' => 422, 'errors' => $v['errors']));
+    }
+    if (phoenix_acc_customer($phone)) {
+        return new WP_Error('phoenix_exists', 'این شماره پیش‌تر ثبت شده.', array('status' => 409, 'errors' => array('phone' => 'این شماره پیش‌تر ثبت شده — از فهرست بازش کن.')));
+    }
+    phoenix_acc_customer_update($phone, array('name' => $v['data']['name'], 'email' => $v['data']['email'], 'admin_note' => 'ساخته‌شده در پنل'));
+    if ($v['data']['password'] !== '') {
+        phoenix_acc_password_set($phone, $v['data']['password'], 0);
+    }
+    phoenix_audit('customer', 'phone:' . $phone, null, 'created', 'مشتری در پنل ساخته شد' . ($v['data']['password'] !== '' ? ' (با رمز)' : ''));
+    return phoenix_api_ok(phoenix_acc_admin_customer_payload($phone));
 }
 
 /* ============================================================
@@ -314,6 +370,24 @@ function phoenix_acc_admin_customer_act(WP_REST_Request $r) {
             $note = phoenix_acc_text($r['note'], 500, true);
             phoenix_acc_customer_update($phone, array('admin_note' => $note));
             phoenix_audit('customer', $subj, $c->admin_note, $note, 'یادداشتِ داخلی');
+            break;
+        /* ⚠ رمز را مدیر می‌گذارد — برای حسابِ آزمایشی یا مشتری‌ای که تلفنی
+           کمک خواسته. همه‌ی نشست‌ها بیرون می‌روند و در تاریخچه می‌ماند. */
+        case 'set_password':
+            $bad = phoenix_acc_password_problem((string) $r['password'], $phone);
+            if ($bad !== '') {
+                return new WP_Error('phoenix_invalid', $bad, array('status' => 422, 'errors' => array('password' => $bad)));
+            }
+            phoenix_acc_password_set($phone, (string) $r['password'], 0);
+            phoenix_audit('customer', $subj, null, null, 'رمز را مدیر گذاشت؛ همه‌ی نشست‌ها بیرون رفتند');
+            break;
+        case 'profile':
+            $v = phoenix_acc_admin_customer_clean(array('name' => $r['name'], 'email' => $r['email']), $phone);
+            if (!$v['ok']) {
+                return new WP_Error('phoenix_invalid', 'بعضی فیلدها درست نیستند.', array('status' => 422, 'errors' => $v['errors']));
+            }
+            phoenix_acc_customer_update($phone, array('name' => $v['data']['name'], 'email' => $v['data']['email']));
+            phoenix_audit('customer', $subj, $c->email, $v['data']['email'], 'نام و ایمیل از پنل');
             break;
     }
     return phoenix_api_ok(phoenix_acc_admin_customer_payload($phone));

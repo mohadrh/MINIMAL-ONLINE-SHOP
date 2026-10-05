@@ -396,5 +396,24 @@ is_same('کدِ دیگر نه', phoenix_acc_notify_find_code(array('message' => 
 is_same('کد چسبیده به متنِ دیگر نه', phoenix_acc_notify_find_code(array('message' => array('chat' => array('id' => 1), 'text' => 'x' . $code)), $code), null);
 is_same('کدِ بدشکل نه', phoenix_acc_notify_find_code(array('message' => array('chat' => array('id' => 1), 'text' => '.*')), '.*'), null);
 
+/* ============================================================ */
+section('کد با ایمیل و مشتریِ تازه از پنل');
+
+$m = phoenix_acc_otp_email_text('482913', 120);
+is_same('ایمیلِ کد: موضوع و متن', array(strpos($m['subject'], '482913') !== false, strpos($m['body'], '۲ دقیقه') !== false, strpos($m['body'], 'هرگز کد را از شما نمی‌خواهد') !== false), array(true, true, true));
+is_same('خاموش → سایت چیزی نمی‌گوید', phoenix_acc_otp_email_extra(array(), 'off', false), array());
+is_same('بی‌سامانه، ایمیل تنها راه', phoenix_acc_otp_email_extra(array(), 'off', true), array('channel' => 'email'));
+is_same('کنارِ تلگرام', phoenix_acc_otp_email_extra(array('channel' => 'telegram', 'bot' => 'B'), 'telegram', true), array('channel' => 'telegram', 'bot' => 'B', 'also' => 'email'));
+is_same('کنارِ پیامک', phoenix_acc_otp_email_extra(array(), 'kavenegar', true), array('also' => 'email'));
+is_same('گزینه ذخیره می‌شود', array(phoenix_acc_settings_clean(array('otp_email' => true))['data']['otp_email'], phoenix_acc_settings_clean(array())['data']['otp_email']), array(true, false));
+
+$v = phoenix_acc_admin_customer_clean(array('name' => 'مشتریِ <b>آزمایشی</b>', 'email' => 'Test@Example.COM', 'password' => 'Phoenix2026'), '09121234567');
+is_same('مشتریِ تازه: درست، ایمیل کوچک، نام بی‌برچسب', array($v['ok'], $v['data']['email'], strpos($v['data']['name'], '<b>')), array(true, 'test@example.com', false));
+is_same('شماره‌ی خراب رد', isset(phoenix_acc_admin_customer_clean(array(), '')['errors']['phone']), true);
+is_same('ایمیلِ خراب رد', isset(phoenix_acc_admin_customer_clean(array('email' => 'a@b'), '09121234567')['errors']['email']), true);
+is_same('ایمیل با برچسب رد', isset(phoenix_acc_admin_customer_clean(array('email' => 'a<x>@b.co'), '09121234567')['errors']['email']), true);
+is_same('رمزِ ضعیف رد (همان قاعده‌ی سایت)', isset(phoenix_acc_admin_customer_clean(array('password' => '12345678'), '09121234567')['errors']['password']), true);
+is_same('بی‌رمز مجاز', phoenix_acc_admin_customer_clean(array('name' => 'x'), '09121234567')['ok'], true);
+
 printf("\n%d قبول، %d مردود\n", $GLOBALS['pass'], $GLOBALS['fail']);
 exit($GLOBALS['fail'] ? 1 : 0);
